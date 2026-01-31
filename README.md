@@ -2,12 +2,12 @@
 
 # RPG Boss Bar
 
-A RPG inspired boss health bar addon for World of Warcraft with a dragonriding-inspired visual style.
+A RPG inspired boss health bar addon for World of Warcraft.
 
 ## Features
 
 - Displays up to 5 boss health bars with current health, and boss name
-  - Shows boss percentage (xx.x%) if only 1 or 2 bars are showing
+- Shows boss percentage (xx.x%) if only 1 or 2 bars are showing
 - Movable and lockable position (saved per character)
 - Auto-shows during boss encounters, hides otherwise
 
