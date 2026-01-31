@@ -1,34 +1,6 @@
 local ADDON_NAME, RPGBB = ...
 ADDON_ABVR = "RPGBB"
 
-_G.RPGBB = RPGBB
-
---- TESTING AREA
-
-function RPGBB.dump(t, indent)
-    indent = indent or 0
-    local prefix = string.rep("  ", indent)
-
-    if type(t) ~= "table" then
-        print(prefix .. tostring(t))
-        return
-    end
-
-    for k, v in pairs(t) do
-        local key = tostring(k)
-
-        if type(v) == "table" then
-            print(prefix .. key .. " = {")
-            RPGBB.dump(v, indent + 1)
-            print(prefix .. "}")
-        else
-            print(prefix .. key .. " = " .. tostring(v))
-        end
-    end
-end
-
---- TESTING AREA
-
 
 -------------------------------------------------------------------------------
 --- Configuration Variables
@@ -38,7 +10,7 @@ local addon_color = "ffff2277"
 
 local bar_width = 1000
 local bar_height = 38
-local font_size = 32
+local font_size = 24
 
 -- Available bar textures (atlas names) for future theme selection
 local BAR_TEXTURES = {
@@ -55,8 +27,6 @@ local BAR_TEXTURES = {
     ["Blizzard Energy"]      = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Energy",
 }
 
-local DEV_MODE = true -- TODO: Set to false when done developing
-
 local testing = false
 local verbose = false
 
@@ -65,10 +35,12 @@ local FRAME_BORDER_LEVEL = 5
 local HEALTH_BAR_LEVEL   = 10
 local GRAPHICS_LEVEL     = 15
 
+local ScaleTo100Curve = C_CurveUtil.CreateCurve()
+ScaleTo100Curve:AddPoint(0, 0)
+ScaleTo100Curve:AddPoint(1, 100)
+
 
 -------------------------------------------------------------------------------
---- Initialization
----
 --- Main Frame / Container
 -------------------------------------------------------------------------------
 
@@ -104,9 +76,13 @@ RPGBB.border:SetBackdrop({
 })
 RPGBB.border:SetBackdropBorderColor(1, 1, 1, 1)
 
+-------------------------------------------------------------------------------
+--- Mover Handle
+-------------------------------------------------------------------------------
+
 -- Create mover handle frame (shown when unlocked)
 RPGBB.frame.handle = CreateFrame("Frame", "RPGBossBarHandle", RPGBB.frame)
-RPGBB.frame.handle:SetSize(16, 16)
+RPGBB.frame.handle:SetSize(32, 32)
 RPGBB.frame.handle:SetPoint("TOP", RPGBB.frame, "BOTTOM", 0, -8)
 
 -- Mover handle icon
@@ -233,11 +209,11 @@ RPGBB.rightGraphicAccent:SetPoint("LEFT", RPGBB.rightGraphicFg, "RIGHT", -ac_w *
 --- Font
 -------------------------------------------------------------------------------
 
-local FONT = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\PTSansNarrow-Bold.ttf"
+local FONT = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf"
 
-RPGBB.healthFont = CreateFont("RPGBossBarHealthFont")
-RPGBB.healthFont:SetFont(FONT, font_size, "OUTLINE")
-RPGBB.healthFont:SetTextColor(1, 1, 1, 1)
+RPGBB.health_font = CreateFont("RPGBossBarHealthFont")
+RPGBB.health_font:SetFont(FONT, font_size, "OUTLINE")
+RPGBB.health_font:SetTextColor(1, 1, 1, 1)
 
 
 -------------------------------------------------------------------------------
@@ -272,9 +248,14 @@ function RPGBB:Lock(locked)
     if locked then
         RPGBB.frame.handle:Hide()
         RPGBB.frame:EnableMouse(false)
+        -- Hide frame if no bosses and not testing
+        if #RPGBB.current_boss_frames == 0 and not testing then
+            RPGBB.frame:Hide()
+        end
     else
         RPGBB.frame.handle:Show()
         RPGBB.frame:EnableMouse(true)
+        RPGBB.frame:Show()
     end
 end
 
@@ -300,9 +281,12 @@ function RPGBB:ToggleTest(frame_count)
 
         for _, boss_frame in ipairs(test_boss_frames) do
             local test_health = math.random(1, 214748364)
-            RPGBB.health_bars[boss_frame].frame:SetMinMaxValues(0, 214748364)
+            local test_max_health = 214748364
+            RPGBB.health_bars[boss_frame].frame:SetMinMaxValues(0, test_max_health)
             RPGBB.health_bars[boss_frame].frame:SetValue(test_health)
             RPGBB.health_bars[boss_frame].health_text:SetText(test_health)
+            local percent = (test_health / test_max_health) * 100
+            RPGBB.health_bars[boss_frame].percent_text:SetText(string.format("%.1f%%", percent))
             RPGBB.health_bars[boss_frame].name_text:SetText("Test Boss " .. boss_frame:match("%d+"))
         end
         RPGBB.frame:Show()
@@ -314,7 +298,6 @@ function RPGBB:ToggleTest(frame_count)
 end
 
 function RPGBB:UpdateHealth()
-    print("RPGBB: Updating Health")
     if #RPGBB.current_boss_frames == 0 then
         RPGBB.frame:Hide()
         return
@@ -329,6 +312,8 @@ function RPGBB:UpdateHealth()
             health_bar.frame:SetMinMaxValues(0, max_health)
             health_bar.frame:SetValue(health)
             health_bar.health_text:SetText(health)
+            local percent = UnitHealthPercent(boss_frame, true, ScaleTo100Curve) or 0
+            health_bar.percent_text:SetText(string.format("%.1f%%", percent))
             health_bar.frame:Show()
         end
     end
@@ -353,7 +338,6 @@ function RPGBB:BossFramesChanged(new_frames)
 end
 
 function RPGBB:DetectBossCount()
-    print("RPGBB: Detect Boss Count")
     local boss_frames = {}
 
     -- 5 boss frames
@@ -365,8 +349,6 @@ function RPGBB:DetectBossCount()
         end
     end
 
-    print("RPGBB: Detect Boss Count: " ..  #boss_frames)
-    print("RPGBB: Current Boss Count: " ..  #RPGBB.current_boss_frames)
     -- Only rebuild frames if boss frames have changed
     if not RPGBB:BossFramesChanged(boss_frames) then
         return false
@@ -378,8 +360,6 @@ function RPGBB:DetectBossCount()
 end
 
 function RPGBB:UpdateFrames(boss_frames)
-    print("RPGBB: UpdateFrames! | " .. #boss_frames)
-    print("RPGBB: UpdateFrames! | " .. #RPGBB.current_boss_frames)
     local boss_frame_count = #boss_frames
     local health_bar_width = bar_width / boss_frame_count
 
@@ -389,24 +369,22 @@ function RPGBB:UpdateFrames(boss_frames)
     end
 
     for i, boss_frame in ipairs(boss_frames) do
-        print("RPGBB: " .. boss_frame .. " i: " .. i)
+        RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
 
         RPGBB.health_bars[boss_frame] = RPGBB.health_bars[boss_frame] or {}
 
         --- Health Bar
         y_left_offset = health_bar_width * (i - 1)
 
-        print("  y_left_offset: " .. y_left_offset)
-
         if not RPGBB.health_bars[boss_frame].frame then
-            print(boss_frame .. "frame did not exist!")
+            RPGBB:VPrint(boss_frame .. "frame did not exist!")
             RPGBB.health_bars[boss_frame].frame = CreateFrame("StatusBar", "RPG".. boss_frame .."BarHealthBar", RPGBB.frame)
             RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
             RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetAtlas("Unit_Priest_Insanity_Fill")
             RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(1, 1, 1, 1) -- White to show atlas texture colors
             RPGBB.health_bars[boss_frame].frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + HEALTH_BAR_LEVEL)
         else
-            print(boss_frame .. "Already Existed.")
+            RPGBB:VPrint(boss_frame .. "Already Existed.")
         end
 
         RPGBB.health_bars[boss_frame].frame:ClearAllPoints()
@@ -430,17 +408,31 @@ function RPGBB:UpdateFrames(boss_frames)
         -- Create health text (centered on the bar)
         if not RPGBB.health_bars[boss_frame].health_text then
             RPGBB.health_bars[boss_frame].health_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.healthFont)
+            RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.health_font)
             RPGBB.health_bars[boss_frame].health_text:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "CENTER", 0, -1)
         end
 
         -- Create name text (above the bar)
         if not RPGBB.health_bars[boss_frame].name_text then
             RPGBB.health_bars[boss_frame].name_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.healthFont)
+            RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.health_font)
             RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, 2)
+            RPGBB.health_bars[boss_frame].name_text:SetWordWrap(false)
         end
+        RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
         RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or boss_frame)
+
+        -- Create percentage text (right side of bar)
+        if not RPGBB.health_bars[boss_frame].percent_text then
+            RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
+            RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
+            RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", -20, 0)
+        end
+        if boss_frame_count > 2 then
+            RPGBB.health_bars[boss_frame].percent_text:Hide()
+        else
+            RPGBB.health_bars[boss_frame].percent_text:Show()
+        end
 
         -- Don't create extra divider graphic elements
         if i == boss_frame_count then break end
@@ -485,7 +477,6 @@ end
 -------------------------------------------------------------------------------
 
 local function EventHandler(self, event, arg1)
-    print("RPGBB: " .. event)
     if event == "ADDON_LOADED" then
         if arg1 == ADDON_NAME then
             if not RPGBossBarDB then
@@ -512,29 +503,34 @@ local function EventHandler(self, event, arg1)
             RPGBB.frame:RegisterUnitEvent("UNIT_MAXHEALTH", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
             RPGBB.frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-            RPGBB:DetectBossCount()
+            RPGBB.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
             RPGBB:Print("Loaded. Use " .. SLASH_RPGBOSSBAR1 .. " for commands.")
         end
 
     elseif event == "UNIT_HEALTH" or event == "UNIT_MAXHEALTH" then
-        print("RPGBB: UNIT HEALTH EVENT for " .. arg1)
         RPGBB:DetectBossCount()
 
         -- Update health if this boss is being tracked
         if RPGBB.health_bars[arg1] then
-            print("Update Health")
             RPGBB:UpdateHealth()
         end
-
-    elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or event == "PLAYER_ENTERING_WORLD" then
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        if #RPGBB.current_boss_frames == 0 then
+            if RPGBossBarDB.locked then
+                RPGBB.frame:Hide()
+            else
+                RPGBB:ToggleTest(2)
+            end
+        end
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        -- Exited combat - if unlocked, show frame for positioning
+        if not RPGBossBarDB.locked then
+            RPGBB.frame:Show()
+        end
+    elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
         RPGBB:DetectBossCount()
         RPGBB:UpdateHealth()
-
-        if #RPGBB.current_boss_frames == 0 and not testing and not DEV_MODE then
-            RPGBB.frame:Hide()
-        end
     end
 end
 
