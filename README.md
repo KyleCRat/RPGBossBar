@@ -1,1 +1,1 @@
-![RPG Boss Bar Gif](https://github.com/KyleCRat/RPGBossBar/blob/main/RPGBossBarExample.gif)
+![RPG Boss Bar Gif](https://github.com/KyleCRat/RPGBossBar/blob/main/images/RPGBossBarExample.gif)
