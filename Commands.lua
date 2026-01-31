@@ -16,8 +16,8 @@ RPGBB.cmds.toggle_lock = {
 RPGBB.cmds.toggle_test = {
     triggers = { 'test', 't' },
     name = "Toggle frame for testing",
-    description = "Toggle the frame for test viewing",
-    func = function() RPGBB:ToggleTest() end,
+    description = "Toggle the frame for test viewing (optional: number of frames 1-5)",
+    func = function(args) RPGBB:ToggleTest(args) end,
 }
 
 RPGBB.cmds.toggle_debug = {
@@ -52,10 +52,15 @@ SlashCmdList[strupper(ADDON_NAME)] = function(msg)
                              SLASH_RPGBOSSBAR1,
                              msg ~= "" and msg or "(no msg)"))
 
+    -- Split command and arguments
+    local cmd_str, args = msg:match("^(%S+)%s*(.*)$")
+    cmd_str = cmd_str or msg
+    args = args ~= "" and args or nil
+
     for _, cmd in pairs(RPGBB.cmds) do
         for _, trigger in ipairs(cmd.triggers) do
-            if msg == trigger then
-                cmd.func()
+            if cmd_str == trigger then
+                cmd.func(args)
                 return
             end
         end
