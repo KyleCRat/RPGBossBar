@@ -35,10 +35,6 @@ local FRAME_BORDER_LEVEL = 5
 local HEALTH_BAR_LEVEL   = 10
 local GRAPHICS_LEVEL     = 15
 
-local ScaleTo100Curve = C_CurveUtil.CreateCurve()
-ScaleTo100Curve:AddPoint(0, 0)
-ScaleTo100Curve:AddPoint(1, 100)
-
 
 -------------------------------------------------------------------------------
 --- Main Frame / Container
@@ -284,6 +280,7 @@ function RPGBB:ToggleTest(frame_count)
             local test_max_health = 214748364
             RPGBB.health_bars[boss_frame].frame:SetMinMaxValues(0, test_max_health)
             RPGBB.health_bars[boss_frame].frame:SetValue(test_health)
+            -- RPGBB.health_bars[boss_frame].health_text:SetText(AbbreviateNumbers(test_health))
             RPGBB.health_bars[boss_frame].health_text:SetText(test_health)
             local percent = (test_health / test_max_health) * 100
             RPGBB.health_bars[boss_frame].percent_text:SetText(string.format("%.1f%%", percent))
@@ -311,8 +308,9 @@ function RPGBB:UpdateHealth()
         if health_bar and health_bar.frame then
             health_bar.frame:SetMinMaxValues(0, max_health)
             health_bar.frame:SetValue(health)
+            -- health_bar.health_text:SetText(AbbreviateNumbers(health))
             health_bar.health_text:SetText(health)
-            local percent = UnitHealthPercent(boss_frame, true, ScaleTo100Curve) or 0
+            local percent = UnitHealthPercent(boss_frame, true, CurveConstants.ScaleTo100) or 0
             health_bar.percent_text:SetText(string.format("%.1f%%", percent))
             health_bar.frame:Show()
         end
