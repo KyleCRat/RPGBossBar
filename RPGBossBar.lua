@@ -8,11 +8,6 @@ RPGBB.abbv = "RPGBB"
 
 local addon_color = "ff46226a"
 
-local bar_width = 1000
-local bar_height = 38
-
-local font_size = 24
-
 local testing = false
 local verbose = false
 
@@ -23,182 +18,6 @@ local GRAPHICS_LEVEL     = 15
 
 
 -------------------------------------------------------------------------------
---- Main Frame / Container
--------------------------------------------------------------------------------
-
-RPGBB.frame = CreateFrame("Frame", "RPGBossBarFrame", UIParent)
-RPGBB.frame:SetSize(bar_width, bar_height)
-RPGBB.frame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
-RPGBB.frame:SetMovable(true)
-RPGBB.frame:SetClampedToScreen(true)
-RPGBB.frame:Show() -- TODO: Change back to Hide() when done developing
-
--- Create container's background
-RPGBB.frame.bg = RPGBB.frame:CreateTexture(nil, "BACKGROUND")
-RPGBB.frame.bg:SetAllPoints(RPGBB.frame)
-RPGBB.frame.bg:SetColorTexture(0, 0, 0, 0.8)
-
--- Create container's frame
-local border_offset = 6
-local border_size = 18
-RPGBB.border = CreateFrame("Frame", "RPGBossBarBorder", RPGBB.frame, "BackdropTemplate")
-RPGBB.border:ClearAllPoints()
-RPGBB.border:SetPoint("TOPLEFT", RPGBB.frame, "TOPLEFT", -border_offset, border_offset)
-RPGBB.border:SetPoint("BOTTOMRIGHT", RPGBB.frame, "BOTTOMRIGHT", border_offset, -border_offset)
-RPGBB.border:SetFrameLevel(RPGBB.frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
-RPGBB.border:SetBackdrop({
-    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-    edgeSize = border_size,
-    insets = {
-        left = 0,
-        right = 0,
-        top = 0,
-        bottom = 0
-    }
-})
-RPGBB.border:SetBackdropBorderColor(1, 1, 1, 1)
-
--------------------------------------------------------------------------------
---- Mover Handle
--------------------------------------------------------------------------------
-
--- Create mover handle frame (shown when unlocked)
-RPGBB.frame.handle = CreateFrame("Frame", "RPGBossBarHandle", RPGBB.frame)
-RPGBB.frame.handle:SetSize(32, 32)
-RPGBB.frame.handle:SetPoint("TOP", RPGBB.frame, "BOTTOM", 0, -8)
-
--- Mover handle icon
-RPGBB.frame.handle.icon = RPGBB.frame.handle:CreateTexture(nil, "OVERLAY")
-RPGBB.frame.handle.icon:SetAllPoints()
-RPGBB.frame.handle.icon:SetTexture("Interface\\CURSOR\\UI-Cursor-Move")
-RPGBB.frame.handle.icon:SetVertexColor(1, 1, 1, 0.8)
-
--- Mover handle background
-RPGBB.frame.handle.bg = RPGBB.frame.handle:CreateTexture(nil, "BACKGROUND")
-RPGBB.frame.handle.bg:SetAllPoints()
-RPGBB.frame.handle.bg:SetColorTexture(0, 0, 0, 0.8)
-
--- Make the handle draggable (moves the main frame)
-RPGBB.frame.handle:EnableMouse(true)
-RPGBB.frame.handle:RegisterForDrag("LeftButton")
-RPGBB.frame.handle:SetScript("OnDragStart", function()
-    RPGBB.frame:StartMoving()
-end)
-
-RPGBB.frame.handle:SetScript("OnDragStop", function()
-    RPGBB.frame:StopMovingOrSizing()
-    local point, _, relativePoint, x, y = RPGBB.frame:GetPoint()
-    RPGBossBarDB.position = { point = point, relativePoint = relativePoint, x = x, y = y }
-end)
-
--- Make the main frame draggable
-RPGBB.frame:EnableMouse(true)
-RPGBB.frame:RegisterForDrag("LeftButton")
-RPGBB.frame:SetScript("OnDragStart", RPGBB.frame.StartMoving)
-RPGBB.frame:SetScript("OnDragStop", function(self)
-    self:StopMovingOrSizing()
-    local point, _, relativePoint, x, y = self:GetPoint()
-    RPGBossBarDB.position = { point = point, relativePoint = relativePoint, x = x, y = y }
-end)
-
-
--------------------------------------------------------------------------------
---- Graphic Elements
--------------------------------------------------------------------------------
-
-local graphic_height_mult = 1.8
-
--- Foreground size
-local fg_width_to_height_ratio = 44.5 / 62.5
-
-local fg_h = bar_height * graphic_height_mult
-local fg_w = fg_h * fg_width_to_height_ratio
-
--- Background size
-local bg_to_fg_ratio           = 50 / 62.5
-local bg_width_to_height_ratio = 36 / 50
-
-local bg_h = fg_h * bg_to_fg_ratio
-local bg_w = bg_h * bg_width_to_height_ratio
-
--- Accent Size
-local ac_to_fg_ratio           = 75.5 / 62.5
-local ac_width_to_height_ratio = 58.5 / 75.5
-
-local ac_h = fg_h * ac_to_fg_ratio
-local ac_w = ac_h * ac_width_to_height_ratio
-
---- Left - Anchored to Container
--- Create overlay frame for left graphics (sits on top of health bar)
-RPGBB.leftGraphicFrame = CreateFrame("Frame", "RPGBossBarLeftGraphic", RPGBB.frame)
-RPGBB.leftGraphicFrame:SetAllPoints(RPGBB.frame)
-RPGBB.leftGraphicFrame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + GRAPHICS_LEVEL)
-
--- Left Graphic Background (behind foreground)
-RPGBB.leftGraphicBg = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 1)
-RPGBB.leftGraphicBg:SetAtlas("dragonriding_sgvigor_fillfull")
-RPGBB.leftGraphicBg:SetSize(bg_w, bg_h)
-RPGBB.leftGraphicBg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
-RPGBB.leftGraphicBg:SetDesaturated(true)
-
--- Left Graphic Foreground (the frame)
-RPGBB.leftGraphicFg = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 2)
-RPGBB.leftGraphicFg:SetAtlas("dragonriding_sgvigor_frame_dark")
-RPGBB.leftGraphicFg:SetSize(fg_w, fg_h)
-RPGBB.leftGraphicFg:SetPoint("CENTER", RPGBB.frame, "LEFT", -2, 0)
-
--- Anchor background to foreground center
-RPGBB.leftGraphicBg:SetPoint("CENTER", RPGBB.leftGraphicFg, "CENTER", 0, 0)
-
--- Left Graphic Accent (decorative element)
-RPGBB.leftGraphicAccent = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 3)
-RPGBB.leftGraphicAccent:SetAtlas("dragonriding_sgvigor_decor_dark")
-RPGBB.leftGraphicAccent:SetSize(ac_w, ac_h)
-RPGBB.leftGraphicAccent:SetTexCoord(1, 0, 0, 1) -- Mirror horizontally
-RPGBB.leftGraphicAccent:SetPoint("RIGHT", RPGBB.leftGraphicFg, "LEFT", ac_w * 0.325, ac_h * 0.075)
-
-
---- Right - Anchored to Container
--- Create overlay frame for right graphics (sits on top of health bar)
-RPGBB.rightGraphicFrame = CreateFrame("Frame", "RPGBossBarRightGraphic", RPGBB.frame)
-RPGBB.rightGraphicFrame:SetAllPoints(RPGBB.frame)
-RPGBB.rightGraphicFrame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + GRAPHICS_LEVEL)
-
--- Right Graphic Background (behind foreground)
-RPGBB.rightGraphicBg = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 1)
-RPGBB.rightGraphicBg:SetAtlas("dragonriding_sgvigor_fillfull")
-RPGBB.rightGraphicBg:SetSize(bg_w, bg_h)
-RPGBB.rightGraphicBg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
-RPGBB.rightGraphicBg:SetDesaturated(true)
-
--- Right Graphic Foreground (the frame)
-RPGBB.rightGraphicFg = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 2)
-RPGBB.rightGraphicFg:SetAtlas("dragonriding_sgvigor_frame_dark")
-RPGBB.rightGraphicFg:SetSize(fg_w, fg_h)
-RPGBB.rightGraphicFg:SetPoint("CENTER", RPGBB.frame, "RIGHT", 2, 0)
-
--- Anchor background to foreground center
-RPGBB.rightGraphicBg:SetPoint("CENTER", RPGBB.rightGraphicFg, "CENTER", 0, 0)
-
--- Right Graphic Accent (decorative element)
-RPGBB.rightGraphicAccent = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 3)
-RPGBB.rightGraphicAccent:SetAtlas("dragonriding_sgvigor_decor_dark")
-RPGBB.rightGraphicAccent:SetSize(ac_w, ac_h)
-RPGBB.rightGraphicAccent:SetPoint("LEFT", RPGBB.rightGraphicFg, "RIGHT", -ac_w * 0.325, ac_h * 0.075)
-
-
--------------------------------------------------------------------------------
---- Font
--------------------------------------------------------------------------------
-
-local FONT = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf"
-
-RPGBB.health_font = CreateFont("RPGBossBarHealthFont")
-RPGBB.health_font:SetFont(FONT, font_size, "OUTLINE")
-RPGBB.health_font:SetTextColor(1, 1, 1, 1)
-
-
--------------------------------------------------------------------------------
 --- Init Health bar storage
 -------------------------------------------------------------------------------
 
@@ -206,9 +25,234 @@ RPGBB.health_bars = {}
 RPGBB.current_boss_frames = {}
 
 
+---------------------------------------------------------------------------
+--- Main Frame / Container
+---------------------------------------------------------------------------
+
+if not RPGBB.frame then
+    RPGBB.frame = CreateFrame("Frame", "RPGBossBarFrame", UIParent)
+    RPGBB.frame:SetPoint("TOP", UIParent, "TOP", 0, -80)
+    RPGBB.frame:SetClampedToScreen(true)
+    RPGBB.frame:SetMovable(true)
+    RPGBB.frame:Hide()
+
+    -- Make the main frame draggable
+    -- TODO: Remove when adding edit mode?
+    -- RPGBB.frame:EnableMouse(true)
+    -- RPGBB.frame:RegisterForDrag("LeftButton")
+    -- RPGBB.frame:SetScript("OnDragStart", RPGBB.frame.StartMoving)
+    -- RPGBB.frame:SetScript("OnDragStop", function(self)
+    --     self:StopMovingOrSizing()
+    --     local point, _, relativePoint, x, y = self:GetPoint()
+    --     RPGBossBarDB.position = { point = point, relativePoint = relativePoint, x = x, y = y }
+    -- end)
+end
+
+
 -------------------------------------------------------------------------------
 --- Functions
 -------------------------------------------------------------------------------
+
+function RPGBB:InitOrUpdateFrame()
+    RPGBB:VPrint("InitOrUpdateFrame fired")
+
+    local frame_height = RPGBB.db.Get("frame", "height")
+    local frame_width  = RPGBB.db.Get("frame", "width")
+
+    RPGBB.frame:ClearAllPoints()
+    RPGBB.frame:SetPoint(RPGBB.db.Get("frame", "position", "point"),
+                         UIParent,
+                         RPGBB.db.Get("frame", "position", "relative_point"),
+                         RPGBB.db.Get("frame", "position", "x"),
+                         RPGBB.db.Get("frame", "position", "y"))
+    RPGBB.frame:SetSize(frame_width, frame_height)
+
+    -- Create container's background
+    if not RPGBB.frame.bg then
+        RPGBB.frame.bg = RPGBB.frame:CreateTexture(nil, "BACKGROUND")
+        RPGBB.frame.bg:SetAllPoints(RPGBB.frame)
+    end
+    RPGBB.frame.bg:SetColorTexture(RPGBB.db.GetColor("frame", "background_color"))
+
+    -- Create container's frame
+    local border_offset = 6
+    local border_size = 18
+    -- Not allowing editing of the border for now
+    if not RPGBB.border then
+        RPGBB.border = CreateFrame("Frame", "RPGBossBarBorder", RPGBB.frame, "BackdropTemplate")
+        RPGBB.border:ClearAllPoints()
+        RPGBB.border:SetPoint("TOPLEFT", RPGBB.frame, "TOPLEFT", -border_offset, border_offset)
+        RPGBB.border:SetPoint("BOTTOMRIGHT", RPGBB.frame, "BOTTOMRIGHT", border_offset, -border_offset)
+        RPGBB.border:SetFrameLevel(RPGBB.frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
+        RPGBB.border:SetBackdrop({
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            edgeSize = border_size,
+            insets = {
+                left = 0,
+                right = 0,
+                top = 0,
+                bottom = 0
+            }
+        })
+        RPGBB.border:SetBackdropBorderColor(1, 1, 1, 1)
+    end
+
+    ---------------------------------------------------------------------------
+    --- Mover Handle
+    ---------------------------------------------------------------------------
+
+    -- Create mover handle frame (shown when unlocked)
+    -- TODO: Remove when adding edit mode?
+    if not RPGBB.frame.handle then
+        RPGBB.frame.handle = CreateFrame("Frame", "RPGBossBarHandle", RPGBB.frame)
+        RPGBB.frame.handle:SetSize(32, 32)
+        RPGBB.frame.handle:SetPoint("TOP", RPGBB.frame, "BOTTOM", 0, -8)
+
+        -- Mover handle icon
+        RPGBB.frame.handle.icon = RPGBB.frame.handle:CreateTexture(nil, "OVERLAY")
+        RPGBB.frame.handle.icon:SetAllPoints()
+        RPGBB.frame.handle.icon:SetTexture("Interface\\CURSOR\\UI-Cursor-Move")
+        RPGBB.frame.handle.icon:SetVertexColor(1, 1, 1, 0.8)
+
+        -- Mover handle background
+        RPGBB.frame.handle.bg = RPGBB.frame.handle:CreateTexture(nil, "BACKGROUND")
+        RPGBB.frame.handle.bg:SetAllPoints()
+        RPGBB.frame.handle.bg:SetColorTexture(0, 0, 0, 0.8)
+
+        -- Make the handle draggable (moves the main frame)
+        RPGBB.frame.handle:EnableMouse(true)
+        RPGBB.frame.handle:RegisterForDrag("LeftButton")
+        RPGBB.frame.handle:SetScript("OnDragStart", function()
+            RPGBB.frame:StartMoving()
+        end)
+
+        RPGBB.frame.handle:SetScript("OnDragStop", function()
+            RPGBB.frame:StopMovingOrSizing()
+            local point, _, relativePoint, x, y = RPGBB.frame:GetPoint()
+            RPGBossBarDB.frame = RPGBossBarDB.frame or {}
+            RPGBossBarDB.frame.position = { point = point, relativePoint = relativePoint, x = x, y = y }
+        end)
+    end
+
+
+    ---------------------------------------------------------------------------
+    --- Graphic Elements
+    ---------------------------------------------------------------------------
+
+    local graphic_height_mult = 1.8
+
+    -- Foreground size
+    local fg_width_to_height_ratio = 44.5 / 62.5
+
+    RPGBB.fg_h = frame_height * graphic_height_mult
+    RPGBB.fg_w = RPGBB.fg_h * fg_width_to_height_ratio
+
+    -- Background size
+    local bg_to_fg_ratio           = 50 / 62.5
+    local bg_width_to_height_ratio = 36 / 50
+
+    RPGBB.bg_h = RPGBB.fg_h * bg_to_fg_ratio
+    RPGBB.bg_w = RPGBB.bg_h * bg_width_to_height_ratio
+
+    -- Accent Size
+    local ac_to_fg_ratio           = 75.5 / 62.5
+    local ac_width_to_height_ratio = 58.5 / 75.5
+
+    RPGBB.ac_h = RPGBB.fg_h * ac_to_fg_ratio
+    RPGBB.ac_w = RPGBB.ac_h * ac_width_to_height_ratio
+
+    --- Left - Anchored to Container
+    -- Create overlay frame for left graphics (sits on top of health bar)
+    if not RPGBB.leftGraphicFrame then
+        RPGBB.leftGraphicFrame = CreateFrame("Frame", "RPGBossBarLeftGraphic", RPGBB.frame)
+        RPGBB.leftGraphicFrame:SetAllPoints(RPGBB.frame)
+        RPGBB.leftGraphicFrame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + GRAPHICS_LEVEL)
+
+        -- Left Graphic Background (behind foreground)
+        RPGBB.leftGraphicBg = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 1)
+        RPGBB.leftGraphicBg:SetAtlas("dragonriding_sgvigor_fillfull")
+        RPGBB.leftGraphicBg:SetSize(RPGBB.bg_w, RPGBB.bg_h)
+        -- RPGBB.leftGraphicBg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
+        RPGBB.leftGraphicBg:SetDesaturated(true)
+
+        -- Left Graphic Foreground (the frame)
+        RPGBB.leftGraphicFg = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 2)
+        RPGBB.leftGraphicFg:SetAtlas("dragonriding_sgvigor_frame_dark")
+        RPGBB.leftGraphicFg:SetSize(RPGBB.fg_w, RPGBB.fg_h)
+        RPGBB.leftGraphicFg:SetPoint("CENTER", RPGBB.frame, "LEFT", -2, 0)
+
+        -- Anchor background to foreground center
+        RPGBB.leftGraphicBg:SetPoint("CENTER", RPGBB.leftGraphicFg, "CENTER", 0, 0)
+
+        -- Left Graphic Accent (decorative element)
+        RPGBB.leftGraphicAccent = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 3)
+        RPGBB.leftGraphicAccent:SetAtlas("dragonriding_sgvigor_decor_dark")
+        RPGBB.leftGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
+        RPGBB.leftGraphicAccent:SetTexCoord(1, 0, 0, 1) -- Mirror horizontally
+        RPGBB.leftGraphicAccent:SetPoint("RIGHT", RPGBB.leftGraphicFg, "LEFT", RPGBB.ac_w * 0.325, RPGBB.ac_h * 0.075)
+    end
+    RPGBB.leftGraphicBg:SetVertexColor(RPGBB.db.GetColor("accents", "color")) -- #46226a
+
+
+    --- Right - Anchored to Container
+    -- Create overlay frame for right graphics (sits on top of health bar)
+    if not RPGBB.rightGraphicFrame then
+        RPGBB.rightGraphicFrame = CreateFrame("Frame", "RPGBossBarRightGraphic", RPGBB.frame)
+        RPGBB.rightGraphicFrame:SetAllPoints(RPGBB.frame)
+        RPGBB.rightGraphicFrame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + GRAPHICS_LEVEL)
+
+        -- Right Graphic Background (behind foreground)
+        RPGBB.rightGraphicBg = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 1)
+        RPGBB.rightGraphicBg:SetAtlas("dragonriding_sgvigor_fillfull")
+        RPGBB.rightGraphicBg:SetSize(RPGBB.bg_w, RPGBB.bg_h)
+        -- RPGBB.rightGraphicBg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
+        RPGBB.rightGraphicBg:SetDesaturated(true)
+
+        -- Right Graphic Foreground (the frame)
+        RPGBB.rightGraphicFg = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 2)
+        RPGBB.rightGraphicFg:SetAtlas("dragonriding_sgvigor_frame_dark")
+        RPGBB.rightGraphicFg:SetSize(RPGBB.fg_w, RPGBB.fg_h)
+        RPGBB.rightGraphicFg:SetPoint("CENTER", RPGBB.frame, "RIGHT", 2, 0)
+
+        -- Anchor background to foreground center
+        RPGBB.rightGraphicBg:SetPoint("CENTER", RPGBB.rightGraphicFg, "CENTER", 0, 0)
+
+        -- Right Graphic Accent (decorative element)
+        RPGBB.rightGraphicAccent = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 3)
+        RPGBB.rightGraphicAccent:SetAtlas("dragonriding_sgvigor_decor_dark")
+        RPGBB.rightGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
+        RPGBB.rightGraphicAccent:SetPoint("LEFT", RPGBB.rightGraphicFg, "RIGHT", -RPGBB.ac_w * 0.325, RPGBB.ac_h * 0.075)
+    end
+    RPGBB.rightGraphicBg:SetVertexColor(RPGBB.db.GetColor("accents", "color")) -- #46226a
+
+
+    ---------------------------------------------------------------------------
+    --- Font
+    ---------------------------------------------------------------------------
+
+    local health_font = RPGBB.db.Get("health", "font")
+    local health_font_size = RPGBB.db.Get("health", "font_size")
+
+    RPGBB.health_font = CreateFont("RPGBossBarHealthFont")
+    RPGBB.health_font:SetFont(health_font, health_font_size, "OUTLINE")
+    RPGBB.health_font:SetTextColor(RPGBB.db.GetColor("health", "texture", "color"))
+
+
+    local name_font = RPGBB.db.Get("name", "font")
+    local name_font_size = RPGBB.db.Get("name", "font_size")
+
+    RPGBB.name_font = CreateFont("RPGBossBarNameFont")
+    RPGBB.name_font:SetFont(name_font, name_font_size, "OUTLINE")
+    RPGBB.name_font:SetTextColor(RPGBB.db.GetColor("name", "color"))
+
+
+    local power_font = RPGBB.db.Get("power", "font")
+    local power_font_size = RPGBB.db.Get("power", "font_size")
+
+    RPGBB.power_font = CreateFont("RPGBossBarPowerFont")
+    RPGBB.power_font:SetFont(power_font, power_font_size, "OUTLINE")
+    RPGBB.power_font:SetTextColor(RPGBB.db.GetColor("power", "color"))
+end
 
 function RPGBB:Print(msg)
     print("|c" .. addon_color .. ADDON_NAME .. ":|r " .. msg)
@@ -227,17 +271,23 @@ function RPGBB:ToggleLock()
 end
 
 function RPGBB:Lock(locked)
+    RPGBB:VPrint("Lock: " .. (locked and "true" or "false"))
     if locked then
         RPGBB.frame.handle:Hide()
         RPGBB.frame:EnableMouse(false)
-        -- Hide frame if no bosses and not testing
-        if #RPGBB.current_boss_frames == 0 and not testing then
-            RPGBB.frame:Hide()
+        RPGBB.frame:Hide()
+
+        if testing then
+            RPGBB:ToggleTest()
         end
-    else
+    else -- unlocked
         RPGBB.frame.handle:Show()
         RPGBB.frame:EnableMouse(true)
         RPGBB.frame:Show()
+
+        if not testing then
+            RPGBB:ToggleTest(2)
+        end
     end
 end
 
@@ -247,6 +297,8 @@ function RPGBB:ToggleDebug()
 end
 
 function RPGBB:ToggleTest(frame_count)
+    if not RPGBossBarDB.locked and testing then return end
+
     recieved_frame_count_arg = ((frame_count and true) or false)
     frame_count = tonumber(frame_count) or 2
     frame_count = math.max(1, math.min(5, frame_count)) -- Clamp between 1 and 5
@@ -370,78 +422,101 @@ function RPGBB:IsBossFramesToUpdate()
 
     RPGBB.current_boss_frames = boss_frames
     RPGBB:UpdateFrames(boss_frames)
+
     return true
 end
 
 function RPGBB:UpdateFrames(boss_frames)
-    local boss_frame_count = #boss_frames
-    local health_bar_width = bar_width / boss_frame_count
+    local frame_height = RPGBB.db.Get("frame", "height")
+    local frame_width  = RPGBB.db.Get("frame", "width")
 
+    local boss_frame_count = #boss_frames
+    local health_bar_width = frame_width / boss_frame_count
+
+    -- Hide all visible elements for updating
     for _, bf in pairs(RPGBB.health_bars) do
         bf.frame:Hide()
         if bf.mid_graphic_frame then bf.mid_graphic_frame:Hide() end
     end
+
+    -- Get all db values before looping so we only get them once
+    -- If we are using an atlas texture
+    -- if RPGBB.db.get("health", "texture", "atlas") then
+    local health_bat_texture_is_atlas = RPGBB.db.Get("health", "texture", "atlas")
+    local health_bar_texture = RPGBB.db.Get("health", "texture", "texture")
+    local health_bar_atlas_texture = RPGBB.db.Get("health", "texture", "atlas_texture")
+    local health_bar_desaturated = RPGBB.db.Get("health", "texture", "desaturated")
+    local hb_r, hb_b, hb_g, hb_a = RPGBB.db.GetColor("health", "texture", "color")
+
+    local spark_atlas = RPGBB.db.Get("health", "spark", "atlas")
+    local sp_r, sp_b, sp_g, sp_a = RPGBB.db.GetColor("health", "texture", "color")
+    local spark_blend_mode = RPGBB.db.Get("health", "spark", "blend_mode")
+    local spark_width = RPGBB.db.Get("health", "spark", "width")
 
     for i, boss_frame in ipairs(boss_frames) do
         RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
 
         RPGBB.health_bars[boss_frame] = RPGBB.health_bars[boss_frame] or {}
 
-        --- Health Bar
         y_left_offset = health_bar_width * (i - 1)
 
+        -- Healthbar Frame
         if not RPGBB.health_bars[boss_frame].frame then
-            RPGBB:VPrint(boss_frame .. " frame did not exist!")
+            RPGBB:VPrint(boss_frame .. " did not exist, creating.")
             RPGBB.health_bars[boss_frame].frame = CreateFrame("StatusBar", "RPG".. boss_frame .."BarHealthBar", RPGBB.frame)
-            RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-            RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetAtlas("Unit_Priest_Insanity_Fill")
-            RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(1, 1, 1, 1) -- White to show atlas texture colors
             RPGBB.health_bars[boss_frame].frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + HEALTH_BAR_LEVEL)
         else
             RPGBB:VPrint(boss_frame .. " Already Existed.")
         end
+        -- Update each time for setting changes
+        RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture(health_bar_texture)
+        RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetAtlas(health_bar_atlas_texture)
+        RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetDesaturated(health_bar_desaturated)
+        RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(hb_r, hb_b, hb_g, hb_a)
+        -- Update each time for frame count changes
         RPGBB.health_bars[boss_frame].frame:ClearAllPoints()
         RPGBB.health_bars[boss_frame].frame:SetPoint("LEFT", RPGBB.frame, "LEFT", y_left_offset, 0)
-        RPGBB.health_bars[boss_frame].frame:SetSize(health_bar_width, bar_height)
+        RPGBB.health_bars[boss_frame].frame:SetSize(health_bar_width, frame_height)
         RPGBB.health_bars[boss_frame].frame:Show()
 
-        -- Create spark texture
+        -- Healthbar Spark
         if not RPGBB.health_bars[boss_frame].spark then
             RPGBB.health_bars[boss_frame].spark = RPGBB.health_bars[boss_frame].frame:CreateTexture(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].spark:SetAtlas("Insanity-Spark")
-            RPGBB.health_bars[boss_frame].spark:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
-            RPGBB.health_bars[boss_frame].spark:SetBlendMode("ADD")
-            RPGBB.health_bars[boss_frame].spark:SetSize(4, bar_height * 1.5)
-
-            -- Position at the current value of the status bar
             RPGBB.health_bars[boss_frame].spark:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture(), "RIGHT", 0, 0)
         end
+        -- Update each time for setting changes
+        RPGBB.health_bars[boss_frame].spark:SetAtlas(spark_atlas)
+        RPGBB.health_bars[boss_frame].spark:SetVertexColor(sp_r, sp_b, sp_g, sp_a)
+        RPGBB.health_bars[boss_frame].spark:SetBlendMode(spark_blend_mode)
+        RPGBB.health_bars[boss_frame].spark:SetSize(spark_width, frame_height * 1.5)
 
 
-        -- Create health text (centered on the bar)
+        -- Healthbar absolute value health text
         if not RPGBB.health_bars[boss_frame].health_text then
             RPGBB.health_bars[boss_frame].health_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.health_font)
             RPGBB.health_bars[boss_frame].health_text:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "CENTER", 0, -1)
         end
+        -- Update each time for setting changes
+        RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.health_font)
 
-        -- Create name text (above the bar)
+        -- Healthbar name text (above frame)
         if not RPGBB.health_bars[boss_frame].name_text then
             RPGBB.health_bars[boss_frame].name_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.health_font)
             RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, 2)
             RPGBB.health_bars[boss_frame].name_text:SetWordWrap(false)
         end
+        RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
         RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
         RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or boss_frame)
 
-        -- Create percentage text (right side of bar)
+        -- Healthbar percentage text (right side of bar)
         if not RPGBB.health_bars[boss_frame].percent_text then
             RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
             RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", -20, 0)
         end
+        RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
 
+        -- Hide percentage if more than 2 bosses exist
         if boss_frame_count > 2 then
             RPGBB.health_bars[boss_frame].percent_text:Hide()
         else
@@ -468,7 +543,7 @@ function RPGBB:UpdateFrames(boss_frames)
         if not RPGBB.health_bars[boss_frame].mid_graphic_bg then
             RPGBB.health_bars[boss_frame].mid_graphic_bg = RPGBB.health_bars[boss_frame].mid_graphic_frame:CreateTexture(nil, "ARTWORK", nil, 1)
             RPGBB.health_bars[boss_frame].mid_graphic_bg:SetAtlas("dragonriding_sgvigor_fillfull")
-            RPGBB.health_bars[boss_frame].mid_graphic_bg:SetSize(bg_w * middle_graphic_width_mult, bg_h)
+            RPGBB.health_bars[boss_frame].mid_graphic_bg:SetSize(RPGBB.bg_w * middle_graphic_width_mult, RPGBB.bg_h)
             RPGBB.health_bars[boss_frame].mid_graphic_bg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
             RPGBB.health_bars[boss_frame].mid_graphic_bg:SetDesaturated(true)
         end
@@ -477,7 +552,7 @@ function RPGBB:UpdateFrames(boss_frames)
         if not RPGBB.health_bars[boss_frame].mid_graphic_fg then
             RPGBB.health_bars[boss_frame].mid_graphic_fg = RPGBB.health_bars[boss_frame].mid_graphic_frame:CreateTexture(nil, "ARTWORK", nil, 2)
             RPGBB.health_bars[boss_frame].mid_graphic_fg:SetAtlas("dragonriding_sgvigor_frame_dark")
-            RPGBB.health_bars[boss_frame].mid_graphic_fg:SetSize(fg_w * middle_graphic_width_mult, fg_h)
+            RPGBB.health_bars[boss_frame].mid_graphic_fg:SetSize(RPGBB.fg_w * middle_graphic_width_mult, RPGBB.fg_h)
             RPGBB.health_bars[boss_frame].mid_graphic_fg:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "RIGHT", 0, 0)
 
             -- Anchor background to foreground center
@@ -507,6 +582,8 @@ local function EventHandler(self, event, arg1)
                 RPGBB.frame:ClearAllPoints()
                 RPGBB.frame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.x, pos.y)
             end
+
+            RPGBB:InitOrUpdateFrame()
 
             RPGBB:Lock(RPGBossBarDB.locked)
 
