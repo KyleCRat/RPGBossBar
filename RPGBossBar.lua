@@ -261,10 +261,22 @@ function RPGBB:ToggleDebug()
 end
 
 function RPGBB:ToggleTest(frame_count)
+    recieved_frame_count_arg = ((frame_count and true) or false)
     frame_count = tonumber(frame_count) or 2
     frame_count = math.max(1, math.min(5, frame_count)) -- Clamp between 1 and 5
 
-    testing = not testing
+    RPGBB.VPrint("recieved_frame_count_arg " .. ((frame_count and "true") or "false"))
+    RPGBB.VPrint("frame_count: " .. frame_count .. " current_boss_frames_count " .. #RPGBB.current_boss_frames)
+
+    -- Toggle test if:
+    --   We are not testing: Show
+    --   We are testing: if no frame_count passed
+    --                   or frame_count is the same as current test: Hide
+    if not testing or (not recieved_frame_count_arg
+                        or #RPGBB.current_boss_frames == frame_count) then
+        testing = not testing
+    end
+
     RPGBB:Print("testing turned " .. (testing and "on" or "off"))
 
     if testing then
@@ -286,6 +298,7 @@ function RPGBB:ToggleTest(frame_count)
             RPGBB.health_bars[boss_frame].name_text:SetText("Test Boss " .. boss_frame:match("%d+"))
         end
 
+        RPGBB.current_boss_frames = test_boss_frames
         RPGBB.frame:Show()
     else
         RPGBB.current_boss_frames = {}
