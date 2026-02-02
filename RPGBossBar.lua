@@ -1,31 +1,17 @@
 local ADDON_NAME, RPGBB = ...
-ADDON_ABVR = "RPGBB"
+RPGBB.abbv = "RPGBB"
 
 
 -------------------------------------------------------------------------------
 --- Configuration Variables
 -------------------------------------------------------------------------------
 
-local addon_color = "ffff2277"
+local addon_color = "ff46226a"
 
 local bar_width = 1000
 local bar_height = 38
-local font_size = 24
 
--- Available bar textures (atlas names) for future theme selection
-local BAR_TEXTURES = {
-    ["Blizzard Insanity"]    = "Unit_Priest_Insanity_Fill",
-    ["Blizzard Pain"]        = "_DemonHunter-DemonicPainBar",
-    ["Blizzard Maelstrom"]   = "Unit_Shaman_Maelstrom_Fill",
-    ["Blizzard Ebon Might"]  = "Unit_Evoker_EbonMight_Fill",
-    ["Blizzard Lunar Power"] = "Unit_Druid_AstralPower_Fill",
-    ["Blizzard Fury"]        = "Unit_DemonHunter_Fury_Fill",
-    ["Blizzard Runic Power"] = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-RunicPower",
-    ["Blizzard Rage"]        = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Rage",
-    ["Blizzard Mana"]        = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Mana",
-    ["Blizzard Focus"]       = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Focus",
-    ["Blizzard Energy"]      = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Energy",
-}
+local font_size = 24
 
 local testing = false
 local verbose = false
@@ -231,7 +217,7 @@ end
 function RPGBB:VPrint(msg)
     if not verbose then return end
 
-    print("|c" .. addon_color .. ADDON_ABVR .. ":|r " .. msg)
+    print("|c" .. addon_color .. RPGBB.abbv .. ":|r " .. msg)
 end
 
 function RPGBB:ToggleLock()
@@ -265,8 +251,8 @@ function RPGBB:ToggleTest(frame_count)
     frame_count = tonumber(frame_count) or 2
     frame_count = math.max(1, math.min(5, frame_count)) -- Clamp between 1 and 5
 
-    RPGBB.VPrint("recieved_frame_count_arg " .. ((frame_count and "true") or "false"))
-    RPGBB.VPrint("frame_count: " .. frame_count .. " current_boss_frames_count " .. #RPGBB.current_boss_frames)
+    RPGBB:VPrint("ToggleTest: recieved_frame_count_arg " .. ((frame_count and "true") or "false"))
+    RPGBB:VPrint("ToggleTest: frame_count: " .. frame_count .. " current_boss_frames_count " .. #RPGBB.current_boss_frames)
 
     -- Toggle test if:
     --   We are not testing: Show
@@ -275,9 +261,9 @@ function RPGBB:ToggleTest(frame_count)
     if not testing or (not recieved_frame_count_arg
                         or #RPGBB.current_boss_frames == frame_count) then
         testing = not testing
-    end
 
-    RPGBB:Print("testing turned " .. (testing and "on" or "off"))
+        RPGBB:Print("testing turned " .. (testing and "on" or "off"))
+    end
 
     if testing then
         local test_boss_frames = {}
@@ -307,7 +293,6 @@ function RPGBB:ToggleTest(frame_count)
     end
 end
 
--- TODO revamp this to take health, max_health, and percent_health to DRY ToggleTest
 function RPGBB:UpdateHealth()
     for _, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:RenderHealthChanges(boss_frame)
@@ -406,16 +391,15 @@ function RPGBB:UpdateFrames(boss_frames)
         y_left_offset = health_bar_width * (i - 1)
 
         if not RPGBB.health_bars[boss_frame].frame then
-            RPGBB:VPrint(boss_frame .. "frame did not exist!")
+            RPGBB:VPrint(boss_frame .. " frame did not exist!")
             RPGBB.health_bars[boss_frame].frame = CreateFrame("StatusBar", "RPG".. boss_frame .."BarHealthBar", RPGBB.frame)
             RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
             RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetAtlas("Unit_Priest_Insanity_Fill")
             RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(1, 1, 1, 1) -- White to show atlas texture colors
             RPGBB.health_bars[boss_frame].frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + HEALTH_BAR_LEVEL)
         else
-            RPGBB:VPrint(boss_frame .. "Already Existed.")
+            RPGBB:VPrint(boss_frame .. " Already Existed.")
         end
-
         RPGBB.health_bars[boss_frame].frame:ClearAllPoints()
         RPGBB.health_bars[boss_frame].frame:SetPoint("LEFT", RPGBB.frame, "LEFT", y_left_offset, 0)
         RPGBB.health_bars[boss_frame].frame:SetSize(health_bar_width, bar_height)
@@ -457,6 +441,7 @@ function RPGBB:UpdateFrames(boss_frames)
             RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
             RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", -20, 0)
         end
+
         if boss_frame_count > 2 then
             RPGBB.health_bars[boss_frame].percent_text:Hide()
         else
