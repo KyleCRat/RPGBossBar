@@ -276,16 +276,16 @@ function RPGBB:ToggleTest(frame_count)
         RPGBB:UpdateFrames(test_boss_frames)
 
         for _, boss_frame in ipairs(test_boss_frames) do
-            local test_health = math.random(1, 214748364)
             local test_max_health = 214748364
-            RPGBB.health_bars[boss_frame].frame:SetMinMaxValues(0, test_max_health)
-            RPGBB.health_bars[boss_frame].frame:SetValue(test_health)
-            -- RPGBB.health_bars[boss_frame].health_text:SetText(AbbreviateNumbers(test_health))
-            RPGBB.health_bars[boss_frame].health_text:SetText(test_health)
-            local percent = (test_health / test_max_health) * 100
-            RPGBB.health_bars[boss_frame].percent_text:SetText(string.format("%.1f%%", percent))
+            local test_health = math.random(1, test_max_health)
+            local test_percent = (test_health / test_max_health) * 100
+
+            RPGBB:RenderHealthChanges(boss_frame, test_health, test_max_health, test_percent)
+
+            -- Test Boss Name
             RPGBB.health_bars[boss_frame].name_text:SetText("Test Boss " .. boss_frame:match("%d+"))
         end
+
         RPGBB.frame:Show()
     else
         RPGBB.current_boss_frames = {}
@@ -294,32 +294,37 @@ function RPGBB:ToggleTest(frame_count)
     end
 end
 
+-- TODO revamp this to take health, max_health, and percent_health to DRY ToggleTest
 function RPGBB:UpdateHealth()
-    if #RPGBB.current_boss_frames == 0 then
-        RPGBB.frame:Hide()
-        return
-    end
-
     for _, boss_frame in ipairs(RPGBB.current_boss_frames) do
-        local health = UnitHealth(boss_frame)
-        local max_health = UnitHealthMax(boss_frame)
-
-        local health_bar = RPGBB.health_bars[boss_frame]
-        if health_bar and health_bar.frame then
-            health_bar.frame:SetMinMaxValues(0, max_health)
-            health_bar.frame:SetValue(health)
-            -- health_bar.health_text:SetText(AbbreviateNumbers(health))
-            health_bar.health_text:SetText(health)
-            local percent = UnitHealthPercent(boss_frame, true, CurveConstants.ScaleTo100) or 0
-            health_bar.percent_text:SetText(string.format("%.1f%%", percent))
-            health_bar.frame:Show()
-        end
+        RPGBB:RenderHealthChanges(boss_frame)
     end
-
-    RPGBB.frame:Show()
 end
 
-function RPGBB:BossFramesChanged(new_frames)
+function RPGBB:RenderHealthChanges(boss_frame, abs_health, max_health, per_health)
+    local health_bar = RPGBB.health_bars[boss_frame]
+
+    local abs_health = abs_health or UnitHealth(boss_frame)
+    local max_health = max_health or UnitHealthMax(boss_frame)
+    local per_health = per_health or UnitHealthPercent(boss_frame, true, CurveConstants.ScaleTo100) or 0
+
+    if health_bar and health_bar.frame then
+        -- Render frame values
+        health_bar.frame:SetMinMaxValues(0, max_health)
+        health_bar.frame:SetValue(abs_health)
+
+        -- Render absolute health
+        health_bar.health_text:SetText(BreakUpLargeNumbers(abs_health))
+
+        -- Render percent health
+        health_bar.percent_text:SetText(string.format("%.1f%%", per_health))
+
+        -- make sure health frame is showing? shouldn't need.
+        -- health_bar.frame:Show()
+    end
+end
+
+function RPGBB:HaveBossFramesChanged(new_frames)
     local current = RPGBB.current_boss_frames
 
     if #current ~= #new_frames then
@@ -335,10 +340,13 @@ function RPGBB:BossFramesChanged(new_frames)
     return false
 end
 
-function RPGBB:DetectBossCount()
+-- Returns:
+--   true if we have any boss frames we should be tracking and BossBar should be visible
+--  false if we are not tracking boss frames and BossBar should be hidden
+function RPGBB:IsBossFramesToUpdate()
     local boss_frames = {}
 
-    -- 5 boss frames
+    -- 5 boss frames maximum
     for i = 1, 5 do
         local unit = "boss" .. i
         if UnitExists(unit) and (UnitClassification(unit) == "elite"
@@ -347,9 +355,19 @@ function RPGBB:DetectBossCount()
         end
     end
 
-    -- Only rebuild frames if boss frames have changed
-    if not RPGBB:BossFramesChanged(boss_frames) then
+    -- If there are no boss frames we don't have anything to render or update, hide
+    if #boss_frames == 0 then
+        RPGBB.frame:Hide()
+        RPGBB.current_boss_frames = boss_frames
         return false
+    end
+
+    -- Otherwise we have at least one boss frame to update, show
+    RPGBB.frame:Show()
+
+    -- Only rebuild frames if boss frames have changed
+    if not RPGBB:HaveBossFramesChanged(boss_frames) then
+        return true
     end
 
     RPGBB.current_boss_frames = boss_frames
@@ -507,11 +525,12 @@ local function EventHandler(self, event, arg1)
         end
 
     elseif event == "UNIT_HEALTH" or event == "UNIT_MAXHEALTH" then
-        RPGBB:DetectBossCount()
-
-        -- Update health if this boss is being tracked
-        if RPGBB.health_bars[arg1] then
-            RPGBB:UpdateHealth()
+        -- If we are currently tracking a boss frame
+        if RPGBB:IsBossFramesToUpdate() then
+            -- Update health if this boss is being tracked
+            if RPGBB.health_bars[arg1] then
+                RPGBB:UpdateHealth()
+            end
         end
     elseif event == "PLAYER_ENTERING_WORLD" then
         if #RPGBB.current_boss_frames == 0 then
@@ -522,13 +541,17 @@ local function EventHandler(self, event, arg1)
             end
         end
     elseif event == "PLAYER_REGEN_ENABLED" then
-        -- Exited combat - if unlocked, show frame for positioning
+        -- Exited combat
+        -- if unlocked, show frame for positioning
         if not RPGBossBarDB.locked then
             RPGBB.frame:Show()
+        else
+            RPGBB.frame:Hide()
         end
     elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
-        RPGBB:DetectBossCount()
-        RPGBB:UpdateHealth()
+        if RPGBB:IsBossFramesToUpdate() then
+            RPGBB:UpdateHealth()
+        end
     end
 end
 
