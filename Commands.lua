@@ -6,12 +6,6 @@ local ADDON_NAME, RPGBB = ...
 -------------------------------------------------------------------------------
 
 RPGBB.cmds = {}
-RPGBB.cmds.toggle_lock = {
-    triggers = { 'lock', 'l' },
-    name = "Lock",
-    description = "Lock or Unlock the Frame.",
-    func = function() RPGBB:ToggleLock() end,
-}
 
 RPGBB.cmds.toggle_test = {
     triggers = { 'test', 't' },
@@ -29,8 +23,8 @@ RPGBB.cmds.toggle_debug = {
 
 RPGBB.cmds.reset = {
     triggers = { 'reset' },
-    name = "Reset DB",
-    description = "Resets the DB to empty",
+    name = "Reset RPGBossBarDB",
+    description = "Reset the RPGBossBarDB if you're getting errors",
     func = function() RPGBB.db.Reset() end,
 }
 
