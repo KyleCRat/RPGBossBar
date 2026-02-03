@@ -1,6 +1,4 @@
 local ADDON_NAME, RPGBB = ...
-RPGBB.abbv = "RPGBB"
-
 
 -------------------------------------------------------------------------------
 --- Configuration Variables
@@ -221,7 +219,7 @@ end
 function RPGBB:VPrint(msg)
     if not verbose then return end
 
-    print("|c" .. addon_color .. RPGBB.abbv .. ":|r " .. msg)
+    print("|c" .. addon_color .. "RPGBB" .. ":|r " .. msg)
 end
 
 function RPGBB:Lock(locked)
