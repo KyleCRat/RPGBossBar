@@ -29,24 +29,10 @@ RPGBB.current_boss_frames = {}
 --- Main Frame / Container
 ---------------------------------------------------------------------------
 
-if not RPGBB.frame then
-    RPGBB.frame = CreateFrame("Frame", "RPGBossBarFrame", UIParent)
-    RPGBB.frame:SetPoint("TOP", UIParent, "TOP", 0, -80)
-    RPGBB.frame:SetClampedToScreen(true)
-    RPGBB.frame:SetMovable(true)
-    RPGBB.frame:Hide()
-
-    -- Make the main frame draggable
-    -- TODO: Remove when adding edit mode?
-    -- RPGBB.frame:EnableMouse(true)
-    -- RPGBB.frame:RegisterForDrag("LeftButton")
-    -- RPGBB.frame:SetScript("OnDragStart", RPGBB.frame.StartMoving)
-    -- RPGBB.frame:SetScript("OnDragStop", function(self)
-    --     self:StopMovingOrSizing()
-    --     local point, _, relativePoint, x, y = self:GetPoint()
-    --     RPGBossBarDB.position = { point = point, relativePoint = relativePoint, x = x, y = y }
-    -- end)
-end
+RPGBB.frame = CreateFrame("Frame", "RPGBossBarFrame", UIParent)
+RPGBB.frame:SetPoint("TOP", UIParent, "TOP", 0, -80)
+RPGBB.frame:SetClampedToScreen(true)
+RPGBB.frame:Hide()
 
 
 -------------------------------------------------------------------------------
@@ -95,43 +81,6 @@ function RPGBB:InitOrUpdateFrame()
             }
         })
         RPGBB.border:SetBackdropBorderColor(1, 1, 1, 1)
-    end
-
-    ---------------------------------------------------------------------------
-    --- Mover Handle
-    ---------------------------------------------------------------------------
-
-    -- Create mover handle frame (shown when unlocked)
-    -- TODO: Remove when adding edit mode?
-    if not RPGBB.frame.handle then
-        RPGBB.frame.handle = CreateFrame("Frame", "RPGBossBarHandle", RPGBB.frame)
-        RPGBB.frame.handle:SetSize(32, 32)
-        RPGBB.frame.handle:SetPoint("TOP", RPGBB.frame, "BOTTOM", 0, -8)
-
-        -- Mover handle icon
-        RPGBB.frame.handle.icon = RPGBB.frame.handle:CreateTexture(nil, "OVERLAY")
-        RPGBB.frame.handle.icon:SetAllPoints()
-        RPGBB.frame.handle.icon:SetTexture("Interface\\CURSOR\\UI-Cursor-Move")
-        RPGBB.frame.handle.icon:SetVertexColor(1, 1, 1, 0.8)
-
-        -- Mover handle background
-        RPGBB.frame.handle.bg = RPGBB.frame.handle:CreateTexture(nil, "BACKGROUND")
-        RPGBB.frame.handle.bg:SetAllPoints()
-        RPGBB.frame.handle.bg:SetColorTexture(0, 0, 0, 0.8)
-
-        -- Make the handle draggable (moves the main frame)
-        RPGBB.frame.handle:EnableMouse(true)
-        RPGBB.frame.handle:RegisterForDrag("LeftButton")
-        RPGBB.frame.handle:SetScript("OnDragStart", function()
-            RPGBB.frame:StartMoving()
-        end)
-
-        RPGBB.frame.handle:SetScript("OnDragStop", function()
-            RPGBB.frame:StopMovingOrSizing()
-            local point, _, relativePoint, x, y = RPGBB.frame:GetPoint()
-            RPGBossBarDB.frame = RPGBossBarDB.frame or {}
-            RPGBossBarDB.frame.position = { point = point, relativePoint = relativePoint, x = x, y = y }
-        end)
     end
 
 
@@ -230,12 +179,12 @@ function RPGBB:InitOrUpdateFrame()
     --- Font
     ---------------------------------------------------------------------------
 
-    local health_font = RPGBB.db.Get("health", "font")
-    local health_font_size = RPGBB.db.Get("health", "font_size")
+    local health_font = RPGBB.db.Get("health", "font", "font")
+    local health_font_size = RPGBB.db.Get("health", "font", "size")
 
     RPGBB.health_font = CreateFont("RPGBossBarHealthFont")
     RPGBB.health_font:SetFont(health_font, health_font_size, "OUTLINE")
-    RPGBB.health_font:SetTextColor(RPGBB.db.GetColor("health", "texture", "color"))
+    RPGBB.health_font:SetTextColor(RPGBB.db.GetColor("health", "font", "color"))
 
 
     local name_font = RPGBB.db.Get("name", "font")
@@ -252,6 +201,9 @@ function RPGBB:InitOrUpdateFrame()
     RPGBB.power_font = CreateFont("RPGBossBarPowerFont")
     RPGBB.power_font:SetFont(power_font, power_font_size, "OUTLINE")
     RPGBB.power_font:SetTextColor(RPGBB.db.GetColor("power", "color"))
+
+    --- Update Frames after changing Init Frame settings
+    RPGBB:UpdateFrames()
 end
 
 function RPGBB:Print(msg)
@@ -264,25 +216,15 @@ function RPGBB:VPrint(msg)
     print("|c" .. addon_color .. RPGBB.abbv .. ":|r " .. msg)
 end
 
-function RPGBB:ToggleLock()
-    RPGBossBarDB.locked = not RPGBossBarDB.locked
-    RPGBB:Lock(RPGBossBarDB.locked)
-    RPGBB:Print("Frame " .. (RPGBossBarDB.locked and "L" or "Unl") .. "ocked")
-end
-
 function RPGBB:Lock(locked)
     RPGBB:VPrint("Lock: " .. (locked and "true" or "false"))
     if locked then
-        RPGBB.frame.handle:Hide()
-        RPGBB.frame:EnableMouse(false)
         RPGBB.frame:Hide()
 
         if testing then
             RPGBB:ToggleTest()
         end
     else -- unlocked
-        RPGBB.frame.handle:Show()
-        RPGBB.frame:EnableMouse(true)
         RPGBB.frame:Show()
 
         if not testing then
@@ -297,8 +239,6 @@ function RPGBB:ToggleDebug()
 end
 
 function RPGBB:ToggleTest(frame_count)
-    if not RPGBossBarDB.locked and testing then return end
-
     recieved_frame_count_arg = ((frame_count and true) or false)
     frame_count = tonumber(frame_count) or 2
     frame_count = math.max(1, math.min(5, frame_count)) -- Clamp between 1 and 5
@@ -323,7 +263,8 @@ function RPGBB:ToggleTest(frame_count)
             table.insert(test_boss_frames, "boss" .. i)
         end
 
-        RPGBB:UpdateFrames(test_boss_frames)
+        RPGBB.current_boss_frames = test_boss_frames
+        RPGBB:UpdateFrames()
 
         for _, boss_frame in ipairs(test_boss_frames) do
             local test_max_health = 214748364
@@ -340,7 +281,7 @@ function RPGBB:ToggleTest(frame_count)
         RPGBB.frame:Show()
     else
         RPGBB.current_boss_frames = {}
-        RPGBB:UpdateFrames({})
+        RPGBB:UpdateFrames()
         RPGBB.frame:Hide()
     end
 end
@@ -421,16 +362,16 @@ function RPGBB:IsBossFramesToUpdate()
     end
 
     RPGBB.current_boss_frames = boss_frames
-    RPGBB:UpdateFrames(boss_frames)
+    RPGBB:UpdateFrames()
 
     return true
 end
 
-function RPGBB:UpdateFrames(boss_frames)
+function RPGBB:UpdateFrames()
     local frame_height = RPGBB.db.Get("frame", "height")
     local frame_width  = RPGBB.db.Get("frame", "width")
 
-    local boss_frame_count = #boss_frames
+    local boss_frame_count = #RPGBB.current_boss_frames
     local health_bar_width = frame_width / boss_frame_count
 
     -- Hide all visible elements for updating
@@ -442,18 +383,18 @@ function RPGBB:UpdateFrames(boss_frames)
     -- Get all db values before looping so we only get them once
     -- If we are using an atlas texture
     -- if RPGBB.db.get("health", "texture", "atlas") then
-    local health_bat_texture_is_atlas = RPGBB.db.Get("health", "texture", "atlas")
-    local health_bar_texture = RPGBB.db.Get("health", "texture", "texture")
-    local health_bar_atlas_texture = RPGBB.db.Get("health", "texture", "atlas_texture")
-    local health_bar_desaturated = RPGBB.db.Get("health", "texture", "desaturated")
-    local hb_r, hb_b, hb_g, hb_a = RPGBB.db.GetColor("health", "texture", "color")
+    local health_bar_texture_is_atlas = RPGBB.db.Get("health", "texture", "atlas")
+    local health_bar_texture          = RPGBB.db.Get("health", "texture", "texture")
+    local health_bar_atlas_texture    = RPGBB.db.Get("health", "texture", "atlas_texture")
+    local health_bar_desaturated      = RPGBB.db.Get("health", "texture", "desaturated")
+    local hb_r, hb_b, hb_g, hb_a      = RPGBB.db.GetColor("health", "texture", "color")
 
-    local spark_atlas = RPGBB.db.Get("health", "spark", "atlas")
-    local sp_r, sp_b, sp_g, sp_a = RPGBB.db.GetColor("health", "texture", "color")
-    local spark_blend_mode = RPGBB.db.Get("health", "spark", "blend_mode")
-    local spark_width = RPGBB.db.Get("health", "spark", "width")
+    local spark_atlas            = RPGBB.db.Get("health", "spark", "atlas")
+    local sp_r, sp_b, sp_g, sp_a = RPGBB.db.GetColor("health", "spark", "color")
+    local spark_blend_mode       = RPGBB.db.Get("health", "spark", "blend_mode")
+    local spark_width            = RPGBB.db.Get("health", "spark", "width")
 
-    for i, boss_frame in ipairs(boss_frames) do
+    for i, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
 
         RPGBB.health_bars[boss_frame] = RPGBB.health_bars[boss_frame] or {}
@@ -469,8 +410,12 @@ function RPGBB:UpdateFrames(boss_frames)
             RPGBB:VPrint(boss_frame .. " Already Existed.")
         end
         -- Update each time for setting changes
-        RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture(health_bar_texture)
-        RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetAtlas(health_bar_atlas_texture)
+        if health_bar_texture_is_atlas then
+            RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+            RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetAtlas(health_bar_atlas_texture)
+        else
+            RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture(health_bar_texture)
+        end
         RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetDesaturated(health_bar_desaturated)
         RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(hb_r, hb_b, hb_g, hb_a)
         -- Update each time for frame count changes
@@ -568,24 +513,8 @@ end
 local function EventHandler(self, event, arg1)
     if event == "ADDON_LOADED" then
         if arg1 == ADDON_NAME then
-            if not RPGBossBarDB then
-                RPGBB:Print("RPGBossBarDB not available, creating.")
-                RPGBossBarDB = {
-                    locked = true,
-                    position = nil
-                }
-            end
-
-            -- Restore position if saved
-            if RPGBossBarDB.position then
-                local pos = RPGBossBarDB.position
-                RPGBB.frame:ClearAllPoints()
-                RPGBB.frame:SetPoint(pos.point, UIParent, pos.relativePoint, pos.x, pos.y)
-            end
-
+            RPGBB.db.Initialize()
             RPGBB:InitOrUpdateFrame()
-
-            RPGBB:Lock(RPGBossBarDB.locked)
 
             RPGBB.frame:UnregisterEvent("ADDON_LOADED")
 
@@ -608,21 +537,10 @@ local function EventHandler(self, event, arg1)
             end
         end
     elseif event == "PLAYER_ENTERING_WORLD" then
-        if #RPGBB.current_boss_frames == 0 then
-            if RPGBossBarDB.locked then
-                RPGBB.frame:Hide()
-            else
-                RPGBB:ToggleTest(2)
-            end
-        end
+
     elseif event == "PLAYER_REGEN_ENABLED" then
         -- Exited combat
-        -- if unlocked, show frame for positioning
-        if not RPGBossBarDB.locked then
-            RPGBB.frame:Show()
-        else
-            RPGBB.frame:Hide()
-        end
+        RPGBB.frame:Hide()
     elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
         if RPGBB:IsBossFramesToUpdate() then
             RPGBB:UpdateHealth()

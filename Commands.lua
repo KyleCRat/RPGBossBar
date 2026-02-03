@@ -27,6 +27,13 @@ RPGBB.cmds.toggle_debug = {
     func = function() RPGBB:ToggleDebug() end,
 }
 
+RPGBB.cmds.reset = {
+    triggers = { 'reset' },
+    name = "Reset DB",
+    description = "Resets the DB to empty",
+    func = function() RPGBB.db.Reset() end,
+}
+
 
 -------------------------------------------------------------------------------
 --- Slash Command Handling
