@@ -2,6 +2,11 @@
 
 All notable changes to RPG Boss Bar will be documented in this file.
 
+## [12.0.0-4] - 2026-xx-xx
+
+### Added
+- icon for in game addon list
+
 ## [12.0.0-3] - 2026-02-03
 
 ### Changed
