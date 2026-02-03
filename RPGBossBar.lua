@@ -120,14 +120,12 @@ function RPGBB:InitOrUpdateFrame()
         -- Left Graphic Background (behind foreground)
         RPGBB.leftGraphicBg = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 1)
         RPGBB.leftGraphicBg:SetAtlas("dragonriding_sgvigor_fillfull")
-        RPGBB.leftGraphicBg:SetSize(RPGBB.bg_w, RPGBB.bg_h)
         -- RPGBB.leftGraphicBg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
         RPGBB.leftGraphicBg:SetDesaturated(true)
 
         -- Left Graphic Foreground (the frame)
         RPGBB.leftGraphicFg = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 2)
         RPGBB.leftGraphicFg:SetAtlas("dragonriding_sgvigor_frame_dark")
-        RPGBB.leftGraphicFg:SetSize(RPGBB.fg_w, RPGBB.fg_h)
         RPGBB.leftGraphicFg:SetPoint("CENTER", RPGBB.frame, "LEFT", -2, 0)
 
         -- Anchor background to foreground center
@@ -136,10 +134,16 @@ function RPGBB:InitOrUpdateFrame()
         -- Left Graphic Accent (decorative element)
         RPGBB.leftGraphicAccent = RPGBB.leftGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 3)
         RPGBB.leftGraphicAccent:SetAtlas("dragonriding_sgvigor_decor_dark")
-        RPGBB.leftGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
         RPGBB.leftGraphicAccent:SetTexCoord(1, 0, 0, 1) -- Mirror horizontally
-        RPGBB.leftGraphicAccent:SetPoint("RIGHT", RPGBB.leftGraphicFg, "LEFT", RPGBB.ac_w * 0.325, RPGBB.ac_h * 0.075)
     end
+    RPGBB.leftGraphicAccent:SetPoint("BOTTOMRIGHT", RPGBB.leftGraphicFg, "BOTTOMLEFT", (RPGBB.fg_w / 2.25) , -(RPGBB.fg_h * 0.015))
+
+    RPGBB.leftGraphicBg:SetSize(RPGBB.bg_w, RPGBB.bg_h)
+
+    RPGBB.leftGraphicFg:SetSize(RPGBB.fg_w, RPGBB.fg_h)
+
+    RPGBB.leftGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
+
     RPGBB.leftGraphicBg:SetVertexColor(RPGBB.db.GetColor("accents", "color")) -- #46226a
 
 
@@ -153,14 +157,12 @@ function RPGBB:InitOrUpdateFrame()
         -- Right Graphic Background (behind foreground)
         RPGBB.rightGraphicBg = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 1)
         RPGBB.rightGraphicBg:SetAtlas("dragonriding_sgvigor_fillfull")
-        RPGBB.rightGraphicBg:SetSize(RPGBB.bg_w, RPGBB.bg_h)
         -- RPGBB.rightGraphicBg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
         RPGBB.rightGraphicBg:SetDesaturated(true)
 
         -- Right Graphic Foreground (the frame)
         RPGBB.rightGraphicFg = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 2)
         RPGBB.rightGraphicFg:SetAtlas("dragonriding_sgvigor_frame_dark")
-        RPGBB.rightGraphicFg:SetSize(RPGBB.fg_w, RPGBB.fg_h)
         RPGBB.rightGraphicFg:SetPoint("CENTER", RPGBB.frame, "RIGHT", 2, 0)
 
         -- Anchor background to foreground center
@@ -169,10 +171,16 @@ function RPGBB:InitOrUpdateFrame()
         -- Right Graphic Accent (decorative element)
         RPGBB.rightGraphicAccent = RPGBB.rightGraphicFrame:CreateTexture(nil, "ARTWORK", nil, 3)
         RPGBB.rightGraphicAccent:SetAtlas("dragonriding_sgvigor_decor_dark")
-        RPGBB.rightGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
-        RPGBB.rightGraphicAccent:SetPoint("LEFT", RPGBB.rightGraphicFg, "RIGHT", -RPGBB.ac_w * 0.325, RPGBB.ac_h * 0.075)
     end
-    RPGBB.rightGraphicBg:SetVertexColor(RPGBB.db.GetColor("accents", "color")) -- #46226a
+    RPGBB.rightGraphicAccent:SetPoint("BOTTOMLEFT", RPGBB.rightGraphicFg, "BOTTOMRIGHT", -(RPGBB.fg_w / 2.25) , -(RPGBB.fg_h * 0.015))
+
+    RPGBB.rightGraphicBg:SetSize(RPGBB.bg_w, RPGBB.bg_h)
+
+    RPGBB.rightGraphicFg:SetSize(RPGBB.fg_w, RPGBB.fg_h)
+
+    RPGBB.rightGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
+
+    RPGBB.rightGraphicBg:SetVertexColor(RPGBB.db.GetColor("accents", "color"))
 
 
     ---------------------------------------------------------------------------
@@ -393,8 +401,13 @@ function RPGBB:UpdateFrames()
     local sp_r, sp_b, sp_g, sp_a = RPGBB.db.GetColor("health", "spark", "color")
     local spark_blend_mode       = RPGBB.db.Get("health", "spark", "blend_mode")
     local spark_width            = RPGBB.db.Get("health", "spark", "width")
+    local spark_height_multi     = RPGBB.db.Get("health", "spark", "height_multi")
 
     local name_x_offset = RPGBB.db.Get("name", "offset", "x")
+
+    local health_percent_offset_x = RPGBB.db.Get("health", "percent_font", "offset", "x")
+
+    local ac_r, ac_b, ac_g, ac_a = RPGBB.db.GetColor("accents", "color")
 
     for i, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
@@ -435,7 +448,7 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].spark:SetAtlas(spark_atlas)
         RPGBB.health_bars[boss_frame].spark:SetVertexColor(sp_r, sp_b, sp_g, sp_a)
         RPGBB.health_bars[boss_frame].spark:SetBlendMode(spark_blend_mode)
-        RPGBB.health_bars[boss_frame].spark:SetSize(spark_width, frame_height * 1.5)
+        RPGBB.health_bars[boss_frame].spark:SetSize(spark_width, frame_height * spark_height_multi)
 
 
         -- Healthbar absolute value health text
@@ -459,8 +472,8 @@ function RPGBB:UpdateFrames()
         -- Healthbar percentage text (right side of bar)
         if not RPGBB.health_bars[boss_frame].percent_text then
             RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", -20, 0)
         end
+        RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", health_percent_offset_x, 0)
         RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
 
         -- Hide percentage if more than 2 bosses exist
@@ -490,21 +503,22 @@ function RPGBB:UpdateFrames()
         if not RPGBB.health_bars[boss_frame].mid_graphic_bg then
             RPGBB.health_bars[boss_frame].mid_graphic_bg = RPGBB.health_bars[boss_frame].mid_graphic_frame:CreateTexture(nil, "ARTWORK", nil, 1)
             RPGBB.health_bars[boss_frame].mid_graphic_bg:SetAtlas("dragonriding_sgvigor_fillfull")
-            RPGBB.health_bars[boss_frame].mid_graphic_bg:SetSize(RPGBB.bg_w * middle_graphic_width_mult, RPGBB.bg_h)
-            RPGBB.health_bars[boss_frame].mid_graphic_bg:SetVertexColor(0x46/255, 0x22/255, 0x6a/255, 1) -- #46226a
             RPGBB.health_bars[boss_frame].mid_graphic_bg:SetDesaturated(true)
         end
+        RPGBB.health_bars[boss_frame].mid_graphic_bg:SetSize(RPGBB.bg_w * middle_graphic_width_mult, RPGBB.bg_h)
+
+        RPGBB.health_bars[boss_frame].mid_graphic_bg:SetVertexColor(ac_r, ac_b, ac_g, ac_a)
 
         -- Left Graphic Foreground (the frame)
         if not RPGBB.health_bars[boss_frame].mid_graphic_fg then
             RPGBB.health_bars[boss_frame].mid_graphic_fg = RPGBB.health_bars[boss_frame].mid_graphic_frame:CreateTexture(nil, "ARTWORK", nil, 2)
             RPGBB.health_bars[boss_frame].mid_graphic_fg:SetAtlas("dragonriding_sgvigor_frame_dark")
-            RPGBB.health_bars[boss_frame].mid_graphic_fg:SetSize(RPGBB.fg_w * middle_graphic_width_mult, RPGBB.fg_h)
             RPGBB.health_bars[boss_frame].mid_graphic_fg:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "RIGHT", 0, 0)
 
             -- Anchor background to foreground center
             RPGBB.health_bars[boss_frame].mid_graphic_bg:SetPoint("CENTER", RPGBB.health_bars[boss_frame].mid_graphic_fg, "CENTER", 0, 0)
         end
+        RPGBB.health_bars[boss_frame].mid_graphic_fg:SetSize(RPGBB.fg_w * middle_graphic_width_mult, RPGBB.fg_h)
     end
 end
 

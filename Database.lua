@@ -104,6 +104,27 @@ function RPGBB.db.Get(...)
     return default_value
 end
 
+-- RPGBB.db.GetDB("health", "texture", "atlas") -> returns value from DB
+function RPGBB.db.GetDB(...)
+    local keys = { ... }
+
+    -- Ensure db is loaded
+    RPGBossBarDB = RPGBossBarDB or {}
+
+    -- Traverse the db
+    local db_value = RPGBossBarDB
+    for _, key in ipairs(keys) do
+        if type(db_value) ~= "table" then
+            db_value = nil
+            break
+        end
+
+        db_value = db_value[key]
+    end
+
+    return db_value
+end
+
 -- RPGBB.db.Set("health", "texture", "atlas", "NewAtlasName") -> sets RPGBossBarDB.health.texture.atlas = "NewAtlasName"
 function RPGBB.db.Set(...)
     local args = { ... }
@@ -179,7 +200,8 @@ function RPGBB.db.SetColor(...)
     end
 
     -- Get the existing color object
-    local color = RPGBB.db.Get(unpack(keys))
+    local color = RPGBB.db.GetDB(unpack(keys))
+
 
     -- If it exists, update its values
     if type(color) == "table" then
