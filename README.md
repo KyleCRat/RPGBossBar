@@ -6,9 +6,9 @@ A RPG inspired boss health bar addon for World of Warcraft.
 
 ## Features
 
-- Displays up to 5 boss health bars with current health, and boss name
-- Shows boss percentage (xx.x%) if only 1 or 2 bars are showing
-- Movable and lockable position (saved per character)
+- Displays up to 5 boss health bars with current health, % health, and boss name
+- Movable via Edit Mode (saved per character)
+- Configurable via Edit Mode
 - Auto-shows during boss encounters, hides otherwise
 
 ## Installation
@@ -19,8 +19,7 @@ Extract to `World of Warcraft\_retail_\Interface\AddOns\RPGBossBar` and reload.
 
 | Command | Description |
 |---------|-------------|
-| `/rpgbb lock` | Toggle lock/unlock for repositioning |
-| `/rpgbb test [1-5]` | Toggle test mode (optional: number of bars) |
+| `/rpgbb test [1-5]` | Toggle test mode (optional: number of bars to test with) |
 | `/rpgbb debug` | Toggle debug messages |
 | `/rpgbb` | Show help |
 
