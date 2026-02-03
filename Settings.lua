@@ -1,6 +1,8 @@
 local ADDON_NAME, RPGBB = ...
-ADDON_ABVR = "RPGBB"
 
+-------------------------------------------------------------------------------
+--- Initiailze
+-------------------------------------------------------------------------------
 -- local RPGBBSettings = CreateFrame('frame')
 local LibSharedMedia = LibStub('LibSharedMedia-3.0')
 
@@ -9,30 +11,35 @@ LibSharedMedia:Register('font', 'Metamorphous', "Interface\\AddOns\\RPGBossBar\\
 
 local LEM = LibStub('LibEditMode')
 
--- Available bar textures (atlas names) for future theme selection
+
+-------------------------------------------------------------------------------
+--- Custom Resources
+-------------------------------------------------------------------------------
+
+-- Available bar textures (atlas names)
 RPGBB.atlas_textures = {
-    ["Blizzard Insanity"]    = "Unit_Priest_Insanity_Fill",
-    ["Blizzard Pain"]        = "_DemonHunter-DemonicPainBar",
-    ["Blizzard Ebon Might"]  = "Unit_Evoker_EbonMight_Fill",
-    ["Blizzard Maelstrom"]   = "Unit_Shaman_Maelstrom_Fill",
+       ["Blizzard Insanity"] = "Unit_Priest_Insanity_Fill",
+           ["Blizzard Pain"] = "_DemonHunter-DemonicPainBar",
+     ["Blizzard Ebon Might"] = "Unit_Evoker_EbonMight_Fill",
+      ["Blizzard Maelstrom"] = "Unit_Shaman_Maelstrom_Fill",
     ["Blizzard Lunar Power"] = "Unit_Druid_AstralPower_Fill",
-    ["Blizzard Fury"]        = "Unit_DemonHunter_Fury_Fill",
+           ["Blizzard Fury"] = "Unit_DemonHunter_Fury_Fill",
     ["Blizzard Runic Power"] = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-RunicPower",
-    ["Blizzard Rage"]        = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Rage",
-    ["Blizzard Mana"]        = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Mana",
-    ["Blizzard Focus"]       = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Focus",
-    ["Blizzard Energy"]      = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Energy",
+           ["Blizzard Rage"] = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Rage",
+           ["Blizzard Mana"] = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Mana",
+          ["Blizzard Focus"] = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Focus",
+         ["Blizzard Energy"] = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Energy",
 }
 
 -- Available spark textures (atlas names)
 RPGBB.spark_textures = {
-    ["Blizzard Spark"]                       = "Spark",
-    ["Blizzard Garrison Mission Encounter"]  = "GarrMission_EncounterBar-Spark",
-    ["Blizzard Insanity"]                    = "Insanity-Spark",
-    ["Blizzard Legionfall"]                  = "Legionfall_BarSpark",
-    ["Blizzard XPBar"]                       = "XPBarAnim-OrangeSpark",
-    ["Bonus Objectives"]                     = "bonusobjectives-bar-spark",
-    ["Blizzard Honor System"]                = "honorsystem-bar-spark",
+           ["Blizzard Spark"] = "Spark",
+        ["Blizzard Garrison"] = "GarrMission_EncounterBar-Spark",
+        ["Blizzard Insanity"] = "Insanity-Spark",
+      ["Blizzard Legionfall"] = "Legionfall_BarSpark",
+           ["Blizzard XPBar"] = "XPBarAnim-OrangeSpark",
+         ["Bonus Objectives"] = "bonusobjectives-bar-spark",
+    ["Blizzard Honor System"] = "honorsystem-bar-spark",
 }
 
 
