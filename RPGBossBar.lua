@@ -404,6 +404,7 @@ function RPGBB:UpdateFrames()
     local name_x_offset = RPGBB.db.Get("name", "offset", "x")
 
     local health_percent_offset_x = RPGBB.db.Get("health", "percent_font", "offset", "x")
+    local disable_per_above       = RPGBB.db.Get("health", "percent_font", "disable_above")
 
     local ac_r, ac_b, ac_g, ac_a = RPGBB.db.GetColor("accents", "color")
 
@@ -475,7 +476,7 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
 
         -- Hide percentage if more than 2 bosses exist
-        if boss_frame_count > 2 then
+        if boss_frame_count > disable_per_above then
             RPGBB.health_bars[boss_frame].percent_text:Hide()
         else
             RPGBB.health_bars[boss_frame].percent_text:Show()

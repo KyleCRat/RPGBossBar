@@ -373,7 +373,7 @@ local function health_bar_percentage_disable_above_set(layoutName, value, fromRe
 end
 
 health_bar_percentage_disable_above_setting = {
-    name = 'Hide % above',
+    name = 'Hide % above # Frames',
     kind = LEM.SettingType.Slider,
     default = RPGBB.db.defaults.health.percent_font.disable_above,
     get = health_bar_percentage_disable_above_get,
