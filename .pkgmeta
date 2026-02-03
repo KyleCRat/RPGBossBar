@@ -1,4 +1,12 @@
+package-as: RPGBossBar
+
+manual-changelog: CHANGELOG.md
+
+externals:
+  libs/LibStub: https://www.curseforge.com/wow/addons/libstub
+  libs/LibSharedMedia-3.0: https://www.curseforge.com/wow/addons/libsharedmedia-3-0
+  libs/LibEditMode: https://www.curseforge.com/wow/addons/libeditmode
+
 ignore:
   - README.md
   - images
-  - images/*
