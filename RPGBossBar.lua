@@ -187,20 +187,20 @@ function RPGBB:InitOrUpdateFrame()
     RPGBB.health_font:SetTextColor(RPGBB.db.GetColor("health", "font", "color"))
 
 
-    local name_font = RPGBB.db.Get("name", "font")
-    local name_font_size = RPGBB.db.Get("name", "font_size")
+    local name_font = RPGBB.db.Get("name", "font", "font")
+    local name_font_size = RPGBB.db.Get("name", "font", "size")
 
     RPGBB.name_font = CreateFont("RPGBossBarNameFont")
     RPGBB.name_font:SetFont(name_font, name_font_size, "OUTLINE")
-    RPGBB.name_font:SetTextColor(RPGBB.db.GetColor("name", "color"))
+    RPGBB.name_font:SetTextColor(RPGBB.db.GetColor("name", "font", "color"))
 
 
-    local power_font = RPGBB.db.Get("power", "font")
-    local power_font_size = RPGBB.db.Get("power", "font_size")
+    local power_font = RPGBB.db.Get("power", "font", "font")
+    local power_font_size = RPGBB.db.Get("power", "font", "size")
 
     RPGBB.power_font = CreateFont("RPGBossBarPowerFont")
     RPGBB.power_font:SetFont(power_font, power_font_size, "OUTLINE")
-    RPGBB.power_font:SetTextColor(RPGBB.db.GetColor("power", "color"))
+    RPGBB.power_font:SetTextColor(RPGBB.db.GetColor("power", "font", "color"))
 
     --- Update Frames after changing Init Frame settings
     RPGBB:UpdateFrames()
@@ -394,6 +394,8 @@ function RPGBB:UpdateFrames()
     local spark_blend_mode       = RPGBB.db.Get("health", "spark", "blend_mode")
     local spark_width            = RPGBB.db.Get("health", "spark", "width")
 
+    local name_x_offset = RPGBB.db.Get("name", "offset", "x")
+
     for i, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
 
@@ -447,9 +449,9 @@ function RPGBB:UpdateFrames()
         -- Healthbar name text (above frame)
         if not RPGBB.health_bars[boss_frame].name_text then
             RPGBB.health_bars[boss_frame].name_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, 2)
             RPGBB.health_bars[boss_frame].name_text:SetWordWrap(false)
         end
+        RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, name_x_offset)
         RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
         RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
         RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or boss_frame)

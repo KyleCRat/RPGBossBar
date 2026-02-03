@@ -4,12 +4,6 @@ ADDON_ABVR = "RPGBB"
 local FONT = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf"
 
 local default_settings = {
-    handle = {
-        size = 32,
-        bg_color = { r = 0, g = 0, b = 0, a = 0.8 },
-        texture = "Interface\\CURSOR\\UI-Cursor-Move",
-        vertex_color = { r = 1, g = 1, b = 1, a = 0.8 },
-    },
     frame = {
         width = 1000,
         height = 38,
@@ -42,15 +36,22 @@ local default_settings = {
         },
     },
     name = {
-        font = FONT,
-        font_size = 32,
-        color = { r = 1, g = 1, b = 1, a = 1 },
+        offset = {
+            x = 2,
+        },
+        font = {
+            font = FONT,
+            size = 32,
+            color = { r = 1, g = 1, b = 1, a = 1 },
+        },
     },
     power = {
         enabled = false,
-        font = FONT,
-        font_size = 16,
-        color = { r = 1, g = 1, b = 1, a = 1 },
+        font = {
+            font = FONT,
+            size = 16,
+            color = { r = 1, g = 1, b = 1, a = 1 },
+        },
     },
     accents = {
         enabled = true,
