@@ -5,8 +5,8 @@ local FONT = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.
 
 local default_settings = {
     frame = {
-        width = 1000,
-        height = 38,
+        width = 1200,
+        height = 44,
         background_color = { r = 0, g = 0, b = 0, a = 0.8 },
         position = {
             x = 0,
@@ -21,6 +21,12 @@ local default_settings = {
             size = 24,
             color = { r = 1, g = 1, b = 1, a = 1 },
         },
+        percent_font = {
+            disable_above = 3,
+            offset = {
+                x = -20,
+            },
+        },
         texture = {
             atlas = true,
             texture = false,
@@ -29,10 +35,11 @@ local default_settings = {
             color = { r = 1, g = 1, b = 1, a = 1 },
         },
         spark = {
-            atlas = "Insanity-Spark",
+            atlas = "GarrMission_EncounterBar-Spark",
             color = { r = 70/255, g = 34/255, b = 106/255, a = 1 },
-            blend_mode = "BLEND",
-            width = 4,
+            blend_mode = "ADD",
+            width = 8,
+            height_multi = 2.2,
         },
     },
     name = {
@@ -54,8 +61,7 @@ local default_settings = {
         },
     },
     accents = {
-        enabled = true,
-        copy_healthbar_texture_color = true,
+        copy_healthbar_texture_color = false,
         color = { r = 70/255, g = 34/255, b = 106/255, a = 1 },
     }
 }
