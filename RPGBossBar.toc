@@ -8,7 +8,9 @@ libs\LibStub\LibStub.lua
 libs\LibEditMode\embed.xml
 libs\LibSharedMedia-3.0\lib.xml
 
-Database.lua
+database/Init.lua
+database/Defaults.lua
+database/Functions.lua
 Commands.lua
 RPGBossBar.lua
 Settings.lua
