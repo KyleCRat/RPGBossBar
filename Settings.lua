@@ -842,7 +842,6 @@ local default_position = CopyTable(RPGBB.db.defaults.frame.position)
 RPGBB.frame.editModeName = 'RPG Boss Bar'
 LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
-    { name = 'RPG Boss Bar', kind = LEM.SettingType.Divider, },
     frame_width_setting,
     frame_height_setting,
     frame_background_color_setting,
