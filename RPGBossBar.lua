@@ -278,9 +278,6 @@ function RPGBB:ToggleTest(frame_count)
             local test_percent = (test_health / test_max_health) * 100
 
             RPGBB:RenderHealthChanges(boss_frame, test_health, test_max_health, test_percent)
-
-            -- Test Boss Name
-            RPGBB.health_bars[boss_frame].name_text:SetText("Test Boss " .. boss_frame:match("%d+"))
         end
 
         RPGBB.current_boss_frames = test_boss_frames
@@ -466,7 +463,7 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, name_x_offset)
         RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
         RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
-        RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or boss_frame)
+        RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or "Test Boss " .. boss_frame:match("%d+"))
 
         -- Healthbar percentage text (right side of bar)
         if not RPGBB.health_bars[boss_frame].percent_text then
