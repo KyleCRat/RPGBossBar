@@ -2,6 +2,7 @@
 ## Title: RPG Boss Bar
 ## Author: Yvairel
 ## Version: 12.0.0-2
+## IconTexture: Interface\AddOns\RPGBossBar\icon.tga
 ## SavedVariablesPerCharacter: RPGBossBarDB
 
 libs\LibStub\LibStub.lua
