@@ -252,12 +252,39 @@ local default_position = CopyTable(RPGBB.db.defaults.frame.position)
 RPGBB.frame.editModeName = 'RPG Boss Bar'
 LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
+    { name = 'Frame Size', kind = LEM.SettingType.Divider, },
+    frame_width_setting,
+    frame_height_setting,
+    frame_background_color_setting,
+    frame_center_x_setting, -- Button to center vertically
+    { name = 'Health Bar Texture', kind = LEM.SettingType.Divider, },
     health_bar_texture_setting,
     health_bar_desaturated_setting,
     health_bar_texture_color_setting,
+    { name = 'Health Bar Font', kind = LEM.SettingType.Divider, },
     health_bar_font_setting,
     health_bar_font_size_setting,
     health_bar_font_color_setting,
+    { name = 'Health Bar Spark', kind = LEM.SettingType.Divider, },
+    health_bar_spark_texture_setting,
+    health_bar_spark_color_setting,
+    health_bar_spark_blend_mode_setting,
+    health_bar_spark_width_setting,
+    { name = 'Accent Settings', kind = LEM.SettingType.Divider, },
+    accent_enabled_setting,
+    accent_copy_healthbar_texture_color_setting,
+    accent_color_setting,
+    { name = 'Boss Name', kind = LEM.SettingType.Divider, },
+    name_offset_x_setting,
+    { name = 'Boss Name Font', kind = LEM.SettingType.Divider, },
+    name_font_setting,
+    name_font_size_setting,
+    name_font_color_setting,
+    { name = 'Power Bar', kind = LEM.SettingType.Divider, },
+    power_bar_enabled_setting,
+    power_bar_font_setting,
+    power_bar_font_size_setting,
+    power_bar_font_color_setting,
 })
 
 
