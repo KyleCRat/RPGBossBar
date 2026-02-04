@@ -3,7 +3,9 @@ local ADDON_NAME, RPGBB = ...
 RPGBB.db = {}
 
 function RPGBB.db.Initialize()
-    RPGBB.db.data = RPGBossBarDB or {}
+    -- Initialize saved variable if it doesn't exist
+    RPGBossBarDB = RPGBossBarDB or {}
+    RPGBB.db.data = RPGBossBarDB
 
     -- Old version of RPGBossBarDB.lua, reset db
     if RPGBossBarDB.position then

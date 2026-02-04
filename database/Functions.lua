@@ -172,5 +172,5 @@ end
 -- end
 
 function addon.db.Reset()
-    addon.db.data = {}
+    wipe(addon.db.data)
 end
