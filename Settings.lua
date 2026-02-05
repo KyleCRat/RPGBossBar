@@ -71,6 +71,9 @@ local function global_db_toggle_get()
 end
 
 local function global_db_toggle_set(layoutName, value, fromReset)
+    -- Do not change global setting when resetting
+    if fromReset then return end
+
     -- Ensure both global and local db's are available
     -- Store global value on local character's db
     if RPGBossBarDB and RPGBossBarGlobalDB then
@@ -95,7 +98,7 @@ end
 global_db_toggle_setting = {
     name = 'Use Global Settings',
     kind = LEM.SettingType.Checkbox,
-    default = false,
+    default = global_db_toggle_get(),
     get = global_db_toggle_get,
     set = global_db_toggle_set,
     tooltip = "When enabled, uses a global profile that can be shared with all characters who also enable this. Your per character setting is saved and reachable by disabling."
