@@ -1,6 +1,7 @@
 local ADDON_NAME, addon = ...
 
 addon.db.defaults = {
+    global = false,
     frame = {
         width = 1100,
         height = 38,
@@ -17,6 +18,9 @@ addon.db.defaults = {
             font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
             size = 20,
             color = { r = 1, g = 1, b = 1, a = 1 },
+            offset = {
+                y = 0
+            }
         },
         percent_font = {
             disable_above = 3,

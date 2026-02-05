@@ -392,6 +392,8 @@ function RPGBB:UpdateFrames()
     local health_bar_desaturated      = RPGBB.db.Get("health", "texture", "desaturated")
     local hb_r, hb_b, hb_g, hb_a      = RPGBB.db.GetColor("health", "texture", "color")
 
+    local health_font_offset_y = RPGBB.db.Get("health", "font", "offset", "y")
+
     local spark_atlas            = RPGBB.db.Get("health", "spark", "atlas")
     local sp_r, sp_b, sp_g, sp_a = RPGBB.db.GetColor("health", "spark", "color")
     local spark_blend_mode       = RPGBB.db.Get("health", "spark", "blend_mode")
@@ -446,14 +448,20 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].spark:SetBlendMode(spark_blend_mode)
         RPGBB.health_bars[boss_frame].spark:SetSize(spark_width, frame_height * spark_height_multi)
 
-
         -- Healthbar absolute value health text
         if not RPGBB.health_bars[boss_frame].health_text then
             RPGBB.health_bars[boss_frame].health_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-            RPGBB.health_bars[boss_frame].health_text:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "CENTER", 0, -1)
         end
         -- Update each time for setting changes
+        RPGBB.health_bars[boss_frame].health_text:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "CENTER", 0, health_font_offset_y)
         RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.health_font)
+
+        -- Healthbar percentage text (right side of bar)
+        if not RPGBB.health_bars[boss_frame].percent_text then
+            RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
+        end
+        RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", health_percent_offset_x, health_font_offset_y)
+        RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
 
         -- Healthbar name text (above frame)
         if not RPGBB.health_bars[boss_frame].name_text then
@@ -464,13 +472,6 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
         RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
         RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or "Test Boss " .. boss_frame:match("%d+"))
-
-        -- Healthbar percentage text (right side of bar)
-        if not RPGBB.health_bars[boss_frame].percent_text then
-            RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
-        end
-        RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", health_percent_offset_x, 0)
-        RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
 
         -- Hide percentage if more than 2 bosses exist
         if boss_frame_count > disable_per_above then

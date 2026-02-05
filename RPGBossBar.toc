@@ -4,6 +4,7 @@
 ## Version: 12.0.0-4
 ## IconTexture: Interface\AddOns\RPGBossBar\icon.tga
 ## SavedVariablesPerCharacter: RPGBossBarDB
+## SavedVariables: RPGBossBarGlobalDB
 
 libs\LibStub\LibStub.lua
 libs\LibEditMode\embed.xml

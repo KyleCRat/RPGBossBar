@@ -64,6 +64,43 @@ end
 -------------------------------------------------------------------------------
 --- Settings Frame
 -------------------------------------------------------------------------------
+--- Global settings toggle
+local function global_db_toggle_get()
+    -- Global value is stored on local character's db
+    return RPGBossBarDB and RPGBossBarDB.global
+end
+
+local function global_db_toggle_set(layoutName, value, fromReset)
+    -- Ensure both global and local db's are available
+    -- Store global value on local character's db
+    if RPGBossBarDB and RPGBossBarGlobalDB then
+        if value then
+            RPGBB:Print("Using global settings!")
+            RPGBossBarDB.global = true
+            RPGBB.db.data = RPGBossBarGlobalDB
+        else
+            RPGBB:Print("Using per character settings!")
+            RPGBossBarDB.global = false
+            RPGBB.db.data = RPGBossBarDB
+        end
+    else
+        RPGBB:Print("Something went wrong changing the DB.")
+        return
+    end
+
+    LEM:RefreshFrameSettings(RPGBB.frame)
+    RPGBB:InitOrUpdateFrame()
+end
+
+global_db_toggle_setting = {
+    name = 'Use Global Settings',
+    kind = LEM.SettingType.Checkbox,
+    default = true,
+    get = global_db_toggle_get,
+    set = global_db_toggle_set,
+    tooltip = "When enabled, uses a global profile that can be shared with all characters who also enable this. Your per character setting is saved and reachable by disabling."
+}
+
 --- Test Frames
 local function test_frame_count_get()
     return #RPGBB.current_boss_frames
@@ -117,7 +154,7 @@ frame_width_setting = {
     get = frame_width_get,
     set = frame_width_set,
     minValue = 200,
-    maxValue = 2000,
+    maxValue = 3000,
     valueStep = 10,
     formatter = function(value) return value end,
 }
@@ -144,7 +181,7 @@ frame_height_setting = {
     default = RPGBB.db.defaults.frame.height,
     get = frame_height_get,
     set = frame_height_set,
-    minValue = 20,
+    minValue = 1,
     maxValue = 100,
     valueStep = 1,
     formatter = function(value) return value end,
@@ -304,19 +341,47 @@ health_bar_texture_color_setting = {
 }
 
 -------------------------------------------------------------------------------
---- Health Bar Font
-local function health_bar_font_get(value)
+--- Health Font Offset Y
+local function health_font_offset_y_get()
+    return RPGBB.db.Get("health", "font", "offset", "y")
+end
+
+local function health_font_offset_y_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db.SetDefault("health", "font", "offset", "y")
+    else
+        RPGBB.db.Set("health", "font", "offset", "y", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+health_font_offset_y_setting = {
+    name = 'Health Font Offset Y',
+    kind = LEM.SettingType.Slider,
+    default = RPGBB.db.defaults.name.offset.x,
+    get = health_font_offset_y_get,
+    set = health_font_offset_y_set,
+    minValue = -100,
+    maxValue = 100,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Health Font
+local function health_font_get(value)
     local font = LibSharedMedia:Fetch('font', value)
     return RPGBB.db.Get("health", "font", "font") == font
 end
 
-local function health_bar_font_set(value)
+local function health_font_set(value)
     local font = LibSharedMedia:Fetch('font', value)
     RPGBB.db.Set("health", "font", "font", font)
     RPGBB:InitOrUpdateFrame()
 end
 
-local function health_bar_font_default(layoutName, value, fromReset)
+local function health_font_default(layoutName, value, fromReset)
     if fromReset then
         RPGBB.db.SetDefault("health", "font", "font")
 
@@ -324,27 +389,27 @@ local function health_bar_font_default(layoutName, value, fromReset)
     end
 end
 
-health_bar_font_setting = {
-    name = 'Health Bar Font',
+health_font_setting = {
+    name = 'Health Font',
     kind = LEM.SettingType.Dropdown,
     default = RPGBB.db.defaults.health.font.font,
-    set = health_bar_font_default,
+    set = health_font_default,
     generator = function(owner, rootDescription)
         rootDescription:SetScrollMode(400)
 
         for _, name in ipairs(LibSharedMedia:List('font')) do
-            rootDescription:CreateCheckbox(name, health_bar_font_get, health_bar_font_set, name)
+            rootDescription:CreateCheckbox(name, health_font_get, health_font_set, name)
         end
     end,
 }
 
 -------------------------------------------------------------------------------
---- Health Bar Font Size
-local function health_bar_font_size_get(layoutName)
+--- Health Font Size
+local function health_font_size_get(layoutName)
     RPGBB.db.Get("health", "font", "size")
 end
 
-local function health_bar_font_size_set(layoutName, value, fromReset)
+local function health_font_size_set(layoutName, value, fromReset)
     if fromReset then
         RPGBB.db.SetDefault("health", "font", "size")
     else
@@ -354,12 +419,12 @@ local function health_bar_font_size_set(layoutName, value, fromReset)
     RPGBB:InitOrUpdateFrame()
 end
 
-health_bar_font_size_setting = {
+health_font_size_setting = {
   name = 'Health Font Size',
   kind = LEM.SettingType.Slider,
   default = RPGBB.db.defaults.health.font.size,
-  get = health_bar_font_size_get,
-  set = health_bar_font_size_set,
+  get = health_font_size_get,
+  set = health_font_size_set,
   minValue = 6,
   maxValue = 64,
   valueStep = 1,
@@ -369,12 +434,12 @@ health_bar_font_size_setting = {
 }
 
 -------------------------------------------------------------------------------
---- Health Bar Font Color
-local function health_bar_font_color_get(layoutName)
+--- Health Font Color
+local function health_font_color_get(layoutName)
     return CreateColor(RPGBB.db.GetColor("health", "font", "color"))
 end
 
-local function health_bar_font_color_set(layoutName, value, fromReset)
+local function health_font_color_set(layoutName, value, fromReset)
     if fromReset then
         RPGBB.db.SetDefault("health", "font", "color")
     else
@@ -385,22 +450,22 @@ local function health_bar_font_color_set(layoutName, value, fromReset)
     RPGBB:InitOrUpdateFrame()
 end
 
-health_bar_font_color_setting = {
+health_font_color_setting = {
   name = 'Health Font Color',
   kind = LEM.SettingType.ColorPicker,
   default = CreateColor(RPGBB.db.GetColorDefault("health", "font", "color")),
   hasOpacity = true,
-  get = health_bar_font_color_get,
-  set = health_bar_font_color_set,
+  get = health_font_color_get,
+  set = health_font_color_set,
 }
 
 -------------------------------------------------------------------------------
 --- Health Bar Percentage Disable At
-local function health_bar_percentage_disable_above_get()
+local function health_percentage_disable_above_get()
     return RPGBB.db.Get("health", "percent_font", "disable_above")
 end
 
-local function health_bar_percentage_disable_above_set(layoutName, value, fromReset)
+local function health_percentage_disable_above_set(layoutName, value, fromReset)
     if fromReset then
         RPGBB.db.SetDefault("health", "percent_font", "disable_above")
     else
@@ -410,12 +475,12 @@ local function health_bar_percentage_disable_above_set(layoutName, value, fromRe
     RPGBB:UpdateFrames()
 end
 
-health_bar_percentage_disable_above_setting = {
+health_percentage_disable_above_setting = {
     name = 'Hide % above # Frames',
     kind = LEM.SettingType.Slider,
     default = RPGBB.db.defaults.health.percent_font.disable_above,
-    get = health_bar_percentage_disable_above_get,
-    set = health_bar_percentage_disable_above_set,
+    get = health_percentage_disable_above_get,
+    set = health_percentage_disable_above_set,
     minValue = 1,
     maxValue = 5,
     valueStep = 1,
@@ -424,11 +489,11 @@ health_bar_percentage_disable_above_setting = {
 
 -------------------------------------------------------------------------------
 --- Health Bar Percent Font Offset X
-local function name_offset_x_get()
+local function health_percentage_font_offset_x_get()
     return RPGBB.db.Get("health", "percent_font", "offset", "x")
 end
 
-local function name_offset_x_set(layoutName, value, fromReset)
+local function health_percentage_font_offset_x_set(layoutName, value, fromReset)
     if fromReset then
         RPGBB.db.SetDefault("health", "percent_font", "offset", "x")
     else
@@ -438,14 +503,14 @@ local function name_offset_x_set(layoutName, value, fromReset)
     RPGBB:UpdateFrames()
 end
 
-health_bar_percentage_font_offset_x_setting = {
+health_percentage_font_offset_x_setting = {
     name = '% Offset X',
     kind = LEM.SettingType.Slider,
     default = RPGBB.db.defaults.name.offset.x,
-    get = name_offset_x_get,
-    set = name_offset_x_set,
-    minValue = -100,
-    maxValue = 0,
+    get = health_percentage_font_offset_x_get,
+    set = health_percentage_font_offset_x_set,
+    minValue = -200,
+    maxValue = 200,
     valueStep = 1,
     formatter = function(value) return value end,
 }
@@ -590,7 +655,7 @@ health_bar_spark_height_multi_setting = {
     default = RPGBB.db.defaults.health.spark.height_multi,
     get = health_bar_spark_height_multi_get,
     set = health_bar_spark_height_multi_set,
-    minValue = 1,
+    minValue = 0.1,
     maxValue = 4,
     valueStep = 0.1,
     formatter = function(value) return value end,
@@ -841,7 +906,7 @@ power_bar_font_size_setting = {
     get = power_bar_font_size_get,
     set = power_bar_font_size_set,
     minValue = 6,
-    maxValue = 32,
+    maxValue = 48,
     valueStep = 1,
     formatter = function(value) return value end,
 }
@@ -880,6 +945,7 @@ local default_position = CopyTable(RPGBB.db.defaults.frame.position)
 RPGBB.frame.editModeName = 'RPG Boss Bar'
 LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
+    global_db_toggle_setting,
     test_frame_count_setting,
     { name = 'Frame Settings', kind = LEM.SettingType.Divider, },
     frame_center_x_setting,
@@ -895,13 +961,14 @@ LEM:AddFrameSettings(RPGBB.frame, {
     health_bar_desaturated_setting,
     health_bar_texture_setting,
     health_bar_texture_color_setting,
-    { name = 'Health Bar Font', kind = LEM.SettingType.Divider, },
-    health_bar_font_setting,
-    health_bar_font_size_setting,
-    health_bar_font_color_setting,
+    { name = 'Health Font', kind = LEM.SettingType.Divider, },
+    health_font_offset_y_setting,
+    health_font_setting,
+    health_font_size_setting,
+    health_font_color_setting,
     { name = 'Percentage Font', kind = LEM.SettingType.Divider, },
-    health_bar_percentage_disable_above_setting,
-    health_bar_percentage_font_offset_x_setting,
+    health_percentage_disable_above_setting,
+    health_percentage_font_offset_x_setting,
     { name = 'Health Bar Spark', kind = LEM.SettingType.Divider, },
     health_bar_spark_width_setting,
     health_bar_spark_height_multi_setting,

@@ -3,13 +3,12 @@ local ADDON_NAME, RPGBB = ...
 RPGBB.db = {}
 
 function RPGBB.db.Initialize()
-    -- Initialize saved variable if it doesn't exist
+    -- Initialize character and global saved variable if they don't exist
+    RPGBossBarGlobalDB = RPGBossBarGlobalDB or {}
     RPGBossBarDB = RPGBossBarDB or {}
-    RPGBB.db.data = RPGBossBarDB
-
-    -- Old version of RPGBossBarDB.lua, reset db
-    if RPGBossBarDB.position then
-        RPGBB:Print("Outdated / Invalid settings detected, resetting RPGBossBarDB!")
-        RPGBB.db.Reset()
+    if RPGBossBarDB.global then
+        RPGBB.db.data = RPGBossBarGlobalDB
+    else
+        RPGBB.db.data = RPGBossBarDB
     end
 end
