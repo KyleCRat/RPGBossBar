@@ -647,29 +647,29 @@ accent_color_setting = {
 }
 
 -------------------------------------------------------------------------------
---- Name Offset X
-local function name_offset_x_get()
-    return RPGBB.db.Get("name", "offset", "x")
+--- Name Offset Y
+local function name_offset_y_get()
+    return RPGBB.db.Get("name", "offset", "y")
 end
 
-local function name_offset_x_set(layoutName, value, fromReset)
+local function name_offset_y_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("name", "offset", "x")
+        RPGBB.db.SetDefault("name", "offset", "y")
     else
-        RPGBB.db.Set("name", "offset", "x", value)
+        RPGBB.db.Set("name", "offset", "y", value)
     end
 
     RPGBB:UpdateFrames()
 end
 
-name_offset_x_setting = {
+name_offset_y_setting = {
     name = 'Name Offset X',
     kind = LEM.SettingType.Slider,
     default = RPGBB.db.defaults.name.offset.x,
-    get = name_offset_x_get,
-    set = name_offset_x_set,
+    get = name_offset_y_get,
+    set = name_offset_y_set,
     minValue = -200,
-    maxValue = 100,
+    maxValue = 200,
     valueStep = 1,
     formatter = function(value) return value end,
 }
@@ -887,7 +887,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     frame_height_setting,
     frame_background_color_setting,
     { name = 'Boss Name Font', kind = LEM.SettingType.Divider, },
-    name_offset_x_setting,
+    name_offset_y_setting,
     name_font_setting,
     name_font_size_setting,
     name_font_color_setting,

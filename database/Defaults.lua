@@ -41,7 +41,7 @@ addon.db.defaults = {
     },
     name = {
         offset = {
-            x = 2,
+            y = 2,
         },
         font = {
             font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
