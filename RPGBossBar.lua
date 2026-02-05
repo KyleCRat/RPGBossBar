@@ -398,7 +398,7 @@ function RPGBB:UpdateFrames()
     local spark_width            = RPGBB.db.Get("health", "spark", "width")
     local spark_height_multi     = RPGBB.db.Get("health", "spark", "height_multi")
 
-    local name_x_offset = RPGBB.db.Get("name", "offset", "x")
+    local name_y_offset = RPGBB.db.Get("name", "offset", "y")
 
     local health_percent_offset_x = RPGBB.db.Get("health", "percent_font", "offset", "x")
     local disable_per_above       = RPGBB.db.Get("health", "percent_font", "disable_above")
@@ -460,7 +460,7 @@ function RPGBB:UpdateFrames()
             RPGBB.health_bars[boss_frame].name_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
             RPGBB.health_bars[boss_frame].name_text:SetWordWrap(false)
         end
-        RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, name_x_offset)
+        RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, name_y_offset)
         RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
         RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
         RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or "Test Boss " .. boss_frame:match("%d+"))

@@ -663,7 +663,7 @@ local function name_offset_y_set(layoutName, value, fromReset)
 end
 
 name_offset_y_setting = {
-    name = 'Name Offset X',
+    name = 'Name Offset Y',
     kind = LEM.SettingType.Slider,
     default = RPGBB.db.defaults.name.offset.x,
     get = name_offset_y_get,
