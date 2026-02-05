@@ -95,7 +95,7 @@ end
 global_db_toggle_setting = {
     name = 'Use Global Settings',
     kind = LEM.SettingType.Checkbox,
-    default = true,
+    default = false,
     get = global_db_toggle_get,
     set = global_db_toggle_set,
     tooltip = "When enabled, uses a global profile that can be shared with all characters who also enable this. Your per character setting is saved and reachable by disabling."
