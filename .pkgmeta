@@ -1,7 +1,11 @@
 package-as: RPGBossBar
+
 manual-changelog:
-  filename: CHANGELOG.md
-  markup-type: markdown
+    filename: CHANGELOG.md
+    markup-type: markdown
+
 ignore:
-  - README.md
-  - images
+    - images
+    - .pkgmeta
+    - .git
+    - "*.png"
