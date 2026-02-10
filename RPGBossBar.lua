@@ -10,8 +10,8 @@ local testing = false
 local verbose = false
 
 --- Strata levels
-local FRAME_BORDER_LEVEL = 5
-local HEALTH_BAR_LEVEL   = 10
+local HEALTH_BAR_LEVEL   = 5
+local FRAME_BORDER_LEVEL = 10
 local GRAPHICS_LEVEL     = 15
 
 
