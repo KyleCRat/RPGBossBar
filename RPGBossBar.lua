@@ -245,18 +245,18 @@ function RPGBB:ToggleDebug()
 end
 
 function RPGBB:ToggleTest(frame_count)
-    recieved_frame_count_arg = ((frame_count and true) or false)
+    local received_frame_count_arg = ((frame_count and true) or false)
     frame_count = tonumber(frame_count) or 2
     frame_count = math.max(1, math.min(5, frame_count)) -- Clamp between 1 and 5
 
-    RPGBB:VPrint("ToggleTest: recieved_frame_count_arg " .. ((frame_count and "true") or "false"))
+    RPGBB:VPrint("ToggleTest: received_frame_count_arg " .. ((frame_count and "true") or "false"))
     RPGBB:VPrint("ToggleTest: frame_count: " .. frame_count .. " current_boss_frames_count " .. #RPGBB.current_boss_frames)
 
     -- Toggle test if:
     --   We are not testing: Show
     --   We are testing: if no frame_count passed
     --                   or frame_count is the same as current test: Hide
-    if not testing or (not recieved_frame_count_arg
+    if not testing or (not received_frame_count_arg
                         or #RPGBB.current_boss_frames == frame_count) then
         testing = not testing
 
@@ -412,7 +412,7 @@ function RPGBB:UpdateFrames()
 
         RPGBB.health_bars[boss_frame] = RPGBB.health_bars[boss_frame] or {}
 
-        y_left_offset = health_bar_width * (i - 1)
+        local y_left_offset = health_bar_width * (i - 1)
 
         -- Healthbar Frame
         if not RPGBB.health_bars[boss_frame].frame then
@@ -535,7 +535,6 @@ local function EventHandler(self, event, arg1)
             RPGBB.frame:RegisterUnitEvent("UNIT_HEALTH", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterUnitEvent("UNIT_MAXHEALTH", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
-            RPGBB.frame:RegisterEvent("PLAYER_ENTERING_WORLD")
             RPGBB.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
             RPGBB:Print("Loaded. Use " .. SLASH_RPGBOSSBAR1 .. " for commands.")
@@ -549,8 +548,6 @@ local function EventHandler(self, event, arg1)
                 RPGBB:UpdateHealth()
             end
         end
-    elseif event == "PLAYER_ENTERING_WORLD" then
-
     elseif event == "PLAYER_REGEN_ENABLED" then
         -- Exited combat
         RPGBB.frame:Hide()

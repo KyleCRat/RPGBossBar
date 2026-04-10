@@ -78,7 +78,7 @@ function addon.db.Set(...)
 end
 
 function addon.db.GetColor(...)
-    color = addon.db.Get(...)
+    local color = addon.db.Get(...)
 
     if type(color) == "table" and color.r and color.g and color.b and color.a then
         return color.r, color.g, color.b, color.a
