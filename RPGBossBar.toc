@@ -1,7 +1,7 @@
 ## Interface: 120001, 120005
 ## Title: RPG Boss Bar
 ## Author: Yvairel
-## Version: 12.0.1-7
+## Version: 12.0.5-8
 ## IconTexture: Interface\AddOns\RPGBossBar\icon.tga
 ## SavedVariablesPerCharacter: RPGBossBarDB
 ## SavedVariables: RPGBossBarGlobalDB
