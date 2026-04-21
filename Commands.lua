@@ -25,7 +25,7 @@ RPGBB.cmds.reset = {
     triggers = { 'reset' },
     name = "Reset RPGBossBarDB",
     description = "Reset the RPGBossBarDB if you're getting errors",
-    func = function() RPGBB.db:ResetProfile() end,
+    func = function() RPGBB.db:Reset() end,
 }
 
 

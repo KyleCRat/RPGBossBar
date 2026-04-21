@@ -77,23 +77,18 @@ end
 -------------------------------------------------------------------------------
 --- Global settings toggle
 local function global_db_toggle_get()
-    return RPGBB.db and RPGBB.db:GetCurrentProfile() == "Global"
+    return RPGBB.GetActiveProfileKey() == "Global"
 end
 
 local function global_db_toggle_set(layoutName, value, fromReset)
     if fromReset then return end
 
-    if not RPGBB.db then
-        RPGBB:Print("Something went wrong changing the DB.")
-        return
-    end
-
     if value then
         RPGBB:Print("Using global settings!")
-        RPGBB.db:SetProfile("Global")
+        RPGBB.SetActiveProfile("Global")
     else
         RPGBB:Print("Using per character settings!")
-        RPGBB.db:SetProfile("Default")
+        RPGBB.SetActiveProfile("Default")
     end
 
     LEM:RefreshFrameSettings(RPGBB.frame)

@@ -4,8 +4,6 @@ if not lib then
 	return
 end
 
-lib.db_registry = lib.db_registry or {}
-
 -------------------------------------------------------------------------------
 --- Internal Helpers
 -------------------------------------------------------------------------------
@@ -319,7 +317,16 @@ end
 
 function DBMethods:Reset()
 	wipe(self.data)
-	self:FireEvent("OnProfileReset")
+	self:FireEvent("OnReset")
+end
+
+function DBMethods:SetData(data)
+	if type(data) ~= "table" then
+		error("Usage: db:SetData(table)", 2)
+	end
+
+	self.data = data
+	self:FireEvent("OnDataChanged")
 end
 
 -------------------------------------------------------------------------------
@@ -401,47 +408,18 @@ end
 --- Constructor
 -------------------------------------------------------------------------------
 
-function lib:New(savedVariableName, defaults, defaultProfile)
-	if type(savedVariableName) ~= "string" then
-		error("Usage: LibSimpleDB:New(savedVariableName, defaults, defaultProfile) — savedVariableName must be a string", 2)
+function lib:New(data, defaults)
+	if type(data) ~= "table" then
+		error("Usage: LibSimpleDB:New(data, defaults) — data must be a table", 2)
 	end
 
-	-- Initialize the saved variable if it doesn't exist
-	local sv = _G[savedVariableName]
-	if not sv then
-		sv = {}
-		_G[savedVariableName] = sv
-	end
-
-	sv.profileKeys = sv.profileKeys or {}
-	sv.profiles = sv.profiles or {}
-	sv.global = sv.global or {}
-
-	-- Determine character key
-	local charKey = UnitName("player") .. " - " .. GetRealmName()
-
-	-- Determine active profile
-	defaultProfile = defaultProfile or "Default"
-	local profileKey = sv.profileKeys[charKey] or defaultProfile
-	sv.profileKeys[charKey] = profileKey
-
-	-- Ensure the profile table exists
-	sv.profiles[profileKey] = sv.profiles[profileKey] or {}
-
-	-- Build the db instance
 	local db = {
-		sv = sv,
-		data = sv.profiles[profileKey],
+		data = data,
 		defaults = defaults and deepCopy(defaults) or {},
-		charKey = charKey,
-		profileKey = profileKey,
-		defaultProfile = defaultProfile,
-		savedVariableName = savedVariableName,
 		_callbacks = {},
 		_events = {},
 	}
 
-	-- Mix in all methods
 	for k, v in pairs(DBMethods) do
 		db[k] = v
 	end
@@ -453,10 +431,6 @@ function lib:New(savedVariableName, defaults, defaultProfile)
 	for k, v in pairs(EventMixin) do
 		db[k] = v
 	end
-
-	-- Profile methods are mixed in by Profiles.lua
-	-- Store in registry for global access
-	lib.db_registry[savedVariableName] = db
 
 	return db
 end

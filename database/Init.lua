@@ -3,10 +3,34 @@ local ADDON_NAME, RPGBB = ...
 local LibSimpleDB = LibStub('LibSimpleDB-1.0')
 
 function RPGBB.InitializeDB()
-    -- Migrate old saved variable format if needed
     RPGBB.MigrateOldDB()
 
-    RPGBB.db = LibSimpleDB:New("RPGBossBarDB", RPGBB.db_defaults)
+    RPGBossBarDB = RPGBossBarDB or {}
+    RPGBossBarDB.profileKeys = RPGBossBarDB.profileKeys or {}
+    RPGBossBarDB.profiles = RPGBossBarDB.profiles or {}
+
+    local profileKey = RPGBB.GetActiveProfileKey()
+    RPGBossBarDB.profiles[profileKey] = RPGBossBarDB.profiles[profileKey] or {}
+
+    RPGBB.db = LibSimpleDB:New(RPGBossBarDB.profiles[profileKey], RPGBB.db_defaults)
+end
+
+function RPGBB.GetCharKey()
+    return UnitName("player") .. " - " .. GetRealmName()
+end
+
+function RPGBB.GetActiveProfileKey()
+    local charKey = RPGBB.GetCharKey()
+
+    return RPGBossBarDB.profileKeys[charKey] or "Default"
+end
+
+function RPGBB.SetActiveProfile(profileKey)
+    local charKey = RPGBB.GetCharKey()
+    RPGBossBarDB.profileKeys[charKey] = profileKey
+    RPGBossBarDB.profiles[profileKey] = RPGBossBarDB.profiles[profileKey] or {}
+
+    RPGBB.db:SetData(RPGBossBarDB.profiles[profileKey])
 end
 
 function RPGBB.MigrateOldDB()
@@ -42,7 +66,6 @@ function RPGBB.MigrateOldDB()
     wipe(sv)
     sv.profileKeys = {}
     sv.profiles = {}
-    sv.global = {}
 
     -- Migrate old character data into "Default" profile
     if next(oldCharData) then
