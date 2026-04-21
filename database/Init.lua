@@ -33,6 +33,71 @@ function RPGBB.SetActiveProfile(profileKey)
     RPGBB.db:SetData(RPGBossBarDB.profiles[profileKey])
 end
 
+function RPGBB.GetProfileList()
+    local profiles = {}
+    for name in pairs(RPGBossBarDB.profiles) do
+        profiles[#profiles + 1] = name
+    end
+    table.sort(profiles)
+
+    return profiles
+end
+
+function RPGBB.CreateProfile(name)
+    if not name or name == "" then
+        return false
+    end
+
+    if RPGBossBarDB.profiles[name] then
+        return false
+    end
+
+    RPGBossBarDB.profiles[name] = {}
+
+    return true
+end
+
+function RPGBB.DeleteProfile(name)
+    if not name or not RPGBossBarDB.profiles[name] then
+        return false
+    end
+
+    if name == RPGBB.GetActiveProfileKey() then
+        return false
+    end
+
+    RPGBossBarDB.profiles[name] = nil
+
+    for charKey, profileKey in pairs(RPGBossBarDB.profileKeys) do
+        if profileKey == name then
+            RPGBossBarDB.profileKeys[charKey] = "Default"
+        end
+    end
+
+    return true
+end
+
+function RPGBB.CopyProfile(sourceName)
+    local source = RPGBossBarDB.profiles[sourceName]
+    if not source then
+        return false
+    end
+
+    local activeKey = RPGBB.GetActiveProfileKey()
+    local dest = RPGBossBarDB.profiles[activeKey]
+    wipe(dest)
+
+    for k, v in pairs(source) do
+        if type(v) == "table" then
+            dest[k] = CopyTable(v)
+        else
+            dest[k] = v
+        end
+    end
+
+    return true
+end
+
 function RPGBB.MigrateOldDB()
     local sv = RPGBossBarDB
 

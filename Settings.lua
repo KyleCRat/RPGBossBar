@@ -75,33 +75,32 @@ end
 -------------------------------------------------------------------------------
 --- Settings Frame
 -------------------------------------------------------------------------------
---- Global settings toggle
-local function global_db_toggle_get()
-    return RPGBB.GetActiveProfileKey() == "Global"
+--- Profile selector
+local function profile_selector_get(value)
+    return RPGBB.GetActiveProfileKey() == value
 end
 
-local function global_db_toggle_set(layoutName, value, fromReset)
-    if fromReset then return end
-
-    if value then
-        RPGBB:Print("Using global settings!")
-        RPGBB.SetActiveProfile("Global")
-    else
-        RPGBB:Print("Using per character settings!")
-        RPGBB.SetActiveProfile("Default")
-    end
-
+local function profile_selector_set(value)
+    RPGBB.SetActiveProfile(value)
     LEM:RefreshFrameSettings(RPGBB.frame)
     RPGBB:InitOrUpdateFrame()
+    RPGBB:Print("Switched to profile: " .. value)
 end
 
-global_db_toggle_setting = {
-    name = 'Use Global Settings',
-    kind = LEM.SettingType.Checkbox,
-    default = false,
-    get = global_db_toggle_get,
-    set = global_db_toggle_set,
-    tooltip = "When enabled, uses a global profile that can be shared with all characters who also enable this. Your per character setting is saved and reachable by disabling."
+local function profile_selector_default(layoutName, value, fromReset)
+    if fromReset then return end
+end
+
+profile_selector_setting = {
+    name = 'Profile',
+    kind = LEM.SettingType.Dropdown,
+    default = "Default",
+    set = profile_selector_default,
+    generator = function(owner, rootDescription)
+        for _, name in ipairs(RPGBB.GetProfileList()) do
+            rootDescription:CreateCheckbox(name, profile_selector_get, profile_selector_set, name)
+        end
+    end,
 }
 
 --- Test Frames
@@ -948,7 +947,7 @@ local default_position = CopyTable(defaults.frame.position)
 RPGBB.frame.editModeName = 'RPG Boss Bar'
 LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
-    global_db_toggle_setting,
+    profile_selector_setting,
     test_frame_count_setting,
     { name = 'Frame Settings', kind = LEM.SettingType.Divider, },
     frame_center_x_setting,
@@ -986,6 +985,17 @@ LEM:AddFrameSettings(RPGBB.frame, {
     -- power_bar_font_setting,
     -- power_bar_font_size_setting,
     -- power_bar_font_color_setting,
+})
+
+LEM:AddFrameSettingsButtons(RPGBB.frame, {
+    {
+        text = "Manage Profiles",
+        click = function()
+            if RPGBB.settingsCategory then
+                Settings.OpenToCategory(RPGBB.settingsCategory:GetID())
+            end
+        end,
+    },
 })
 
 

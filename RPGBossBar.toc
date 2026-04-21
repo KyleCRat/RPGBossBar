@@ -15,3 +15,4 @@ database/Init.lua
 Commands.lua
 RPGBossBar.lua
 Settings.lua
+ProfileSettings.lua

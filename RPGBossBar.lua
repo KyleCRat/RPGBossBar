@@ -526,6 +526,7 @@ local function EventHandler(self, event, arg1)
         if arg1 == ADDON_NAME then
             RPGBB.InitializeDB()
             RPGBB:InitOrUpdateFrame()
+            RPGBB.RegisterProfileSettings()
 
             RPGBB.frame:UnregisterEvent("ADDON_LOADED")
 
