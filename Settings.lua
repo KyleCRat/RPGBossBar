@@ -240,7 +240,7 @@ local function health_bar_texture_get(value)
     if RPGBB.atlas_textures[value] then
         return RPGBB.db:Get("health", "texture", "atlas_texture") == RPGBB.atlas_textures[value]
     else
-        texture = LibSharedMedia:Fetch('statusbar', value)
+        local texture = LibSharedMedia:Fetch('statusbar', value)
         return RPGBB.db:Get("health", "texture", "texture") == texture
     end
 end
@@ -251,7 +251,7 @@ local function health_bar_texture_set(value)
         RPGBB.db:SetDefault("health", "texture", "texture")
         RPGBB.db:Set("health", "texture", "atlas_texture", RPGBB.atlas_textures[value])
     else
-        texture = LibSharedMedia:Fetch('statusbar', value)
+        local texture = LibSharedMedia:Fetch('statusbar', value)
         RPGBB.db:Set("health", "texture", "atlas", false)
         RPGBB.db:Set("health", "texture", "texture", texture)
         RPGBB.db:Set("health", "texture", "atlas_texture", false)
@@ -361,7 +361,7 @@ end
 health_font_offset_y_setting = {
     name = 'Health Font Offset Y',
     kind = LEM.SettingType.Slider,
-    default = defaults.name.offset.x,
+    default = defaults.health.font.offset.y,
     get = health_font_offset_y_get,
     set = health_font_offset_y_set,
     minValue = -100,
@@ -408,7 +408,7 @@ health_font_setting = {
 -------------------------------------------------------------------------------
 --- Health Font Size
 local function health_font_size_get(layoutName)
-    RPGBB.db:Get("health", "font", "size")
+    return RPGBB.db:Get("health", "font", "size")
 end
 
 local function health_font_size_set(layoutName, value, fromReset)
@@ -508,7 +508,7 @@ end
 health_percentage_font_offset_x_setting = {
     name = '% Offset X',
     kind = LEM.SettingType.Slider,
-    default = defaults.name.offset.x,
+    default = defaults.health.percent_font.offset.x,
     get = health_percentage_font_offset_x_get,
     set = health_percentage_font_offset_x_set,
     minValue = -200,
@@ -732,7 +732,7 @@ end
 name_offset_y_setting = {
     name = 'Name Offset Y',
     kind = LEM.SettingType.Slider,
-    default = defaults.name.offset.x,
+    default = defaults.name.offset.y,
     get = name_offset_y_get,
     set = name_offset_y_set,
     minValue = -200,

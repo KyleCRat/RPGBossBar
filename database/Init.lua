@@ -5,14 +5,14 @@ local LibSimpleDB = LibStub('LibSimpleDB-1.0')
 function RPGBB.InitializeDB()
     RPGBB.MigrateOldDB()
 
-    RPGBossBarDB = RPGBossBarDB or {}
-    RPGBossBarDB.profileKeys = RPGBossBarDB.profileKeys or {}
-    RPGBossBarDB.profiles = RPGBossBarDB.profiles or {}
+    RPGBossBarProfiles = RPGBossBarProfiles or {}
+    RPGBossBarProfiles.profileKeys = RPGBossBarProfiles.profileKeys or {}
+    RPGBossBarProfiles.profiles = RPGBossBarProfiles.profiles or {}
 
     local profileKey = RPGBB.GetActiveProfileKey()
-    RPGBossBarDB.profiles[profileKey] = RPGBossBarDB.profiles[profileKey] or {}
+    RPGBossBarProfiles.profiles[profileKey] = RPGBossBarProfiles.profiles[profileKey] or {}
 
-    RPGBB.db = LibSimpleDB:New(RPGBossBarDB.profiles[profileKey], RPGBB.db_defaults)
+    RPGBB.db = LibSimpleDB:New(RPGBossBarProfiles.profiles[profileKey], RPGBB.db_defaults)
 end
 
 function RPGBB.GetCharKey()
@@ -22,20 +22,20 @@ end
 function RPGBB.GetActiveProfileKey()
     local charKey = RPGBB.GetCharKey()
 
-    return RPGBossBarDB.profileKeys[charKey] or "Default"
+    return RPGBossBarProfiles.profileKeys[charKey] or "Default"
 end
 
 function RPGBB.SetActiveProfile(profileKey)
     local charKey = RPGBB.GetCharKey()
-    RPGBossBarDB.profileKeys[charKey] = profileKey
-    RPGBossBarDB.profiles[profileKey] = RPGBossBarDB.profiles[profileKey] or {}
+    RPGBossBarProfiles.profileKeys[charKey] = profileKey
+    RPGBossBarProfiles.profiles[profileKey] = RPGBossBarProfiles.profiles[profileKey] or {}
 
-    RPGBB.db:SetData(RPGBossBarDB.profiles[profileKey])
+    RPGBB.db:SetData(RPGBossBarProfiles.profiles[profileKey])
 end
 
 function RPGBB.GetProfileList()
     local profiles = {}
-    for name in pairs(RPGBossBarDB.profiles) do
+    for name in pairs(RPGBossBarProfiles.profiles) do
         profiles[#profiles + 1] = name
     end
     table.sort(profiles)
@@ -48,17 +48,17 @@ function RPGBB.CreateProfile(name)
         return false
     end
 
-    if RPGBossBarDB.profiles[name] then
+    if RPGBossBarProfiles.profiles[name] then
         return false
     end
 
-    RPGBossBarDB.profiles[name] = {}
+    RPGBossBarProfiles.profiles[name] = {}
 
     return true
 end
 
 function RPGBB.DeleteProfile(name)
-    if not name or not RPGBossBarDB.profiles[name] then
+    if not name or not RPGBossBarProfiles.profiles[name] then
         return false
     end
 
@@ -66,11 +66,11 @@ function RPGBB.DeleteProfile(name)
         return false
     end
 
-    RPGBossBarDB.profiles[name] = nil
+    RPGBossBarProfiles.profiles[name] = nil
 
-    for charKey, profileKey in pairs(RPGBossBarDB.profileKeys) do
+    for charKey, profileKey in pairs(RPGBossBarProfiles.profileKeys) do
         if profileKey == name then
-            RPGBossBarDB.profileKeys[charKey] = "Default"
+            RPGBossBarProfiles.profileKeys[charKey] = "Default"
         end
     end
 
@@ -78,13 +78,13 @@ function RPGBB.DeleteProfile(name)
 end
 
 function RPGBB.CopyProfile(sourceName)
-    local source = RPGBossBarDB.profiles[sourceName]
+    local source = RPGBossBarProfiles.profiles[sourceName]
     if not source then
         return false
     end
 
     local activeKey = RPGBB.GetActiveProfileKey()
-    local dest = RPGBossBarDB.profiles[activeKey]
+    local dest = RPGBossBarProfiles.profiles[activeKey]
     wipe(dest)
 
     for k, v in pairs(source) do
@@ -98,58 +98,98 @@ function RPGBB.CopyProfile(sourceName)
     return true
 end
 
-function RPGBB.MigrateOldDB()
-    local sv = RPGBossBarDB
+-------------------------------------------------------------------------------
+--- Migration from old saved variable format
+-------------------------------------------------------------------------------
+-- Old TOC had:
+--   ## SavedVariablesPerCharacter: RPGBossBarDB    (per-character settings)
+--   ## SavedVariables: RPGBossBarGlobalDB          (shared "global" profile)
+--
+-- New TOC has:
+--   ## SavedVariables: RPGBossBarProfiles, RPGBossBarGlobalDB
+--   ## SavedVariablesPerCharacter: RPGBossBarDB
+--
+-- We keep the old names so WoW still loads old data from disk.
+-- RPGBossBarDB (per-char) and RPGBossBarGlobalDB (account-wide) are preserved
+-- in the TOC purely for migration. After migration they are wiped.
+-- RPGBossBarProfiles is the new account-wide profile store.
+--
+-- Each character that logs in after the upgrade will migrate their own
+-- per-character RPGBossBarDB into a profile named after them.
 
-    -- Nothing to migrate
-    if not sv or sv.profileKeys then
+function RPGBB.MigrateOldDB()
+    RPGBossBarProfiles = RPGBossBarProfiles or {}
+
+    -- Already migrated if profileKeys exists
+    if RPGBossBarProfiles.profileKeys then
+        -- Still check if this character has un-migrated per-char data
+        RPGBB.MigrateCharacterDB()
+
         return
     end
 
-    -- Old format: RPGBossBarDB held per-character data directly
-    -- Old format: RPGBossBarGlobalDB held global profile data directly
-    local oldCharData = {}
-    local oldGlobalData = {}
-
-    -- Collect old character data (skip the "global" flag)
-    for k, v in pairs(sv) do
-        if k ~= "global" then
-            oldCharData[k] = v
-        end
-    end
-
-    -- Collect old global data
-    if RPGBossBarGlobalDB then
-        for k, v in pairs(RPGBossBarGlobalDB) do
-            oldGlobalData[k] = v
-        end
-    end
-
-    local wasGlobal = sv.global
-
-    -- Wipe and rebuild in new format
-    wipe(sv)
-    sv.profileKeys = {}
-    sv.profiles = {}
-
-    -- Migrate old character data into "Default" profile
-    if next(oldCharData) then
-        sv.profiles["Default"] = oldCharData
-    end
+    -- First-ever migration: set up the new structure
+    RPGBossBarProfiles.profileKeys = {}
+    RPGBossBarProfiles.profiles = {}
 
     -- Migrate old global data into "Global" profile
-    if next(oldGlobalData) then
-        sv.profiles["Global"] = oldGlobalData
-    end
-
-    -- If the user was using global mode, point to the "Global" profile
-    if wasGlobal then
-        local charKey = UnitName("player") .. " - " .. GetRealmName()
-        sv.profileKeys[charKey] = "Global"
-    end
-
-    -- Clean up the old global saved variable
-    if RPGBossBarGlobalDB then
+    if RPGBossBarGlobalDB and next(RPGBossBarGlobalDB) then
+        local globalData = {}
+        for k, v in pairs(RPGBossBarGlobalDB) do
+            globalData[k] = v
+        end
+        RPGBossBarProfiles.profiles["Global"] = globalData
         wipe(RPGBossBarGlobalDB)
     end
+
+    -- Migrate this character's per-char data
+    RPGBB.MigrateCharacterDB()
+end
+
+function RPGBB.MigrateCharacterDB()
+    local sv = RPGBossBarDB
+    if not sv or not next(sv) then
+        return
+    end
+
+    -- If the per-char DB has a "global" key, it's old-format data
+    -- (new format never writes to RPGBossBarDB)
+    local hasOldData = false
+    for k in pairs(sv) do
+        if k ~= "global" then
+            hasOldData = true
+            break
+        end
+    end
+
+    if not hasOldData then
+        wipe(sv)
+
+        return
+    end
+
+    local charKey = UnitName("player") .. " - " .. GetRealmName()
+    local wasGlobal = sv.global
+
+    -- Collect old settings (everything except the "global" flag)
+    local charData = {}
+    for k, v in pairs(sv) do
+        if k ~= "global" then
+            charData[k] = v
+        end
+    end
+
+    -- Store as a profile named after the character
+    RPGBossBarProfiles.profiles[charKey] = charData
+
+    -- Point this character to their migrated profile
+    -- Unless they were using global mode
+    if wasGlobal and RPGBossBarProfiles.profiles["Global"] then
+        RPGBossBarProfiles.profileKeys[charKey] = "Global"
+    else
+        RPGBossBarProfiles.profileKeys[charKey] = charKey
+    end
+
+    -- Clear old per-char data so it won't migrate again
+    wipe(sv)
 end
