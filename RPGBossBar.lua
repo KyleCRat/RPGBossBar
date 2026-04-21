@@ -40,15 +40,15 @@ RPGBB.frame:Hide()
 function RPGBB:InitOrUpdateFrame()
     RPGBB:VPrint("InitOrUpdateFrame fired")
 
-    local frame_height = RPGBB.db.Get("frame", "height")
-    local frame_width  = RPGBB.db.Get("frame", "width")
+    local frame_height = RPGBB.db:Get("frame", "height")
+    local frame_width  = RPGBB.db:Get("frame", "width")
 
     RPGBB.frame:ClearAllPoints()
-    RPGBB.frame:SetPoint(RPGBB.db.Get("frame", "position", "point"),
+    RPGBB.frame:SetPoint(RPGBB.db:Get("frame", "position", "point"),
                          UIParent,
-                         RPGBB.db.Get("frame", "position", "relative_point"),
-                         RPGBB.db.Get("frame", "position", "x"),
-                         RPGBB.db.Get("frame", "position", "y"))
+                         RPGBB.db:Get("frame", "position", "relative_point"),
+                         RPGBB.db:Get("frame", "position", "x"),
+                         RPGBB.db:Get("frame", "position", "y"))
     RPGBB.frame:SetSize(frame_width, frame_height)
 
     -- Create container's background
@@ -56,7 +56,7 @@ function RPGBB:InitOrUpdateFrame()
         RPGBB.frame.bg = RPGBB.frame:CreateTexture(nil, "BACKGROUND")
         RPGBB.frame.bg:SetAllPoints(RPGBB.frame)
     end
-    RPGBB.frame.bg:SetColorTexture(RPGBB.db.GetColor("frame", "background_color"))
+    RPGBB.frame.bg:SetColorTexture(RPGBB.db:GetColor("frame", "background_color"))
 
     -- Create container's frame
     local border_offset = 6
@@ -142,7 +142,7 @@ function RPGBB:InitOrUpdateFrame()
 
     RPGBB.leftGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
 
-    RPGBB.leftGraphicBg:SetVertexColor(RPGBB.db.GetColor("accents", "color")) -- #46226a
+    RPGBB.leftGraphicBg:SetVertexColor(RPGBB.db:GetColor("accents", "color")) -- #46226a
 
 
     --- Right - Anchored to Container
@@ -178,35 +178,35 @@ function RPGBB:InitOrUpdateFrame()
 
     RPGBB.rightGraphicAccent:SetSize(RPGBB.ac_w, RPGBB.ac_h)
 
-    RPGBB.rightGraphicBg:SetVertexColor(RPGBB.db.GetColor("accents", "color"))
+    RPGBB.rightGraphicBg:SetVertexColor(RPGBB.db:GetColor("accents", "color"))
 
 
     ---------------------------------------------------------------------------
     --- Font
     ---------------------------------------------------------------------------
 
-    local health_font = RPGBB.db.Get("health", "font", "font")
-    local health_font_size = RPGBB.db.Get("health", "font", "size")
+    local health_font = RPGBB.db:Get("health", "font", "font")
+    local health_font_size = RPGBB.db:Get("health", "font", "size")
 
     RPGBB.health_font = CreateFont("RPGBossBarHealthFont")
     RPGBB.health_font:SetFont(health_font, health_font_size, "OUTLINE")
-    RPGBB.health_font:SetTextColor(RPGBB.db.GetColor("health", "font", "color"))
+    RPGBB.health_font:SetTextColor(RPGBB.db:GetColor("health", "font", "color"))
 
 
-    local name_font = RPGBB.db.Get("name", "font", "font")
-    local name_font_size = RPGBB.db.Get("name", "font", "size")
+    local name_font = RPGBB.db:Get("name", "font", "font")
+    local name_font_size = RPGBB.db:Get("name", "font", "size")
 
     RPGBB.name_font = CreateFont("RPGBossBarNameFont")
     RPGBB.name_font:SetFont(name_font, name_font_size, "OUTLINE")
-    RPGBB.name_font:SetTextColor(RPGBB.db.GetColor("name", "font", "color"))
+    RPGBB.name_font:SetTextColor(RPGBB.db:GetColor("name", "font", "color"))
 
 
-    local power_font = RPGBB.db.Get("power", "font", "font")
-    local power_font_size = RPGBB.db.Get("power", "font", "size")
+    local power_font = RPGBB.db:Get("power", "font", "font")
+    local power_font_size = RPGBB.db:Get("power", "font", "size")
 
     RPGBB.power_font = CreateFont("RPGBossBarPowerFont")
     RPGBB.power_font:SetFont(power_font, power_font_size, "OUTLINE")
-    RPGBB.power_font:SetTextColor(RPGBB.db.GetColor("power", "font", "color"))
+    RPGBB.power_font:SetTextColor(RPGBB.db:GetColor("power", "font", "color"))
 
     --- Update Frames after changing Init Frame settings
     RPGBB:UpdateFrames()
@@ -371,8 +371,8 @@ function RPGBB:IsBossFramesToUpdate()
 end
 
 function RPGBB:UpdateFrames()
-    local frame_height = RPGBB.db.Get("frame", "height")
-    local frame_width  = RPGBB.db.Get("frame", "width")
+    local frame_height = RPGBB.db:Get("frame", "height")
+    local frame_width  = RPGBB.db:Get("frame", "width")
 
     local boss_frame_count = #RPGBB.current_boss_frames
     local health_bar_width = frame_width / boss_frame_count
@@ -384,28 +384,26 @@ function RPGBB:UpdateFrames()
     end
 
     -- Get all db values before looping so we only get them once
-    -- If we are using an atlas texture
-    -- if RPGBB.db.get("health", "texture", "atlas") then
-    local health_bar_texture_is_atlas = RPGBB.db.Get("health", "texture", "atlas")
-    local health_bar_texture          = RPGBB.db.Get("health", "texture", "texture")
-    local health_bar_atlas_texture    = RPGBB.db.Get("health", "texture", "atlas_texture")
-    local health_bar_desaturated      = RPGBB.db.Get("health", "texture", "desaturated")
-    local hb_r, hb_b, hb_g, hb_a      = RPGBB.db.GetColor("health", "texture", "color")
+    local health_bar_texture_is_atlas = RPGBB.db:Get("health", "texture", "atlas")
+    local health_bar_texture          = RPGBB.db:Get("health", "texture", "texture")
+    local health_bar_atlas_texture    = RPGBB.db:Get("health", "texture", "atlas_texture")
+    local health_bar_desaturated      = RPGBB.db:Get("health", "texture", "desaturated")
+    local hb_r, hb_b, hb_g, hb_a      = RPGBB.db:GetColor("health", "texture", "color")
 
-    local health_font_offset_y = RPGBB.db.Get("health", "font", "offset", "y")
+    local health_font_offset_y = RPGBB.db:Get("health", "font", "offset", "y")
 
-    local spark_atlas            = RPGBB.db.Get("health", "spark", "atlas")
-    local sp_r, sp_b, sp_g, sp_a = RPGBB.db.GetColor("health", "spark", "color")
-    local spark_blend_mode       = RPGBB.db.Get("health", "spark", "blend_mode")
-    local spark_width            = RPGBB.db.Get("health", "spark", "width")
-    local spark_height_multi     = RPGBB.db.Get("health", "spark", "height_multi")
+    local spark_atlas            = RPGBB.db:Get("health", "spark", "atlas")
+    local sp_r, sp_b, sp_g, sp_a = RPGBB.db:GetColor("health", "spark", "color")
+    local spark_blend_mode       = RPGBB.db:Get("health", "spark", "blend_mode")
+    local spark_width            = RPGBB.db:Get("health", "spark", "width")
+    local spark_height_multi     = RPGBB.db:Get("health", "spark", "height_multi")
 
-    local name_y_offset = RPGBB.db.Get("name", "offset", "y")
+    local name_y_offset = RPGBB.db:Get("name", "offset", "y")
 
-    local health_percent_offset_x = RPGBB.db.Get("health", "percent_font", "offset", "x")
-    local disable_per_above       = RPGBB.db.Get("health", "percent_font", "disable_above")
+    local health_percent_offset_x = RPGBB.db:Get("health", "percent_font", "offset", "x")
+    local disable_per_above       = RPGBB.db:Get("health", "percent_font", "disable_above")
 
-    local ac_r, ac_b, ac_g, ac_a = RPGBB.db.GetColor("accents", "color")
+    local ac_r, ac_b, ac_g, ac_a = RPGBB.db:GetColor("accents", "color")
 
     for i, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
@@ -526,7 +524,7 @@ end
 local function EventHandler(self, event, arg1)
     if event == "ADDON_LOADED" then
         if arg1 == ADDON_NAME then
-            RPGBB.db.Initialize()
+            RPGBB.InitializeDB()
             RPGBB:InitOrUpdateFrame()
 
             RPGBB.frame:UnregisterEvent("ADDON_LOADED")

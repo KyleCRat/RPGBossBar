@@ -3,16 +3,15 @@
 ## Author: Yvairel
 ## Version: 12.0.5-8
 ## IconTexture: Interface\AddOns\RPGBossBar\icon.tga
-## SavedVariablesPerCharacter: RPGBossBarDB
-## SavedVariables: RPGBossBarGlobalDB
+## SavedVariables: RPGBossBarDB
 
 libs\LibStub\LibStub.lua
+libs\LibSimpleDB-1.0\embed.xml
 libs\LibEditMode\embed.xml
 libs\LibSharedMedia-3.0\lib.xml
 
-database/Init.lua
 database/Defaults.lua
-database/Functions.lua
+database/Init.lua
 Commands.lua
 RPGBossBar.lua
 Settings.lua

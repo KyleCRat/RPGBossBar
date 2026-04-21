@@ -1,7 +1,6 @@
 local ADDON_NAME, addon = ...
 
-addon.db.defaults = {
-    global = false,
+addon.db_defaults = {
     frame = {
         width = 1100,
         height = 38,

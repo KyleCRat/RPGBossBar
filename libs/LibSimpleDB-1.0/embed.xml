@@ -1,0 +1,4 @@
+<Ui>
+	<Script file='LibSimpleDB-1.0.lua'/>
+	<Script file='Profiles.lua'/>
+</Ui>

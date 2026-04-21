@@ -11,6 +11,17 @@ LibSharedMedia:Register('font', 'Metamorphous', "Interface\\AddOns\\RPGBossBar\\
 
 local LEM = LibStub('LibEditMode')
 
+local defaults = RPGBB.db_defaults
+
+local function DefaultColor(...)
+    local color = defaults
+    for i = 1, select("#", ...) do
+        color = color[select(i, ...)]
+    end
+
+    return CreateColor(color.r, color.g, color.b, color.a)
+end
+
 
 -------------------------------------------------------------------------------
 --- Custom Resources
@@ -54,10 +65,10 @@ local function OnPositionChanged(frame, layoutName, point, x, y)
     x = PixelUtil.GetNearestPixelSize(x, uiScale)
     y = PixelUtil.GetNearestPixelSize(y, uiScale)
 
-    RPGBB.db.Set("frame", "position", "point", point)
-    RPGBB.db.Set("frame", "position", "relative_point", relative_point)
-    RPGBB.db.Set("frame", "position", "x", x)
-    RPGBB.db.Set("frame", "position", "y", y)
+    RPGBB.db:Set("frame", "position", "point", point)
+    RPGBB.db:Set("frame", "position", "relative_point", relative_point)
+    RPGBB.db:Set("frame", "position", "x", x)
+    RPGBB.db:Set("frame", "position", "y", y)
 end
 
 
@@ -66,29 +77,23 @@ end
 -------------------------------------------------------------------------------
 --- Global settings toggle
 local function global_db_toggle_get()
-    -- Global value is stored on local character's db
-    return RPGBossBarDB and RPGBossBarDB.global
+    return RPGBB.db and RPGBB.db:GetCurrentProfile() == "Global"
 end
 
 local function global_db_toggle_set(layoutName, value, fromReset)
-    -- Do not change global setting when resetting
     if fromReset then return end
 
-    -- Ensure both global and local db's are available
-    -- Store global value on local character's db
-    if RPGBossBarDB and RPGBossBarGlobalDB then
-        if value then
-            RPGBB:Print("Using global settings!")
-            RPGBossBarDB.global = true
-            RPGBB.db.data = RPGBossBarGlobalDB
-        else
-            RPGBB:Print("Using per character settings!")
-            RPGBossBarDB.global = false
-            RPGBB.db.data = RPGBossBarDB
-        end
-    else
+    if not RPGBB.db then
         RPGBB:Print("Something went wrong changing the DB.")
         return
+    end
+
+    if value then
+        RPGBB:Print("Using global settings!")
+        RPGBB.db:SetProfile("Global")
+    else
+        RPGBB:Print("Using per character settings!")
+        RPGBB.db:SetProfile("Default")
     end
 
     LEM:RefreshFrameSettings(RPGBB.frame)
@@ -98,7 +103,7 @@ end
 global_db_toggle_setting = {
     name = 'Use Global Settings',
     kind = LEM.SettingType.Checkbox,
-    default = global_db_toggle_get(),
+    default = false,
     get = global_db_toggle_get,
     set = global_db_toggle_set,
     tooltip = "When enabled, uses a global profile that can be shared with all characters who also enable this. Your per character setting is saved and reachable by disabling."
@@ -137,14 +142,14 @@ test_frame_count_setting = {
 
 --- Frame Width
 local function frame_width_get()
-    return RPGBB.db.Get("frame", "width")
+    return RPGBB.db:Get("frame", "width")
 end
 
 local function frame_width_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("frame", "width")
+        RPGBB.db:SetDefault("frame", "width")
     else
-        RPGBB.db.Set("frame", "width", value)
+        RPGBB.db:Set("frame", "width", value)
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -153,7 +158,7 @@ end
 frame_width_setting = {
     name = 'Frame Width',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.frame.width,
+    default = defaults.frame.width,
     get = frame_width_get,
     set = frame_width_set,
     minValue = 200,
@@ -165,14 +170,14 @@ frame_width_setting = {
 -------------------------------------------------------------------------------
 --- Frame Height
 local function frame_height_get()
-    return RPGBB.db.Get("frame", "height")
+    return RPGBB.db:Get("frame", "height")
 end
 
 local function frame_height_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("frame", "height")
+        RPGBB.db:SetDefault("frame", "height")
     else
-        RPGBB.db.Set("frame", "height", value)
+        RPGBB.db:Set("frame", "height", value)
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -181,7 +186,7 @@ end
 frame_height_setting = {
     name = 'Frame Height',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.frame.height,
+    default = defaults.frame.height,
     get = frame_height_get,
     set = frame_height_set,
     minValue = 1,
@@ -193,15 +198,15 @@ frame_height_setting = {
 -------------------------------------------------------------------------------
 --- Frame Background Color
 local function frame_background_color_get()
-    return CreateColor(RPGBB.db.GetColor("frame", "background_color"))
+    return CreateColor(RPGBB.db:GetColor("frame", "background_color"))
 end
 
 local function frame_background_color_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("frame", "background_color")
+        RPGBB.db:SetDefault("frame", "background_color")
     else
         local r, g, b, a = value:GetRGBA()
-        RPGBB.db.SetColor("frame", "background_color", { r = r, g = g, b = b, a = a } )
+        RPGBB.db:SetColor("frame", "background_color", { r = r, g = g, b = b, a = a } )
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -210,7 +215,7 @@ end
 frame_background_color_setting = {
     name = 'Background Color',
     kind = LEM.SettingType.ColorPicker,
-    default = CreateColor(RPGBB.db.GetColorDefault("frame", "background_color")),
+    default = DefaultColor("frame", "background_color"),
     hasOpacity = true,
     get = frame_background_color_get,
     set = frame_background_color_set,
@@ -219,11 +224,11 @@ frame_background_color_setting = {
 -------------------------------------------------------------------------------
 --- Frame Center X
 local function frame_center_x_get()
-    return RPGBB.db.Get("frame", "position", "x") == 0
+    return RPGBB.db:Get("frame", "position", "x") == 0
 end
 
 local function frame_center_x_set(layoutName, value, fromReset)
-    RPGBB.db.Set("frame", "position", "x", 0)
+    RPGBB.db:Set("frame", "position", "x", 0)
     RPGBB:InitOrUpdateFrame()
 end
 
@@ -239,23 +244,23 @@ frame_center_x_setting = {
 --- Health Bar Texture
 local function health_bar_texture_get(value)
     if RPGBB.atlas_textures[value] then
-        return RPGBB.db.Get("health", "texture", "atlas_texture") == RPGBB.atlas_textures[value]
+        return RPGBB.db:Get("health", "texture", "atlas_texture") == RPGBB.atlas_textures[value]
     else
         texture = LibSharedMedia:Fetch('statusbar', value)
-        return RPGBB.db.Get("health", "texture", "texture") == texture
+        return RPGBB.db:Get("health", "texture", "texture") == texture
     end
 end
 
 local function health_bar_texture_set(value)
     if RPGBB.atlas_textures[value] then
-        RPGBB.db.Set("health", "texture", "atlas", true)
-        RPGBB.db.SetDefault("health", "texture", "texture")
-        RPGBB.db.Set("health", "texture", "atlas_texture", RPGBB.atlas_textures[value])
+        RPGBB.db:Set("health", "texture", "atlas", true)
+        RPGBB.db:SetDefault("health", "texture", "texture")
+        RPGBB.db:Set("health", "texture", "atlas_texture", RPGBB.atlas_textures[value])
     else
         texture = LibSharedMedia:Fetch('statusbar', value)
-        RPGBB.db.Set("health", "texture", "atlas", false)
-        RPGBB.db.Set("health", "texture", "texture", texture)
-        RPGBB.db.Set("health", "texture", "atlas_texture", false)
+        RPGBB.db:Set("health", "texture", "atlas", false)
+        RPGBB.db:Set("health", "texture", "texture", texture)
+        RPGBB.db:Set("health", "texture", "atlas_texture", false)
     end
 
     RPGBB.UpdateFrames()
@@ -263,9 +268,9 @@ end
 
 local function health_bar_texture_default(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "texture", "atlas")
-        RPGBB.db.SetDefault("health", "texture", "atlas_texture")
-        RPGBB.db.SetDefault("health", "texture", "texture")
+        RPGBB.db:SetDefault("health", "texture", "atlas")
+        RPGBB.db:SetDefault("health", "texture", "atlas_texture")
+        RPGBB.db:SetDefault("health", "texture", "texture")
 
         RPGBB.UpdateFrames()
     end
@@ -274,7 +279,7 @@ end
 health_bar_texture_setting = {
   name = 'Health Bar Texture',
   kind = LEM.SettingType.Dropdown,
-  default = RPGBB.db.defaults.health.texture.texture,
+  default = defaults.health.texture.texture,
   set = health_bar_texture_default,
   generator = function(owner, rootDescription)
     rootDescription:SetScrollMode(400)
@@ -296,14 +301,14 @@ health_bar_texture_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Desaturated
 local function health_bar_desaturated_get()
-    return RPGBB.db.Get("health", "texture", "desaturated")
+    return RPGBB.db:Get("health", "texture", "desaturated")
 end
 
 local function health_bar_desaturated_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "texture", "desaturated")
+        RPGBB.db:SetDefault("health", "texture", "desaturated")
     else
-        RPGBB.db.Set("health", "texture", "desaturated", value)
+        RPGBB.db:Set("health", "texture", "desaturated", value)
     end
 
     RPGBB:UpdateFrames()
@@ -312,7 +317,7 @@ end
 health_bar_desaturated_setting = {
     name = 'Health Bar Desaturated',
     kind = LEM.SettingType.Checkbox,
-    default = RPGBB.db.defaults.health.texture.desaturated,
+    default = defaults.health.texture.desaturated,
     get = health_bar_desaturated_get,
     set = health_bar_desaturated_set,
 }
@@ -320,15 +325,15 @@ health_bar_desaturated_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Texture Color
 local function health_bar_texture_color_get(layoutName)
-    return CreateColor(RPGBB.db.GetColor("health", "texture", "color"))
+    return CreateColor(RPGBB.db:GetColor("health", "texture", "color"))
 end
 
 local function health_bar_texture_color_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "texture", "color")
+        RPGBB.db:SetDefault("health", "texture", "color")
     else
         local r, g, b, a = value:GetRGBA()
-        RPGBB.db.SetColor("health", "texture", "color", { r = r, g = g, b = b, a = a } )
+        RPGBB.db:SetColor("health", "texture", "color", { r = r, g = g, b = b, a = a } )
     end
 
     RPGBB.UpdateFrames()
@@ -337,7 +342,7 @@ end
 health_bar_texture_color_setting = {
   name = 'Health Bar Color',
   kind = LEM.SettingType.ColorPicker,
-  default = CreateColor(RPGBB.db.GetColorDefault("health", "texture", "color")),
+  default = DefaultColor("health", "texture", "color"),
   hasOpacity = true,
   get = health_bar_texture_color_get,
   set = health_bar_texture_color_set,
@@ -346,14 +351,14 @@ health_bar_texture_color_setting = {
 -------------------------------------------------------------------------------
 --- Health Font Offset Y
 local function health_font_offset_y_get()
-    return RPGBB.db.Get("health", "font", "offset", "y")
+    return RPGBB.db:Get("health", "font", "offset", "y")
 end
 
 local function health_font_offset_y_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "font", "offset", "y")
+        RPGBB.db:SetDefault("health", "font", "offset", "y")
     else
-        RPGBB.db.Set("health", "font", "offset", "y", value)
+        RPGBB.db:Set("health", "font", "offset", "y", value)
     end
 
     RPGBB:UpdateFrames()
@@ -362,7 +367,7 @@ end
 health_font_offset_y_setting = {
     name = 'Health Font Offset Y',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.name.offset.x,
+    default = defaults.name.offset.x,
     get = health_font_offset_y_get,
     set = health_font_offset_y_set,
     minValue = -100,
@@ -375,18 +380,18 @@ health_font_offset_y_setting = {
 --- Health Font
 local function health_font_get(value)
     local font = LibSharedMedia:Fetch('font', value)
-    return RPGBB.db.Get("health", "font", "font") == font
+    return RPGBB.db:Get("health", "font", "font") == font
 end
 
 local function health_font_set(value)
     local font = LibSharedMedia:Fetch('font', value)
-    RPGBB.db.Set("health", "font", "font", font)
+    RPGBB.db:Set("health", "font", "font", font)
     RPGBB:InitOrUpdateFrame()
 end
 
 local function health_font_default(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "font", "font")
+        RPGBB.db:SetDefault("health", "font", "font")
 
         RPGBB:InitOrUpdateFrame()
     end
@@ -395,7 +400,7 @@ end
 health_font_setting = {
     name = 'Health Font',
     kind = LEM.SettingType.Dropdown,
-    default = RPGBB.db.defaults.health.font.font,
+    default = defaults.health.font.font,
     set = health_font_default,
     generator = function(owner, rootDescription)
         rootDescription:SetScrollMode(400)
@@ -409,14 +414,14 @@ health_font_setting = {
 -------------------------------------------------------------------------------
 --- Health Font Size
 local function health_font_size_get(layoutName)
-    RPGBB.db.Get("health", "font", "size")
+    RPGBB.db:Get("health", "font", "size")
 end
 
 local function health_font_size_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "font", "size")
+        RPGBB.db:SetDefault("health", "font", "size")
     else
-        RPGBB.db.Set("health", "font", "size", value)
+        RPGBB.db:Set("health", "font", "size", value)
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -425,7 +430,7 @@ end
 health_font_size_setting = {
   name = 'Health Font Size',
   kind = LEM.SettingType.Slider,
-  default = RPGBB.db.defaults.health.font.size,
+  default = defaults.health.font.size,
   get = health_font_size_get,
   set = health_font_size_set,
   minValue = 6,
@@ -439,15 +444,15 @@ health_font_size_setting = {
 -------------------------------------------------------------------------------
 --- Health Font Color
 local function health_font_color_get(layoutName)
-    return CreateColor(RPGBB.db.GetColor("health", "font", "color"))
+    return CreateColor(RPGBB.db:GetColor("health", "font", "color"))
 end
 
 local function health_font_color_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "font", "color")
+        RPGBB.db:SetDefault("health", "font", "color")
     else
         local r, g, b, a = value:GetRGBA()
-        RPGBB.db.SetColor("health", "font", "color", { r = r, g = g, b = b, a = a } )
+        RPGBB.db:SetColor("health", "font", "color", { r = r, g = g, b = b, a = a } )
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -456,7 +461,7 @@ end
 health_font_color_setting = {
   name = 'Health Font Color',
   kind = LEM.SettingType.ColorPicker,
-  default = CreateColor(RPGBB.db.GetColorDefault("health", "font", "color")),
+  default = DefaultColor("health", "font", "color"),
   hasOpacity = true,
   get = health_font_color_get,
   set = health_font_color_set,
@@ -465,14 +470,14 @@ health_font_color_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Percentage Disable At
 local function health_percentage_disable_above_get()
-    return RPGBB.db.Get("health", "percent_font", "disable_above")
+    return RPGBB.db:Get("health", "percent_font", "disable_above")
 end
 
 local function health_percentage_disable_above_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "percent_font", "disable_above")
+        RPGBB.db:SetDefault("health", "percent_font", "disable_above")
     else
-        RPGBB.db.Set("health", "percent_font", "disable_above", value)
+        RPGBB.db:Set("health", "percent_font", "disable_above", value)
     end
 
     RPGBB:UpdateFrames()
@@ -481,7 +486,7 @@ end
 health_percentage_disable_above_setting = {
     name = 'Hide % above # Frames',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.health.percent_font.disable_above,
+    default = defaults.health.percent_font.disable_above,
     get = health_percentage_disable_above_get,
     set = health_percentage_disable_above_set,
     minValue = 1,
@@ -493,14 +498,14 @@ health_percentage_disable_above_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Percent Font Offset X
 local function health_percentage_font_offset_x_get()
-    return RPGBB.db.Get("health", "percent_font", "offset", "x")
+    return RPGBB.db:Get("health", "percent_font", "offset", "x")
 end
 
 local function health_percentage_font_offset_x_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "percent_font", "offset", "x")
+        RPGBB.db:SetDefault("health", "percent_font", "offset", "x")
     else
-        RPGBB.db.Set("health", "percent_font", "offset", "x", value)
+        RPGBB.db:Set("health", "percent_font", "offset", "x", value)
     end
 
     RPGBB:UpdateFrames()
@@ -509,7 +514,7 @@ end
 health_percentage_font_offset_x_setting = {
     name = '% Offset X',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.name.offset.x,
+    default = defaults.name.offset.x,
     get = health_percentage_font_offset_x_get,
     set = health_percentage_font_offset_x_set,
     minValue = -200,
@@ -521,17 +526,17 @@ health_percentage_font_offset_x_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Spark Texture
 local function health_bar_spark_texture_get(value)
-    return RPGBB.db.Get("health", "spark", "atlas") == value
+    return RPGBB.db:Get("health", "spark", "atlas") == value
 end
 
 local function health_bar_spark_texture_set(value)
-    RPGBB.db.Set("health", "spark", "atlas", value)
+    RPGBB.db:Set("health", "spark", "atlas", value)
     RPGBB:UpdateFrames()
 end
 
 local function health_bar_spark_texture_default(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "spark", "atlas")
+        RPGBB.db:SetDefault("health", "spark", "atlas")
         RPGBB:UpdateFrames()
     end
 end
@@ -539,7 +544,7 @@ end
 health_bar_spark_texture_setting = {
     name = 'Spark Texture',
     kind = LEM.SettingType.Dropdown,
-    default = RPGBB.db.defaults.health.spark.atlas,
+    default = defaults.health.spark.atlas,
     set = health_bar_spark_texture_default,
     generator = function(owner, rootDescription)
         rootDescription:SetScrollMode(400)
@@ -553,15 +558,15 @@ health_bar_spark_texture_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Spark Color
 local function health_bar_spark_color_get()
-    return CreateColor(RPGBB.db.GetColor("health", "spark", "color"))
+    return CreateColor(RPGBB.db:GetColor("health", "spark", "color"))
 end
 
 local function health_bar_spark_color_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "spark", "color")
+        RPGBB.db:SetDefault("health", "spark", "color")
     else
         local r, g, b, a = value:GetRGBA()
-        RPGBB.db.SetColor("health", "spark", "color", { r = r, g = g, b = b, a = a })
+        RPGBB.db:SetColor("health", "spark", "color", { r = r, g = g, b = b, a = a })
     end
 
     RPGBB:UpdateFrames()
@@ -570,7 +575,7 @@ end
 health_bar_spark_color_setting = {
     name = 'Spark Color',
     kind = LEM.SettingType.ColorPicker,
-    default = CreateColor(RPGBB.db.GetColorDefault("health", "spark", "color")),
+    default = DefaultColor("health", "spark", "color"),
     hasOpacity = true,
     get = health_bar_spark_color_get,
     set = health_bar_spark_color_set,
@@ -581,17 +586,17 @@ health_bar_spark_color_setting = {
 local blend_modes = { "DISABLE", "BLEND", "ALPHAKEY", "ADD", "MOD" }
 
 local function health_bar_spark_blend_mode_get(value)
-    return RPGBB.db.Get("health", "spark", "blend_mode") == value
+    return RPGBB.db:Get("health", "spark", "blend_mode") == value
 end
 
 local function health_bar_spark_blend_mode_set(value)
-    RPGBB.db.Set("health", "spark", "blend_mode", value)
+    RPGBB.db:Set("health", "spark", "blend_mode", value)
     RPGBB:UpdateFrames()
 end
 
 local function health_bar_spark_blend_mode_default(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "spark", "blend_mode")
+        RPGBB.db:SetDefault("health", "spark", "blend_mode")
         RPGBB:UpdateFrames()
     end
 end
@@ -599,7 +604,7 @@ end
 health_bar_spark_blend_mode_setting = {
     name = 'Spark Blend Mode',
     kind = LEM.SettingType.Dropdown,
-    default = RPGBB.db.defaults.health.spark.blend_mode,
+    default = defaults.health.spark.blend_mode,
     set = health_bar_spark_blend_mode_default,
     generator = function(owner, rootDescription)
         for _, mode in ipairs(blend_modes) do
@@ -611,14 +616,14 @@ health_bar_spark_blend_mode_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Spark Width
 local function health_bar_spark_width_get()
-    return RPGBB.db.Get("health", "spark", "width")
+    return RPGBB.db:Get("health", "spark", "width")
 end
 
 local function health_bar_spark_width_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "spark", "width")
+        RPGBB.db:SetDefault("health", "spark", "width")
     else
-        RPGBB.db.Set("health", "spark", "width", value)
+        RPGBB.db:Set("health", "spark", "width", value)
     end
 
     RPGBB:UpdateFrames()
@@ -627,7 +632,7 @@ end
 health_bar_spark_width_setting = {
     name = 'Spark Width',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.health.spark.width,
+    default = defaults.health.spark.width,
     get = health_bar_spark_width_get,
     set = health_bar_spark_width_set,
     minValue = 1,
@@ -639,14 +644,14 @@ health_bar_spark_width_setting = {
 -------------------------------------------------------------------------------
 --- Health Bar Spark Height Mulit
 local function health_bar_spark_height_multi_get()
-    return RPGBB.db.Get("health", "spark", "height_multi")
+    return RPGBB.db:Get("health", "spark", "height_multi")
 end
 
 local function health_bar_spark_height_multi_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("health", "spark", "height_multi")
+        RPGBB.db:SetDefault("health", "spark", "height_multi")
     else
-        RPGBB.db.Set("health", "spark", "height_multi", value)
+        RPGBB.db:Set("health", "spark", "height_multi", value)
     end
 
     RPGBB:UpdateFrames()
@@ -655,7 +660,7 @@ end
 health_bar_spark_height_multi_setting = {
     name = 'Spark Height Multiplier',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.health.spark.height_multi,
+    default = defaults.health.spark.height_multi,
     get = health_bar_spark_height_multi_get,
     set = health_bar_spark_height_multi_set,
     minValue = 0.1,
@@ -667,14 +672,14 @@ health_bar_spark_height_multi_setting = {
 -- -------------------------------------------------------------------------------
 -- --- Accent Copy Healthbar Texture Color
 -- local function accent_copy_healthbar_texture_color_get()
---     return RPGBB.db.Get("accents", "copy_healthbar_texture_color")
+--     return RPGBB.db:Get("accents", "copy_healthbar_texture_color")
 -- end
 
 -- local function accent_copy_healthbar_texture_color_set(layoutName, value, fromReset)
 --     if fromReset then
---         RPGBB.db.SetDefault("accents", "copy_healthbar_texture_color")
+--         RPGBB.db:SetDefault("accents", "copy_healthbar_texture_color")
 --     else
---         RPGBB.db.Set("accents", "copy_healthbar_texture_color", value)
+--         RPGBB.db:Set("accents", "copy_healthbar_texture_color", value)
 --     end
 
 --     RPGBB:InitOrUpdateFrame()
@@ -683,7 +688,7 @@ health_bar_spark_height_multi_setting = {
 -- accent_copy_healthbar_texture_color_setting = {
 --     name = 'Copy Health Bar Color',
 --     kind = LEM.SettingType.Checkbox,
---     default = RPGBB.db.defaults.accents.copy_healthbar_texture_color,
+--     default = defaults.accents.copy_healthbar_texture_color,
 --     get = accent_copy_healthbar_texture_color_get,
 --     set = accent_copy_healthbar_texture_color_set,
 -- }
@@ -691,15 +696,15 @@ health_bar_spark_height_multi_setting = {
 -------------------------------------------------------------------------------
 --- Accent Color
 local function accent_color_get()
-    return CreateColor(RPGBB.db.GetColor("accents", "color"))
+    return CreateColor(RPGBB.db:GetColor("accents", "color"))
 end
 
 local function accent_color_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("accents", "color")
+        RPGBB.db:SetDefault("accents", "color")
     else
         local r, g, b, a = value:GetRGBA()
-        RPGBB.db.SetColor("accents", "color", { r = r, g = g, b = b, a = a })
+        RPGBB.db:SetColor("accents", "color", { r = r, g = g, b = b, a = a })
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -708,7 +713,7 @@ end
 accent_color_setting = {
     name = 'Accent Color',
     kind = LEM.SettingType.ColorPicker,
-    default = CreateColor(RPGBB.db.GetColorDefault("accents", "color")),
+    default = DefaultColor("accents", "color"),
     hasOpacity = true,
     get = accent_color_get,
     set = accent_color_set,
@@ -717,14 +722,14 @@ accent_color_setting = {
 -------------------------------------------------------------------------------
 --- Name Offset Y
 local function name_offset_y_get()
-    return RPGBB.db.Get("name", "offset", "y")
+    return RPGBB.db:Get("name", "offset", "y")
 end
 
 local function name_offset_y_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("name", "offset", "y")
+        RPGBB.db:SetDefault("name", "offset", "y")
     else
-        RPGBB.db.Set("name", "offset", "y", value)
+        RPGBB.db:Set("name", "offset", "y", value)
     end
 
     RPGBB:UpdateFrames()
@@ -733,7 +738,7 @@ end
 name_offset_y_setting = {
     name = 'Name Offset Y',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.name.offset.x,
+    default = defaults.name.offset.x,
     get = name_offset_y_get,
     set = name_offset_y_set,
     minValue = -200,
@@ -746,18 +751,18 @@ name_offset_y_setting = {
 --- Name Font
 local function name_font_get(value)
     local font = LibSharedMedia:Fetch('font', value)
-    return RPGBB.db.Get("name", "font", "font") == font
+    return RPGBB.db:Get("name", "font", "font") == font
 end
 
 local function name_font_set(value)
     local font = LibSharedMedia:Fetch('font', value)
-    RPGBB.db.Set("name", "font", "font", font)
+    RPGBB.db:Set("name", "font", "font", font)
     RPGBB:InitOrUpdateFrame()
 end
 
 local function name_font_default(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("name", "font", "font")
+        RPGBB.db:SetDefault("name", "font", "font")
         RPGBB:InitOrUpdateFrame()
     end
 end
@@ -765,7 +770,7 @@ end
 name_font_setting = {
     name = 'Name Font',
     kind = LEM.SettingType.Dropdown,
-    default = RPGBB.db.defaults.name.font.font,
+    default = defaults.name.font.font,
     set = name_font_default,
     generator = function(owner, rootDescription)
         rootDescription:SetScrollMode(400)
@@ -778,14 +783,14 @@ name_font_setting = {
 -------------------------------------------------------------------------------
 --- Name Font Size
 local function name_font_size_get()
-    return RPGBB.db.Get("name", "font", "size")
+    return RPGBB.db:Get("name", "font", "size")
 end
 
 local function name_font_size_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("name", "font", "size")
+        RPGBB.db:SetDefault("name", "font", "size")
     else
-        RPGBB.db.Set("name", "font", "size", value)
+        RPGBB.db:Set("name", "font", "size", value)
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -794,7 +799,7 @@ end
 name_font_size_setting = {
     name = 'Name Font Size',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.name.font.size,
+    default = defaults.name.font.size,
     get = name_font_size_get,
     set = name_font_size_set,
     minValue = 6,
@@ -806,15 +811,15 @@ name_font_size_setting = {
 -------------------------------------------------------------------------------
 --- Name Font Color
 local function name_font_color_get()
-    return CreateColor(RPGBB.db.GetColor("name", "font", "color"))
+    return CreateColor(RPGBB.db:GetColor("name", "font", "color"))
 end
 
 local function name_font_color_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("name", "font", "color")
+        RPGBB.db:SetDefault("name", "font", "color")
     else
         local r, g, b, a = value:GetRGBA()
-        RPGBB.db.SetColor("name", "font", "color", { r = r, g = g, b = b, a = a })
+        RPGBB.db:SetColor("name", "font", "color", { r = r, g = g, b = b, a = a })
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -823,7 +828,7 @@ end
 name_font_color_setting = {
     name = 'Name Font Color',
     kind = LEM.SettingType.ColorPicker,
-    default = CreateColor(RPGBB.db.GetColorDefault("name", "font", "color")),
+    default = DefaultColor("name", "font", "color"),
     hasOpacity = true,
     get = name_font_color_get,
     set = name_font_color_set,
@@ -832,14 +837,14 @@ name_font_color_setting = {
 -------------------------------------------------------------------------------
 --- Power Bar Enabled
 local function power_bar_enabled_get()
-    return RPGBB.db.Get("power", "enabled")
+    return RPGBB.db:Get("power", "enabled")
 end
 
 local function power_bar_enabled_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("power", "enabled")
+        RPGBB.db:SetDefault("power", "enabled")
     else
-        RPGBB.db.Set("power", "enabled", value)
+        RPGBB.db:Set("power", "enabled", value)
     end
 
     RPGBB:UpdateFrames()
@@ -848,7 +853,7 @@ end
 power_bar_enabled_setting = {
     name = 'Power Bar Enabled',
     kind = LEM.SettingType.Checkbox,
-    default = RPGBB.db.defaults.power.enabled,
+    default = defaults.power.enabled,
     get = power_bar_enabled_get,
     set = power_bar_enabled_set,
 }
@@ -857,18 +862,18 @@ power_bar_enabled_setting = {
 --- Power Bar Font
 local function power_bar_font_get(value)
     local font = LibSharedMedia:Fetch('font', value)
-    return RPGBB.db.Get("power", "font", "font") == font
+    return RPGBB.db:Get("power", "font", "font") == font
 end
 
 local function power_bar_font_set(value)
     local font = LibSharedMedia:Fetch('font', value)
-    RPGBB.db.Set("power", "font", "font", font)
+    RPGBB.db:Set("power", "font", "font", font)
     RPGBB:InitOrUpdateFrame()
 end
 
 local function power_bar_font_default(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("power", "font", "font")
+        RPGBB.db:SetDefault("power", "font", "font")
         RPGBB:InitOrUpdateFrame()
     end
 end
@@ -876,7 +881,7 @@ end
 power_bar_font_setting = {
     name = 'Power Font',
     kind = LEM.SettingType.Dropdown,
-    default = RPGBB.db.defaults.power.font.font,
+    default = defaults.power.font.font,
     set = power_bar_font_default,
     generator = function(owner, rootDescription)
         rootDescription:SetScrollMode(400)
@@ -889,14 +894,14 @@ power_bar_font_setting = {
 -------------------------------------------------------------------------------
 --- Power Bar Font Size
 local function power_bar_font_size_get()
-    return RPGBB.db.Get("power", "font", "size")
+    return RPGBB.db:Get("power", "font", "size")
 end
 
 local function power_bar_font_size_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("power", "font", "size")
+        RPGBB.db:SetDefault("power", "font", "size")
     else
-        RPGBB.db.Set("power", "font", "size", value)
+        RPGBB.db:Set("power", "font", "size", value)
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -905,7 +910,7 @@ end
 power_bar_font_size_setting = {
     name = 'Power Font Size',
     kind = LEM.SettingType.Slider,
-    default = RPGBB.db.defaults.power.font.size,
+    default = defaults.power.font.size,
     get = power_bar_font_size_get,
     set = power_bar_font_size_set,
     minValue = 6,
@@ -917,15 +922,15 @@ power_bar_font_size_setting = {
 -------------------------------------------------------------------------------
 --- Power Bar Font Color
 local function power_bar_font_color_get()
-    return CreateColor(RPGBB.db.GetColor("power", "font", "color"))
+    return CreateColor(RPGBB.db:GetColor("power", "font", "color"))
 end
 
 local function power_bar_font_color_set(layoutName, value, fromReset)
     if fromReset then
-        RPGBB.db.SetDefault("power", "font", "color")
+        RPGBB.db:SetDefault("power", "font", "color")
     else
         local r, g, b, a = value:GetRGBA()
-        RPGBB.db.SetColor("power", "font", "color", { r = r, g = g, b = b, a = a })
+        RPGBB.db:SetColor("power", "font", "color", { r = r, g = g, b = b, a = a })
     end
 
     RPGBB:InitOrUpdateFrame()
@@ -934,7 +939,7 @@ end
 power_bar_font_color_setting = {
     name = 'Power Font Color',
     kind = LEM.SettingType.ColorPicker,
-    default = CreateColor(RPGBB.db.GetColorDefault("power", "font", "color")),
+    default = DefaultColor("power", "font", "color"),
     hasOpacity = true,
     get = power_bar_font_color_get,
     set = power_bar_font_color_set,
@@ -943,7 +948,7 @@ power_bar_font_color_setting = {
 -------------------------------------------------------------------------------
 --- Construct the settings frame
 
-local default_position = CopyTable(RPGBB.db.defaults.frame.position)
+local default_position = CopyTable(defaults.frame.position)
 
 RPGBB.frame.editModeName = 'RPG Boss Bar'
 LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
