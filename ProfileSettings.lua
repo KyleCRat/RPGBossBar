@@ -13,7 +13,7 @@ StaticPopupDialogs["RPGBB_CREATE_PROFILE"] = {
     hasEditBox = true,
     editBoxWidth = 200,
     OnAccept = function(self)
-        local name = self.editBox:GetText():trim()
+        local name = self.EditBox:GetText():trim()
         if RPGBB.CreateProfile(name) then
             RPGBB:Print("Created profile: " .. name)
             RPGBB.RefreshProfileSettings()
@@ -23,7 +23,7 @@ StaticPopupDialogs["RPGBB_CREATE_PROFILE"] = {
     end,
     EditBoxOnEnterPressed = function(self)
         local parent = self:GetParent()
-        local name = parent.editBox:GetText():trim()
+        local name = parent.EditBox:GetText():trim()
         if RPGBB.CreateProfile(name) then
             RPGBB:Print("Created profile: " .. name)
             RPGBB.RefreshProfileSettings()
