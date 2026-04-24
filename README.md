@@ -10,10 +10,7 @@ A RPG inspired boss health bar addon for World of Warcraft.
 - Movable via Edit Mode (saved per character)
 - Configurable via Edit Mode
 - Auto-shows during boss encounters, hides otherwise
-
-## Installation
-
-Extract to `World of Warcraft\_retail_\Interface\AddOns\RPGBossBar` and reload.
+- Profile system — create, copy, rename, and delete profiles per character
 
 ## Commands
 
