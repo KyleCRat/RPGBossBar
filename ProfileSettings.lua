@@ -58,6 +58,46 @@ StaticPopupDialogs["RPGBB_DELETE_PROFILE"] = {
     preferredIndex = 3,
 }
 
+StaticPopupDialogs["RPGBB_RENAME_PROFILE"] = {
+    text = "Enter a new name for profile \"%s\":",
+    button1 = "Rename",
+    button2 = "Cancel",
+    hasEditBox = true,
+    editBoxWidth = 200,
+    OnAccept = function(self, oldName)
+        local newName = self.EditBox:GetText():trim()
+        if RPGBB.RenameProfile(oldName, newName) then
+            RPGBB:Print("Renamed profile \"" .. oldName .. "\" to \"" .. newName .. "\"")
+            RPGBB.RefreshProfileSettings()
+            if RPGBB.activeProfileSetting then
+                RPGBB.activeProfileSetting:SetValue(RPGBB.GetActiveProfileKey())
+            end
+        else
+            RPGBB:Print("Could not rename profile. New name may already exist or be empty.")
+        end
+    end,
+    EditBoxOnEnterPressed = function(self)
+        local parent = self:GetParent()
+        local oldName = parent.data
+        local newName = parent.EditBox:GetText():trim()
+        if RPGBB.RenameProfile(oldName, newName) then
+            RPGBB:Print("Renamed profile \"" .. oldName .. "\" to \"" .. newName .. "\"")
+            RPGBB.RefreshProfileSettings()
+            if RPGBB.activeProfileSetting then
+                RPGBB.activeProfileSetting:SetValue(RPGBB.GetActiveProfileKey())
+            end
+        end
+        parent:Hide()
+    end,
+    EditBoxOnEscapePressed = function(self)
+        self:GetParent():Hide()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
+
 StaticPopupDialogs["RPGBB_COPY_PROFILE"] = {
     text = "Copy all settings from \"%s\" into the active profile?\n\nThis will overwrite your current settings.",
     button1 = "Copy",
@@ -106,11 +146,12 @@ function RPGBB.RegisterProfileSettings()
         RPGBB:Print("Switched to profile: " .. value)
     end
 
-    local activeProfileSetting = Settings.RegisterProxySetting(
+    RPGBB.activeProfileSetting = Settings.RegisterProxySetting(
         category, "RPGBB_ACTIVE_PROFILE",
         Settings.VarType.String, "Active Profile",
         "Default", GetActiveProfile, SetActiveProfile
     )
+    local activeProfileSetting = RPGBB.activeProfileSetting
     Settings.CreateDropdown(category, activeProfileSetting, GetProfileOptions,
         "Select which profile to use for this character.")
 
@@ -149,6 +190,25 @@ function RPGBB.RegisterProfileSettings()
         false
     )
     layout:AddInitializer(copyInitializer)
+
+    local renameInitializer = CreateSettingsButtonInitializer(
+        "Rename Profile", "Rename",
+        function()
+            local profiles = RPGBB.GetProfileList()
+
+            local menuFrame = MenuUtil.CreateContextMenu(UIParent, function(owner, rootDescription)
+                rootDescription:CreateTitle("Rename profile:")
+                for _, name in ipairs(profiles) do
+                    rootDescription:CreateButton(name, function()
+                        StaticPopup_Show("RPGBB_RENAME_PROFILE", name, nil, name)
+                    end)
+                end
+            end)
+        end,
+        "Rename a profile.",
+        false
+    )
+    layout:AddInitializer(renameInitializer)
 
     local deleteInitializer = CreateSettingsButtonInitializer(
         "Delete Profile", "Delete",

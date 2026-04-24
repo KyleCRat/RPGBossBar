@@ -77,6 +77,31 @@ function RPGBB.DeleteProfile(name)
     return true
 end
 
+function RPGBB.RenameProfile(oldName, newName)
+    if not oldName or not newName or newName == "" then
+        return false
+    end
+
+    if not RPGBossBarProfiles.profiles[oldName] then
+        return false
+    end
+
+    if RPGBossBarProfiles.profiles[newName] then
+        return false
+    end
+
+    RPGBossBarProfiles.profiles[newName] = RPGBossBarProfiles.profiles[oldName]
+    RPGBossBarProfiles.profiles[oldName] = nil
+
+    for charKey, profileKey in pairs(RPGBossBarProfiles.profileKeys) do
+        if profileKey == oldName then
+            RPGBossBarProfiles.profileKeys[charKey] = newName
+        end
+    end
+
+    return true
+end
+
 function RPGBB.CopyProfile(sourceName)
     local source = RPGBossBarProfiles.profiles[sourceName]
     if not source then
