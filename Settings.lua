@@ -1028,6 +1028,46 @@ LEM.internal.dialog:HookScript('OnHide', function(self)
   end
 end)
 
+-------------------------------------------------------------------------------
+--- Intercept Reset to Default with confirmation dialog
+-------------------------------------------------------------------------------
+
+StaticPopupDialogs["RPGBB_RESET_SETTINGS"] = {
+    text = "Reset the active profile's settings to defaults?\n\nThis cannot be undone.",
+    button1 = "Reset",
+    button2 = "Cancel",
+    OnAccept = function()
+        local dialog = LEM.internal.dialog
+        local settings, num = LEM.internal:GetFrameSettings(dialog.selection.parent)
+        if num > 0 then
+            for _, data in next, settings do
+                if data.set then
+                    data.set(LEM:GetActiveLayoutName(), data.default, true)
+                end
+            end
+
+            dialog:Update(dialog.selection)
+        end
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    showAlert = true,
+    preferredIndex = 3,
+}
+
+local resetButton = LEM.internal.dialog.Settings.ResetButton
+resetButton:SetOnClickHandler(function()
+    local dialog = LEM.internal.dialog
+    if dialog.selection and dialog.selection.parent == RPGBB.frame then
+        StaticPopup_Show("RPGBB_RESET_SETTINGS")
+
+        return
+    end
+
+    dialog:ResetSettings()
+end)
+
 LEM:RegisterCallback('enter', function()
     RPGBB:Lock(false)
 end)
