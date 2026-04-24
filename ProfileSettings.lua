@@ -117,6 +117,183 @@ StaticPopupDialogs["RPGBB_COPY_PROFILE"] = {
 }
 
 -------------------------------------------------------------------------------
+--- Export
+-------------------------------------------------------------------------------
+
+local function serializeValue(value, indent)
+    local t = type(value)
+
+    if t == "string" then
+        return string.format("%q", value)
+    end
+
+    if t == "number" then
+        return tostring(value)
+    end
+
+    if t == "boolean" then
+        return value and "true" or "false"
+    end
+
+    if t ~= "table" then
+        return "nil"
+    end
+
+    local parts = {}
+    local innerIndent = indent .. "    "
+
+    -- Collect and sort keys for consistent output
+    local keys = {}
+    for k in pairs(value) do
+        keys[#keys + 1] = k
+    end
+    table.sort(keys, function(a, b)
+        return tostring(a) < tostring(b)
+    end)
+
+    for _, k in ipairs(keys) do
+        local keyStr
+        if type(k) == "string" and k:match("^[%a_][%w_]*$") then
+            keyStr = k
+        else
+            keyStr = "[" .. string.format("%q", tostring(k)) .. "]"
+        end
+
+        parts[#parts + 1] = innerIndent .. keyStr .. " = " .. serializeValue(value[k], innerIndent) .. ","
+    end
+
+    return "{\n" .. table.concat(parts, "\n") .. "\n" .. indent .. "}"
+end
+
+local function createTextFrame(name, buttonText, onButtonClick)
+    local frame = CreateFrame("Frame", name, UIParent, "BackdropTemplate")
+    frame:SetSize(500, 400)
+    frame:SetPoint("CENTER")
+    frame:SetFrameStrata("DIALOG")
+    frame:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 },
+    })
+    frame:EnableMouse(true)
+    frame:SetMovable(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", frame.StartMoving)
+    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    frame:SetScript("OnKeyDown", function(self, key)
+        if key == "ESCAPE" then
+            self:Hide()
+        end
+    end)
+
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    title:SetPoint("TOP", 0, -12)
+    frame.Title = title
+
+    local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+    close:SetPoint("TOPRIGHT", -2, -2)
+
+    local bottomOffset = 12
+    if buttonText then
+        local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+        button:SetSize(120, 22)
+        button:SetPoint("BOTTOM", 0, 12)
+        button:SetText(buttonText)
+        button:SetScript("OnClick", function() onButtonClick(frame) end)
+        frame.ActionButton = button
+        bottomOffset = 40
+    end
+
+    local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 12, -36)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -30, bottomOffset)
+
+    local editBox = CreateFrame("EditBox", nil, scrollFrame)
+    editBox:SetMultiLine(true)
+    editBox:SetAutoFocus(false)
+    editBox:SetFontObject(GameFontHighlightSmall)
+    editBox:SetWidth(scrollFrame:GetWidth() or 440)
+    editBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    scrollFrame:SetScrollChild(editBox)
+
+    frame.EditBox = editBox
+
+    return frame
+end
+
+local exportFrame
+
+local function showExport(profileName, data)
+    if not exportFrame then
+        exportFrame = createTextFrame("RPGBBExportFrame")
+    end
+
+    exportFrame.Title:SetText("Export: " .. profileName)
+    exportFrame.EditBox:SetText(serializeValue(data, ""))
+    exportFrame:Show()
+    exportFrame.EditBox:HighlightText()
+    exportFrame.EditBox:SetFocus()
+end
+
+-------------------------------------------------------------------------------
+--- Import
+-------------------------------------------------------------------------------
+
+local function deserialize(str)
+    if type(str) ~= "string" or str:trim() == "" then
+        return nil
+    end
+
+    local func = loadstring("return " .. str)
+    if not func then
+        return nil
+    end
+
+    setfenv(func, {})
+    local ok, result = pcall(func)
+    if not ok or type(result) ~= "table" then
+        return nil
+    end
+
+    return result
+end
+
+local importFrame
+
+local function showImport()
+    if not importFrame then
+        importFrame = createTextFrame("RPGBBImportFrame", "Import", function(frame)
+            local text = frame.EditBox:GetText()
+            local data = deserialize(text)
+            if not data then
+                RPGBB:Print("Import failed: invalid format. Paste an exported profile table.")
+
+                return
+            end
+
+            local activeKey = RPGBB.GetActiveProfileKey()
+            local dest = RPGBossBarProfiles.profiles[activeKey]
+            wipe(dest)
+            for k, v in pairs(data) do
+                dest[k] = v
+            end
+
+            RPGBB:Print("Imported settings into profile: " .. activeKey)
+            RPGBB:InitOrUpdateFrame()
+            LEM:RefreshFrameSettings(RPGBB.frame)
+            frame:Hide()
+        end)
+    end
+
+    local activeKey = RPGBB.GetActiveProfileKey()
+    importFrame.Title:SetText("Import into: " .. activeKey)
+    importFrame.EditBox:SetText("")
+    importFrame:Show()
+    importFrame.EditBox:SetFocus()
+end
+
+-------------------------------------------------------------------------------
 --- Blizzard Settings Panel
 -------------------------------------------------------------------------------
 
@@ -231,6 +408,30 @@ function RPGBB.RegisterProfileSettings()
         false
     )
     layout:AddInitializer(deleteInitializer)
+
+    ---- Import / Export
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Import / Export"))
+
+    local exportInitializer = CreateSettingsButtonInitializer(
+        "Export Active Profile", "Export",
+        function()
+            local active = RPGBB.GetActiveProfileKey()
+            showExport(active, RPGBossBarProfiles.profiles[active])
+        end,
+        "Export the active profile's settings as a Lua table for sharing.",
+        false
+    )
+    layout:AddInitializer(exportInitializer)
+
+    local importInitializer = CreateSettingsButtonInitializer(
+        "Import Into Active Profile", "Import",
+        function()
+            showImport()
+        end,
+        "Import settings into the active profile. This will overwrite current settings.",
+        false
+    )
+    layout:AddInitializer(importInitializer)
 
     Settings.RegisterAddOnCategory(category)
     RPGBB.settingsCategory = category

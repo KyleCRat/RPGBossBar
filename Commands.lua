@@ -21,6 +21,17 @@ RPGBB.cmds.toggle_debug = {
     func = function() RPGBB:ToggleDebug() end,
 }
 
+RPGBB.cmds.settings = {
+    triggers = { 'settings', 's' },
+    name = "Open Settings",
+    description = "Open the profile settings panel",
+    func = function()
+        if RPGBB.settingsCategory then
+            Settings.OpenToCategory(RPGBB.settingsCategory:GetID())
+        end
+    end,
+}
+
 RPGBB.cmds.reset = {
     triggers = { 'reset' },
     name = "Reset RPGBossBarDB",
