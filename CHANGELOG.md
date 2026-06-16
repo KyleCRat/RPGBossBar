@@ -1,5 +1,13 @@
 # Changelog
 
+## [12.0.7-10] - 2026-06-16
+
+### Added
+- Profile export and import support
+
+### Changed
+- Update TOC interface metadata for WoW 12.0.7
+
 ## [12.0.5-9] - 2026-04-24
 
 ### Added
@@ -13,6 +21,3 @@
 ### Internal
 - Extract LibSimpleDB-1.0 as a standalone library
 - Migrate old per-character/global SavedVariables to new profile format
-
-## [12.0.5-8] - 2026-04-21
-- Update to WoW 12.0.5
