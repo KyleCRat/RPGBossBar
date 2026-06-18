@@ -1000,19 +1000,25 @@ LEM:AddFrameSettingsButtons(RPGBB.frame, {
 
 
 -------------------------------------------------------------------------------
---- Hook into and hide the Edit Mode selection label
+--- Hide the Edit Mode selection visuals
 -------------------------------------------------------------------------------
 
--- Hide the overlay in edit mode when selected on RPGBB
+-- Keep the selection frame interactive while hiding its tint, border, and label
+-- when RPG Boss Bar is selected.
 local function SetEditModeSelectionState(alpha, isLabelVisible)
-  RPGBB.frame.Selection.Center:SetAlpha(alpha)
+  RPGBB.frame.Selection:SetAlpha(alpha)
   if isLabelVisible then
     RPGBB.frame.Selection.Label:Show()
-    -- Add a "Editing RPG Boss Bar" text frame?
   else
     RPGBB.frame.Selection.Label:Hide()
   end
 end
+
+RPGBB.frame.Selection:HookScript('OnMouseDown', function(self)
+  if self.isSelected then
+    SetEditModeSelectionState(0, false)
+  end
+end)
 
 RPGBB.frame.Selection:HookScript('OnLeave', function(self)
   if self.isSelected then
