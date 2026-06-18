@@ -12,6 +12,7 @@ local verbose = false
 --- Strata levels
 local HEALTH_BAR_LEVEL   = 5
 local FRAME_BORDER_LEVEL = 10
+local SPARK_LEVEL        = 11
 local GRAPHICS_LEVEL     = 15
 
 
@@ -21,6 +22,411 @@ local GRAPHICS_LEVEL     = 15
 
 RPGBB.health_bars = {}
 RPGBB.current_boss_frames = {}
+
+local NINE_SLICE_PIECES = {
+    "TopLeftCorner",
+    "TopRightCorner",
+    "BottomLeftCorner",
+    "BottomRightCorner",
+    "TopEdge",
+    "BottomEdge",
+    "LeftEdge",
+    "RightEdge",
+    "Center",
+}
+
+local UNIQUE_CORNERS_BORDER_LAYOUT = {
+    TopRightCorner = { atlas = "%s-NineSlice-CornerTopRight" },
+    TopLeftCorner = { atlas = "%s-NineSlice-CornerTopLeft" },
+    BottomLeftCorner = { atlas = "%s-NineSlice-CornerBottomLeft" },
+    BottomRightCorner = { atlas = "%s-NineSlice-CornerBottomRight" },
+    TopEdge = { atlas = "_%s-NineSlice-EdgeTop" },
+    BottomEdge = { atlas = "_%s-NineSlice-EdgeBottom" },
+    LeftEdge = { atlas = "!%s-NineSlice-EdgeLeft" },
+    RightEdge = { atlas = "!%s-NineSlice-EdgeRight" },
+}
+
+RPGBB.nine_slice_border_styles = {
+    {
+        name = "Midnight",
+        value = "nineslice:midnight",
+        fullAtlas = {
+            atlas = "ui-frame-midnight-border",
+            sampleLeft = 0.25,
+            sampleRight = 0.75,
+            topBottom = 0.10,
+            bottomTop = 0.90,
+        },
+    },
+    {
+        name = "The War Within",
+        value = "nineslice:thewarwithin",
+        fullAtlas = {
+            atlas = "ui-frame-thewarwithin-border",
+            sampleLeft = 0.25,
+            sampleRight = 0.75,
+            topBottom = 0.10,
+            bottomTop = 0.90,
+        },
+    },
+    {
+        name = "Dragonflight",
+        value = "nineslice:dragonflight",
+        layoutName = "DragonflightMissionFrame",
+    },
+    {
+        name = "ActionBar Frame",
+        value = "nineslice:ui-hud-actionbar-frame",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "UI-HUD-ActionBar-Frame",
+    },
+    {
+        name = "Modern Diamond Metal",
+        value = "nineslice:diamond-metal",
+        topAtlas = "_UI-Frame-DiamondMetal-EdgeTop",
+        bottomAtlas = "_UI-Frame-DiamondMetal-EdgeBottom",
+    },
+    {
+        name = "Shadowlands: Oribos",
+        value = "nineslice:oribos",
+        layoutName = "CovenantMissionFrame",
+    },
+    {
+        name = "Shadowlands: Kyrian",
+        value = "nineslice:kyrian",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "kyrian",
+    },
+    {
+        name = "Shadowlands: Necrolord",
+        value = "nineslice:necrolord",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "necrolord",
+    },
+    {
+        name = "Shadowlands: Night Fae",
+        value = "nineslice:nightfae",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "nightfae",
+    },
+    {
+        name = "Shadowlands: Venthyr",
+        value = "nineslice:venthyr",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "venthyr",
+    },
+    {
+        name = "Shadowlands: Adventures",
+        value = "nineslice:adventures",
+        layoutName = "AdventuresMissionComplete",
+    },
+    {
+        name = "Alliance",
+        value = "nineslice:alliance",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "Alliance",
+    },
+    {
+        name = "Horde",
+        value = "nineslice:horde",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "Horde",
+    },
+    {
+        name = "Mechagon",
+        value = "nineslice:mechagon",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "Mechagon",
+    },
+    {
+        name = "Marine",
+        value = "nineslice:marine",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "Marine",
+    },
+    -- {
+    --     name = "Hi-Res Horizontal",
+    --     value = "nineslice:hires-horizontal",
+    --     topAtlas = "_UI-Frame-Bot-HiRes",
+    --     bottomAtlas = "_UI-Frame-Bot-HiRes",
+    -- },
+    {
+        name = "Plunderstorm",
+        value = "nineslice:plunderstorm",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "plunderstorm",
+    },
+    {
+        name = "Neutral Wood",
+        value = "nineslice:neutral",
+        layoutName = "WoodenNeutralFrameTemplate",
+    },
+    {
+        name = "Text Panel",
+        value = "nineslice:text-panel",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "TextPanel",
+    },
+    {
+        name = "Clean Generic Metal",
+        value = "nineslice:generic-metal-2",
+        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
+        textureKit = "GenericMetal2",
+    },
+    {
+        name = "Generic Metal",
+        value = "nineslice:generic-metal",
+        layoutName = "GenericMetal",
+    },
+}
+
+local function GetNineSliceStyleLayout(style)
+    if style.layout then
+        return style.layout
+    end
+
+    return NineSliceLayouts and NineSliceLayouts[style.layoutName]
+end
+
+local function GetNineSliceAtlasName(atlas, textureKit)
+    if textureKit then
+        return atlas:format(textureKit)
+    end
+
+    return atlas
+end
+
+local function GetHorizontalBorderAtlases(style)
+    if style.topAtlas and style.bottomAtlas then
+        return style.topAtlas, style.bottomAtlas
+    end
+
+    local layout = GetNineSliceStyleLayout(style)
+    if not layout or not layout.TopEdge or not layout.BottomEdge then
+        return
+    end
+
+    return GetNineSliceAtlasName(layout.TopEdge.atlas, style.textureKit),
+        GetNineSliceAtlasName(layout.BottomEdge.atlas, style.textureKit)
+end
+
+function RPGBB:GetNineSliceBorderStyle(value)
+    for _, style in ipairs(RPGBB.nine_slice_border_styles) do
+        if style.value == value then
+            return style
+        end
+    end
+end
+
+function RPGBB:GetAvailableNineSliceBorderStyles()
+    return RPGBB.nine_slice_border_styles
+end
+
+local function HideNineSliceBorder(frame)
+    if not frame then
+        return
+    end
+
+    for _, pieceName in ipairs(NINE_SLICE_PIECES) do
+        if frame[pieceName] then
+            frame[pieceName]:Hide()
+        end
+    end
+
+    if frame.FullAtlas then
+        frame.FullAtlas:Hide()
+    end
+
+    if frame.FullAtlasTopTiles then
+        for _, texture in ipairs(frame.FullAtlasTopTiles) do
+            texture:Hide()
+        end
+    end
+
+    if frame.FullAtlasBottomTiles then
+        for _, texture in ipairs(frame.FullAtlasBottomTiles) do
+            texture:Hide()
+        end
+    end
+
+    if frame.HorizontalTopEdge then
+        frame.HorizontalTopEdge:Hide()
+    end
+
+    if frame.HorizontalBottomEdge then
+        frame.HorizontalBottomEdge:Hide()
+    end
+
+    frame:Hide()
+end
+
+local function SetFullAtlasTileTexture(texture, atlasInfo, crop, visibleFraction)
+    local textureAsset = atlasInfo.file or atlasInfo.filename
+    if not textureAsset then
+        return false
+    end
+
+    local atlasWidth = atlasInfo.rightTexCoord - atlasInfo.leftTexCoord
+    local atlasHeight = atlasInfo.bottomTexCoord - atlasInfo.topTexCoord
+    local left = atlasInfo.leftTexCoord + crop.left * atlasWidth
+    local right = atlasInfo.leftTexCoord + crop.right * atlasWidth
+    local top = atlasInfo.topTexCoord + crop.top * atlasHeight
+    local bottom = atlasInfo.topTexCoord + crop.bottom * atlasHeight
+
+    texture:SetTexture(textureAsset)
+    texture:SetTexCoord(left, left + (right - left) * visibleFraction, top, bottom)
+
+    return true
+end
+
+local function ShowFullAtlasEdgeTiles(frame, style, borderSize, r, g, b, a)
+    local fullAtlas = style.fullAtlas
+    local atlasInfo = C_Texture.GetAtlasInfo(fullAtlas.atlas)
+    if not atlasInfo then
+        return false
+    end
+
+    local sampleLeft = fullAtlas.sampleLeft or 0.25
+    local sampleRight = fullAtlas.sampleRight or 0.75
+    local topBottom = fullAtlas.topBottom or 0.10
+    local bottomTop = fullAtlas.bottomTop or 0.90
+    local sourceWidth = atlasInfo.width * (sampleRight - sampleLeft)
+    local sourceHeight = atlasInfo.height * topBottom
+    if sourceWidth <= 0 or sourceHeight <= 0 then
+        return false
+    end
+
+    local tileWidth = borderSize * sourceWidth / sourceHeight
+    local frameWidth = frame:GetWidth()
+    local tileCount = math.ceil(frameWidth / tileWidth)
+
+    frame.FullAtlasTopTiles = frame.FullAtlasTopTiles or {}
+    frame.FullAtlasBottomTiles = frame.FullAtlasBottomTiles or {}
+
+    local topCrop = {
+        left = sampleLeft,
+        right = sampleRight,
+        top = 0,
+        bottom = topBottom,
+    }
+    local bottomCrop = {
+        left = sampleLeft,
+        right = sampleRight,
+        top = bottomTop,
+        bottom = 1,
+    }
+
+    for i = 1, tileCount do
+        local x = (i - 1) * tileWidth
+        local width = math.min(tileWidth, frameWidth - x)
+        local visibleFraction = width / tileWidth
+
+        local topTexture = frame.FullAtlasTopTiles[i]
+        if not topTexture then
+            topTexture = frame:CreateTexture(nil, "BORDER")
+            frame.FullAtlasTopTiles[i] = topTexture
+        end
+
+        topTexture:ClearAllPoints()
+        topTexture:SetPoint("TOPLEFT", frame, "TOPLEFT", x, 0)
+        topTexture:SetSize(width, borderSize)
+        if not SetFullAtlasTileTexture(topTexture, atlasInfo, topCrop, visibleFraction) then
+            return false
+        end
+        topTexture:SetVertexColor(r, g, b, a)
+        topTexture:Show()
+
+        local bottomTexture = frame.FullAtlasBottomTiles[i]
+        if not bottomTexture then
+            bottomTexture = frame:CreateTexture(nil, "BORDER")
+            frame.FullAtlasBottomTiles[i] = bottomTexture
+        end
+
+        bottomTexture:ClearAllPoints()
+        bottomTexture:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", x, 0)
+        bottomTexture:SetSize(width, borderSize)
+        if not SetFullAtlasTileTexture(bottomTexture, atlasInfo, bottomCrop, visibleFraction) then
+            return false
+        end
+        bottomTexture:SetVertexColor(r, g, b, a)
+        bottomTexture:Show()
+    end
+
+    frame:Show()
+
+    return true
+end
+
+local function ShowModernBorder(frame, style, borderSize, r, g, b, a)
+    HideNineSliceBorder(frame)
+
+    if style.fullAtlas then
+        ShowFullAtlasEdgeTiles(frame, style, borderSize, r, g, b, a)
+        return
+    end
+
+    if not style.topAtlas then
+        local layout = GetNineSliceStyleLayout(style)
+        NineSliceUtil.ApplyLayout(frame, layout, style.textureKit)
+
+        for _, pieceName in ipairs(NINE_SLICE_PIECES) do
+            if frame[pieceName] then
+                frame[pieceName]:Hide()
+            end
+        end
+
+        frame.TopEdge:ClearAllPoints()
+        frame.TopEdge:SetPoint("TOPLEFT", frame, "TOPLEFT")
+        frame.TopEdge:SetPoint("TOPRIGHT", frame, "TOPRIGHT")
+        frame.TopEdge:SetHeight(borderSize)
+        frame.TopEdge:SetVertexColor(r, g, b, a)
+        frame.TopEdge:Show()
+
+        frame.BottomEdge:ClearAllPoints()
+        frame.BottomEdge:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT")
+        frame.BottomEdge:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
+        frame.BottomEdge:SetHeight(borderSize)
+        frame.BottomEdge:SetVertexColor(r, g, b, a)
+        frame.BottomEdge:Show()
+
+        frame:Show()
+
+        return
+    end
+
+    if not frame.HorizontalTopEdge then
+        frame.HorizontalTopEdge = frame:CreateTexture(nil, "BORDER")
+    end
+
+    frame.HorizontalTopEdge:ClearAllPoints()
+    frame.HorizontalTopEdge:SetPoint("TOPLEFT", frame, "TOPLEFT")
+    frame.HorizontalTopEdge:SetPoint("TOPRIGHT", frame, "TOPRIGHT")
+    frame.HorizontalTopEdge:SetHeight(borderSize)
+
+    if not frame.HorizontalBottomEdge then
+        frame.HorizontalBottomEdge = frame:CreateTexture(nil, "BORDER")
+    end
+
+    frame.HorizontalBottomEdge:ClearAllPoints()
+    frame.HorizontalBottomEdge:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT")
+    frame.HorizontalBottomEdge:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
+    frame.HorizontalBottomEdge:SetHeight(borderSize)
+
+    local topAtlas, bottomAtlas = GetHorizontalBorderAtlases(style)
+
+    frame.HorizontalTopEdge:SetAtlas(topAtlas, false, nil, true)
+    frame.HorizontalTopEdge:ClearTextureSlice()
+
+    frame.HorizontalBottomEdge:SetAtlas(bottomAtlas, false, nil, true)
+    frame.HorizontalBottomEdge:ClearTextureSlice()
+
+    frame.HorizontalTopEdge:SetVertexColor(r, g, b, a)
+    frame.HorizontalBottomEdge:SetVertexColor(r, g, b, a)
+    frame.HorizontalTopEdge:Show()
+    frame.HorizontalBottomEdge:Show()
+
+    frame:Show()
+end
 
 
 ---------------------------------------------------------------------------
@@ -58,18 +464,53 @@ function RPGBB:InitOrUpdateFrame()
     end
     RPGBB.frame.bg:SetColorTexture(RPGBB.db:GetColor("frame", "background_color"))
 
-    -- Create container's frame
-    local border_offset = 6
-    local border_size = 18
-    -- Not allowing editing of the border for now
+    -- Create container's border
+    local border_texture = RPGBB.db:Get("frame", "border", "texture")
+    local border_r, border_g, border_b, border_a = RPGBB.db:GetColor("frame", "border", "color")
+    local border_size = RPGBB.db:Get("frame", "border", "size")
+    local border_offset = RPGBB.db:Get("frame", "border", "offset")
+    local nine_slice_style = RPGBB:GetNineSliceBorderStyle(border_texture)
+
+    -- Fall back cleanly if a profile references a style no longer in the
+    -- curated list.
+    if not nine_slice_style and type(border_texture) == "string"
+        and border_texture:match("^nineslice:") then
+        border_texture = RPGBB.db:GetDefault("frame", "border", "texture")
+    end
+
     if not RPGBB.border then
         RPGBB.border = CreateFrame("Frame", "RPGBossBarBorder", RPGBB.frame, "BackdropTemplate")
+        RPGBB.border:SetFrameLevel(RPGBB.frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
+    end
+
+    if not RPGBB.nineSliceBorder then
+        RPGBB.nineSliceBorder = CreateFrame("Frame", "RPGBossBarNineSliceBorder", RPGBB.frame)
+        RPGBB.nineSliceBorder:SetFrameLevel(RPGBB.frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
+    end
+
+    if nine_slice_style then
+        RPGBB.border:Hide()
+
+        RPGBB.nineSliceBorder:ClearAllPoints()
+        RPGBB.nineSliceBorder:SetPoint("TOPLEFT", RPGBB.frame, "TOPLEFT", -border_offset, border_offset)
+        RPGBB.nineSliceBorder:SetPoint("BOTTOMRIGHT", RPGBB.frame, "BOTTOMRIGHT", border_offset, -border_offset)
+        ShowModernBorder(
+            RPGBB.nineSliceBorder,
+            nine_slice_style,
+            border_size,
+            border_r,
+            border_g,
+            border_b,
+            border_a
+        )
+    else
+        HideNineSliceBorder(RPGBB.nineSliceBorder)
+
         RPGBB.border:ClearAllPoints()
         RPGBB.border:SetPoint("TOPLEFT", RPGBB.frame, "TOPLEFT", -border_offset, border_offset)
         RPGBB.border:SetPoint("BOTTOMRIGHT", RPGBB.frame, "BOTTOMRIGHT", border_offset, -border_offset)
-        RPGBB.border:SetFrameLevel(RPGBB.frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
         RPGBB.border:SetBackdrop({
-            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            edgeFile = border_texture or nil,
             edgeSize = border_size,
             insets = {
                 left = 0,
@@ -78,7 +519,8 @@ function RPGBB:InitOrUpdateFrame()
                 bottom = 0
             }
         })
-        RPGBB.border:SetBackdropBorderColor(1, 1, 1, 1)
+        RPGBB.border:SetBackdropBorderColor(border_r, border_g, border_b, border_a)
+        RPGBB.border:Show()
     end
 
 
@@ -380,6 +822,7 @@ function RPGBB:UpdateFrames()
     -- Hide all visible elements for updating
     for _, bf in pairs(RPGBB.health_bars) do
         bf.frame:Hide()
+        if bf.spark_frame then bf.spark_frame:Hide() end
         if bf.mid_graphic_frame then bf.mid_graphic_frame:Hide() end
     end
 
@@ -436,8 +879,16 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].frame:Show()
 
         -- Healthbar Spark
+        if not RPGBB.health_bars[boss_frame].spark_frame then
+            RPGBB.health_bars[boss_frame].spark_frame = CreateFrame("Frame", nil, RPGBB.frame)
+            RPGBB.health_bars[boss_frame].spark_frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + SPARK_LEVEL)
+        end
+        RPGBB.health_bars[boss_frame].spark_frame:ClearAllPoints()
+        RPGBB.health_bars[boss_frame].spark_frame:SetAllPoints(RPGBB.health_bars[boss_frame].frame)
+        RPGBB.health_bars[boss_frame].spark_frame:Show()
+
         if not RPGBB.health_bars[boss_frame].spark then
-            RPGBB.health_bars[boss_frame].spark = RPGBB.health_bars[boss_frame].frame:CreateTexture(nil, "OVERLAY")
+            RPGBB.health_bars[boss_frame].spark = RPGBB.health_bars[boss_frame].spark_frame:CreateTexture(nil, "OVERLAY")
             RPGBB.health_bars[boss_frame].spark:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture(), "RIGHT", 0, 0)
         end
         -- Update each time for setting changes

@@ -28,7 +28,7 @@ Open Blizzard Edit Mode and select **RPG Boss Bar**. The addon automatically dis
 
 The Edit Mode panel provides controls for:
 
-- Frame position, width, height, and background color
+- Frame position, width, height, background color, and border appearance
 - Boss name font, size, color, and vertical offset
 - Health font, size, color, and vertical offset
 - Health bar texture, color, and desaturation

@@ -9,6 +9,20 @@ local LibSharedMedia = LibStub('LibSharedMedia-3.0')
 -- Register our custom font with LibSharedMedia
 LibSharedMedia:Register('font', 'Metamorphous', "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf")
 
+local additional_borders = {
+    ["Blizzard Arena"] = "Interface\\ArenaEnemyFrame\\UI-Arena-Border",
+    ["Blizzard Azerite"] = "Interface\\Tooltips\\UI-Tooltip-Border-Azerite",
+    ["Blizzard Corrupted"] = "Interface\\Tooltips\\UI-Tooltip-Border-Corrupted",
+    ["Blizzard LFG"] = "Interface\\LFGFrame\\LFGBorder",
+    ["Blizzard Maw"] = "Interface\\Tooltips\\UI-Tooltip-Border-Maw",
+    ["Blizzard Text Panel"] = "Interface\\Glues\\Common\\TextPanel-Border",
+    ["Blizzard Toast"] = "Interface\\FriendsFrame\\UI-Toast-Border",
+}
+
+for name, path in pairs(additional_borders) do
+    LibSharedMedia:Register('border', name, path)
+end
+
 local LEM = LibStub('LibEditMode')
 
 local defaults = RPGBB.db_defaults
@@ -213,6 +227,157 @@ frame_background_color_setting = {
     hasOpacity = true,
     get = frame_background_color_get,
     set = frame_background_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Frame Border Texture
+local function frame_border_texture_get(value)
+    local nine_slice_style = RPGBB:GetNineSliceBorderStyle(value)
+    if nine_slice_style then
+        return RPGBB.db:Get("frame", "border", "texture") == value
+    end
+
+    local texture = LibSharedMedia:Fetch('border', value)
+    local selected_texture = RPGBB.db:Get("frame", "border", "texture")
+
+    if texture then
+        return selected_texture == texture
+    end
+
+    return selected_texture == false
+end
+
+local function frame_border_texture_set(value)
+    local nine_slice_style = RPGBB:GetNineSliceBorderStyle(value)
+    if nine_slice_style then
+        RPGBB.db:Set("frame", "border", "texture", value)
+        RPGBB:InitOrUpdateFrame()
+
+        return
+    end
+
+    local texture = LibSharedMedia:Fetch('border', value)
+    RPGBB.db:Set("frame", "border", "texture", texture or false)
+    RPGBB:InitOrUpdateFrame()
+end
+
+local function frame_border_texture_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "border", "texture")
+        RPGBB:InitOrUpdateFrame()
+    end
+end
+
+frame_border_texture_setting = {
+    name = 'Border Texture',
+    kind = LEM.SettingType.Dropdown,
+    default = defaults.frame.border.texture,
+    set = frame_border_texture_default,
+    generator = function(owner, rootDescription)
+        rootDescription:SetScrollMode(400)
+
+        local nine_slice_styles = RPGBB:GetAvailableNineSliceBorderStyles()
+        if #nine_slice_styles > 0 then
+            rootDescription:CreateTitle('Modern Blizzard Frames')
+            for _, style in ipairs(nine_slice_styles) do
+                rootDescription:CreateCheckbox(
+                    style.name,
+                    frame_border_texture_get,
+                    frame_border_texture_set,
+                    style.value
+                )
+            end
+
+            rootDescription:CreateSpacer()
+        end
+
+        rootDescription:CreateTitle('Backdrop Textures')
+        for _, name in ipairs(LibSharedMedia:List('border')) do
+            rootDescription:CreateCheckbox(name, frame_border_texture_get, frame_border_texture_set, name)
+        end
+    end,
+}
+
+-------------------------------------------------------------------------------
+--- Frame Border Color
+local function frame_border_color_get()
+    return CreateColor(RPGBB.db:GetColor("frame", "border", "color"))
+end
+
+local function frame_border_color_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "border", "color")
+    else
+        local r, g, b, a = value:GetRGBA()
+        RPGBB.db:SetColor("frame", "border", "color", { r = r, g = g, b = b, a = a })
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+frame_border_color_setting = {
+    name = 'Border Color',
+    kind = LEM.SettingType.ColorPicker,
+    default = DefaultColor("frame", "border", "color"),
+    hasOpacity = true,
+    get = frame_border_color_get,
+    set = frame_border_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Frame Border Size
+local function frame_border_size_get()
+    return RPGBB.db:Get("frame", "border", "size")
+end
+
+local function frame_border_size_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "border", "size")
+    else
+        RPGBB.db:Set("frame", "border", "size", value)
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+frame_border_size_setting = {
+    name = 'Border Size',
+    kind = LEM.SettingType.Slider,
+    default = defaults.frame.border.size,
+    get = frame_border_size_get,
+    set = frame_border_size_set,
+    minValue = 1,
+    maxValue = 64,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Frame Border Offset
+local function frame_border_offset_get()
+    return RPGBB.db:Get("frame", "border", "offset")
+end
+
+local function frame_border_offset_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "border", "offset")
+    else
+        RPGBB.db:Set("frame", "border", "offset", value)
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+frame_border_offset_setting = {
+    name = 'Border Offset',
+    kind = LEM.SettingType.Slider,
+    default = defaults.frame.border.offset,
+    get = frame_border_offset_get,
+    set = frame_border_offset_set,
+    minValue = 0,
+    maxValue = 50,
+    valueStep = 1,
+    formatter = function(value) return value end,
 }
 
 -------------------------------------------------------------------------------
@@ -954,6 +1119,10 @@ LEM:AddFrameSettings(RPGBB.frame, {
     frame_width_setting,
     frame_height_setting,
     frame_background_color_setting,
+    frame_border_texture_setting,
+    frame_border_color_setting,
+    frame_border_size_setting,
+    frame_border_offset_setting,
     { name = 'Boss Name Font', kind = LEM.SettingType.Divider, },
     name_offset_y_setting,
     name_font_setting,

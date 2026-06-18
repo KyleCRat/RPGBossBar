@@ -5,6 +5,12 @@ addon.db_defaults = {
         width = 1100,
         height = 38,
         background_color = { r = 0, g = 0, b = 0, a = 0.8 },
+        border = {
+            texture = "nineslice:diamond-metal",
+            color = { r = 1, g = 1, b = 1, a = 1 },
+            size = 35,
+            offset = 7,
+        },
         position = {
             x = 0,
             y = -70,
