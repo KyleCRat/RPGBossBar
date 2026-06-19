@@ -11,6 +11,7 @@ libs\LibSimpleDB-1.0\embed.xml
 libs\LibEditMode\embed.xml
 libs\LibSharedMedia-3.0\lib.xml
 
+Media.lua
 database/Defaults.lua
 database/Init.lua
 Commands.lua

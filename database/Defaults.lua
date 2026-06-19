@@ -6,10 +6,10 @@ addon.db_defaults = {
         height = 38,
         background_color = { r = 0, g = 0, b = 0, a = 0.8 },
         border = {
-            texture = "nineslice:diamond-metal",
+            texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_dark.tga",
             color = { r = 1, g = 1, b = 1, a = 1 },
-            size = 35,
-            offset = 7,
+            size = 32,
+            offset = 4,
         },
         position = {
             x = 0,
@@ -20,6 +20,7 @@ addon.db_defaults = {
     },
     health = {
         font = {
+            enabled = true,
             font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
             size = 20,
             color = { r = 1, g = 1, b = 1, a = 1 },
@@ -28,6 +29,7 @@ addon.db_defaults = {
             }
         },
         percent_font = {
+            enabled = true,
             disable_above = 3,
             offset = {
                 x = -24,
@@ -49,6 +51,7 @@ addon.db_defaults = {
         },
     },
     name = {
+        enabled = true,
         offset = {
             y = 2,
         },
@@ -59,14 +62,32 @@ addon.db_defaults = {
         },
     },
     power = {
-        enabled = false,
-        percent_width = 16,
-        height = 16,
-        color = { r = 1, g = 1, b = 1, a = 1 },
+        enabled = true,
+        percent_width = 80,
+        height = 12,
+        offset_y = 0,
+        texture = "Interface\\Buttons\\WHITE8X8",
+        color = { r = 1, g = 1, b = 0, a = 1 },
+        hide_above = 3,
+        border = {
+            texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_dark.tga",
+            color = { r = 1, g = 1, b = 1, a = 1 },
+            size = 10,
+            offset = 2,
+        },
         font = {
+            enabled = false,
+            show_percent = true,
             font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
             size = 16,
             color = { r = 1, g = 1, b = 1, a = 1 },
+            hide_above = 5,
+            position = {
+                point = "CENTER",
+                relative_point = "CENTER",
+                x = 0,
+                y = 0,
+            },
         },
     },
     accents = {

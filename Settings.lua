@@ -6,23 +6,6 @@ local ADDON_NAME, RPGBB = ...
 -- local RPGBBSettings = CreateFrame('frame')
 local LibSharedMedia = LibStub('LibSharedMedia-3.0')
 
--- Register our custom font with LibSharedMedia
-LibSharedMedia:Register('font', 'Metamorphous', "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf")
-
-local additional_borders = {
-    ["Blizzard Arena"] = "Interface\\ArenaEnemyFrame\\UI-Arena-Border",
-    ["Blizzard Azerite"] = "Interface\\Tooltips\\UI-Tooltip-Border-Azerite",
-    ["Blizzard Corrupted"] = "Interface\\Tooltips\\UI-Tooltip-Border-Corrupted",
-    ["Blizzard LFG"] = "Interface\\LFGFrame\\LFGBorder",
-    ["Blizzard Maw"] = "Interface\\Tooltips\\UI-Tooltip-Border-Maw",
-    ["Blizzard Text Panel"] = "Interface\\Glues\\Common\\TextPanel-Border",
-    ["Blizzard Toast"] = "Interface\\FriendsFrame\\UI-Toast-Border",
-}
-
-for name, path in pairs(additional_borders) do
-    LibSharedMedia:Register('border', name, path)
-end
-
 local LEM = LibStub('LibEditMode-RPGBossBar-1.0')
 
 local defaults = RPGBB.db_defaults
@@ -164,7 +147,7 @@ local function frame_width_set(layoutName, value, fromReset)
 end
 
 frame_width_setting = {
-    name = 'Frame Width',
+    name = 'Width',
     kind = LEM.SettingType.Slider,
     default = defaults.frame.width,
     get = frame_width_get,
@@ -192,7 +175,7 @@ local function frame_height_set(layoutName, value, fromReset)
 end
 
 frame_height_setting = {
-    name = 'Frame Height',
+    name = 'Height',
     kind = LEM.SettingType.Slider,
     default = defaults.frame.height,
     get = frame_height_get,
@@ -269,7 +252,7 @@ local function frame_border_texture_default(layoutName, value, fromReset)
 end
 
 frame_border_texture_setting = {
-    name = 'Border Texture',
+    name = 'Texture',
     kind = LEM.SettingType.Dropdown,
     default = defaults.frame.border.texture,
     set = frame_border_texture_default,
@@ -316,7 +299,7 @@ local function frame_border_color_set(layoutName, value, fromReset)
 end
 
 frame_border_color_setting = {
-    name = 'Border Color',
+    name = 'Color',
     kind = LEM.SettingType.ColorPicker,
     default = DefaultColor("frame", "border", "color"),
     hasOpacity = true,
@@ -341,7 +324,7 @@ local function frame_border_size_set(layoutName, value, fromReset)
 end
 
 frame_border_size_setting = {
-    name = 'Border Size',
+    name = 'Size',
     kind = LEM.SettingType.Slider,
     default = defaults.frame.border.size,
     get = frame_border_size_get,
@@ -369,7 +352,7 @@ local function frame_border_offset_set(layoutName, value, fromReset)
 end
 
 frame_border_offset_setting = {
-    name = 'Border Offset',
+    name = 'Offset',
     kind = LEM.SettingType.Slider,
     default = defaults.frame.border.offset,
     get = frame_border_offset_get,
@@ -436,7 +419,7 @@ local function health_bar_texture_default(layoutName, value, fromReset)
 end
 
 health_bar_texture_setting = {
-  name = 'Health Bar Texture',
+  name = 'Texture',
   kind = LEM.SettingType.Dropdown,
   default = defaults.health.texture.texture,
   set = health_bar_texture_default,
@@ -474,7 +457,7 @@ local function health_bar_desaturated_set(layoutName, value, fromReset)
 end
 
 health_bar_desaturated_setting = {
-    name = 'Health Bar Desaturated',
+    name = 'Desaturated',
     kind = LEM.SettingType.Checkbox,
     default = defaults.health.texture.desaturated,
     get = health_bar_desaturated_get,
@@ -499,12 +482,36 @@ local function health_bar_texture_color_set(layoutName, value, fromReset)
 end
 
 health_bar_texture_color_setting = {
-  name = 'Health Bar Color',
+  name = 'Color',
   kind = LEM.SettingType.ColorPicker,
   default = DefaultColor("health", "texture", "color"),
   hasOpacity = true,
   get = health_bar_texture_color_get,
   set = health_bar_texture_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Health Text Enabled
+local function health_text_enabled_get()
+    return RPGBB.db:Get("health", "font", "enabled")
+end
+
+local function health_text_enabled_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("health", "font", "enabled")
+    else
+        RPGBB.db:Set("health", "font", "enabled", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+health_text_enabled_setting = {
+    name = 'Enable Health Text',
+    kind = LEM.SettingType.Checkbox,
+    default = defaults.health.font.enabled,
+    get = health_text_enabled_get,
+    set = health_text_enabled_set,
 }
 
 -------------------------------------------------------------------------------
@@ -524,7 +531,7 @@ local function health_font_offset_y_set(layoutName, value, fromReset)
 end
 
 health_font_offset_y_setting = {
-    name = 'Health Font Offset Y',
+    name = 'Offset Y',
     kind = LEM.SettingType.Slider,
     default = defaults.health.font.offset.y,
     get = health_font_offset_y_get,
@@ -557,7 +564,7 @@ local function health_font_default(layoutName, value, fromReset)
 end
 
 health_font_setting = {
-    name = 'Health Font',
+    name = 'Font',
     kind = LEM.SettingType.Dropdown,
     default = defaults.health.font.font,
     set = health_font_default,
@@ -587,7 +594,7 @@ local function health_font_size_set(layoutName, value, fromReset)
 end
 
 health_font_size_setting = {
-  name = 'Health Font Size',
+  name = 'Size',
   kind = LEM.SettingType.Slider,
   default = defaults.health.font.size,
   get = health_font_size_get,
@@ -618,12 +625,36 @@ local function health_font_color_set(layoutName, value, fromReset)
 end
 
 health_font_color_setting = {
-  name = 'Health Font Color',
+  name = 'Color',
   kind = LEM.SettingType.ColorPicker,
   default = DefaultColor("health", "font", "color"),
   hasOpacity = true,
   get = health_font_color_get,
   set = health_font_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Health Percentage Text Enabled
+local function health_percentage_enabled_get()
+    return RPGBB.db:Get("health", "percent_font", "enabled")
+end
+
+local function health_percentage_enabled_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("health", "percent_font", "enabled")
+    else
+        RPGBB.db:Set("health", "percent_font", "enabled", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+health_percentage_enabled_setting = {
+    name = 'Enable Health % Text',
+    kind = LEM.SettingType.Checkbox,
+    default = defaults.health.percent_font.enabled,
+    get = health_percentage_enabled_get,
+    set = health_percentage_enabled_set,
 }
 
 -------------------------------------------------------------------------------
@@ -643,7 +674,7 @@ local function health_percentage_disable_above_set(layoutName, value, fromReset)
 end
 
 health_percentage_disable_above_setting = {
-    name = 'Hide % above # Frames',
+    name = 'Hide above # Frames',
     kind = LEM.SettingType.Slider,
     default = defaults.health.percent_font.disable_above,
     get = health_percentage_disable_above_get,
@@ -671,7 +702,7 @@ local function health_percentage_font_offset_x_set(layoutName, value, fromReset)
 end
 
 health_percentage_font_offset_x_setting = {
-    name = '% Offset X',
+    name = 'Offset X',
     kind = LEM.SettingType.Slider,
     default = defaults.health.percent_font.offset.x,
     get = health_percentage_font_offset_x_get,
@@ -701,7 +732,7 @@ local function health_bar_spark_texture_default(layoutName, value, fromReset)
 end
 
 health_bar_spark_texture_setting = {
-    name = 'Spark Texture',
+    name = 'Texture',
     kind = LEM.SettingType.Dropdown,
     default = defaults.health.spark.atlas,
     set = health_bar_spark_texture_default,
@@ -732,7 +763,7 @@ local function health_bar_spark_color_set(layoutName, value, fromReset)
 end
 
 health_bar_spark_color_setting = {
-    name = 'Spark Color',
+    name = 'Color',
     kind = LEM.SettingType.ColorPicker,
     default = DefaultColor("health", "spark", "color"),
     hasOpacity = true,
@@ -761,7 +792,7 @@ local function health_bar_spark_blend_mode_default(layoutName, value, fromReset)
 end
 
 health_bar_spark_blend_mode_setting = {
-    name = 'Spark Blend Mode',
+    name = 'Blend Mode',
     kind = LEM.SettingType.Dropdown,
     default = defaults.health.spark.blend_mode,
     set = health_bar_spark_blend_mode_default,
@@ -789,7 +820,7 @@ local function health_bar_spark_width_set(layoutName, value, fromReset)
 end
 
 health_bar_spark_width_setting = {
-    name = 'Spark Width',
+    name = 'Width',
     kind = LEM.SettingType.Slider,
     default = defaults.health.spark.width,
     get = health_bar_spark_width_get,
@@ -817,7 +848,7 @@ local function health_bar_spark_height_multi_set(layoutName, value, fromReset)
 end
 
 health_bar_spark_height_multi_setting = {
-    name = 'Spark Height Multiplier',
+    name = 'Height Multiplier',
     kind = LEM.SettingType.Slider,
     default = defaults.health.spark.height_multi,
     get = health_bar_spark_height_multi_get,
@@ -870,12 +901,36 @@ local function accent_color_set(layoutName, value, fromReset)
 end
 
 accent_color_setting = {
-    name = 'Accent Color',
+    name = 'Color',
     kind = LEM.SettingType.ColorPicker,
     default = DefaultColor("accents", "color"),
     hasOpacity = true,
     get = accent_color_get,
     set = accent_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Boss Name Text Enabled
+local function name_text_enabled_get()
+    return RPGBB.db:Get("name", "enabled")
+end
+
+local function name_text_enabled_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("name", "enabled")
+    else
+        RPGBB.db:Set("name", "enabled", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+name_text_enabled_setting = {
+    name = 'Enable Boss Name Text',
+    kind = LEM.SettingType.Checkbox,
+    default = defaults.name.enabled,
+    get = name_text_enabled_get,
+    set = name_text_enabled_set,
 }
 
 -------------------------------------------------------------------------------
@@ -895,7 +950,7 @@ local function name_offset_y_set(layoutName, value, fromReset)
 end
 
 name_offset_y_setting = {
-    name = 'Name Offset Y',
+    name = 'Offset Y',
     kind = LEM.SettingType.Slider,
     default = defaults.name.offset.y,
     get = name_offset_y_get,
@@ -927,7 +982,7 @@ local function name_font_default(layoutName, value, fromReset)
 end
 
 name_font_setting = {
-    name = 'Name Font',
+    name = 'Font',
     kind = LEM.SettingType.Dropdown,
     default = defaults.name.font.font,
     set = name_font_default,
@@ -956,7 +1011,7 @@ local function name_font_size_set(layoutName, value, fromReset)
 end
 
 name_font_size_setting = {
-    name = 'Name Font Size',
+    name = 'Size',
     kind = LEM.SettingType.Slider,
     default = defaults.name.font.size,
     get = name_font_size_get,
@@ -985,7 +1040,7 @@ local function name_font_color_set(layoutName, value, fromReset)
 end
 
 name_font_color_setting = {
-    name = 'Name Font Color',
+    name = 'Color',
     kind = LEM.SettingType.ColorPicker,
     default = DefaultColor("name", "font", "color"),
     hasOpacity = true,
@@ -1010,7 +1065,7 @@ local function power_bar_enabled_set(layoutName, value, fromReset)
 end
 
 power_bar_enabled_setting = {
-    name = 'Power Bar Enabled',
+    name = 'Enable Power Bar',
     kind = LEM.SettingType.Checkbox,
     default = defaults.power.enabled,
     get = power_bar_enabled_get,
@@ -1018,7 +1073,383 @@ power_bar_enabled_setting = {
 }
 
 -------------------------------------------------------------------------------
---- Power Bar Font
+--- Power Bar Width
+local function power_bar_percent_width_get()
+    return RPGBB.db:Get("power", "percent_width")
+end
+
+local function power_bar_percent_width_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "percent_width")
+    else
+        RPGBB.db:Set("power", "percent_width", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_percent_width_setting = {
+    name = 'Width (%)',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.percent_width,
+    get = power_bar_percent_width_get,
+    set = power_bar_percent_width_set,
+    minValue = 1,
+    maxValue = 100,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Height
+local function power_bar_height_get()
+    return RPGBB.db:Get("power", "height")
+end
+
+local function power_bar_height_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "height")
+    else
+        RPGBB.db:Set("power", "height", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_height_setting = {
+    name = 'Height',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.height,
+    get = power_bar_height_get,
+    set = power_bar_height_set,
+    minValue = 1,
+    maxValue = 100,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Offset Y
+local function power_bar_offset_y_get()
+    return RPGBB.db:Get("power", "offset_y")
+end
+
+local function power_bar_offset_y_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "offset_y")
+    else
+        RPGBB.db:Set("power", "offset_y", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_offset_y_setting = {
+    name = 'Offset Y',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.offset_y,
+    get = power_bar_offset_y_get,
+    set = power_bar_offset_y_set,
+    minValue = -100,
+    maxValue = 100,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Texture
+local function power_bar_texture_get(value)
+    local texture = LibSharedMedia:Fetch('statusbar', value)
+
+    return RPGBB.db:Get("power", "texture") == texture
+end
+
+local function power_bar_texture_set(value)
+    local texture = LibSharedMedia:Fetch('statusbar', value)
+    RPGBB.db:Set("power", "texture", texture)
+    RPGBB:UpdateFrames()
+end
+
+local function power_bar_texture_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "texture")
+        RPGBB:UpdateFrames()
+    end
+end
+
+power_bar_texture_setting = {
+    name = 'Texture',
+    kind = LEM.SettingType.Dropdown,
+    default = defaults.power.texture,
+    set = power_bar_texture_default,
+    generator = function(owner, rootDescription)
+        rootDescription:SetScrollMode(400)
+
+        for _, name in ipairs(LibSharedMedia:List('statusbar')) do
+            rootDescription:CreateCheckbox(name, power_bar_texture_get, power_bar_texture_set, name)
+        end
+    end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Color
+local function power_bar_color_get()
+    return CreateColor(RPGBB.db:GetColor("power", "color"))
+end
+
+local function power_bar_color_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "color")
+    else
+        local r, g, b, a = value:GetRGBA()
+        RPGBB.db:SetColor("power", "color", { r = r, g = g, b = b, a = a })
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_color_setting = {
+    name = 'Color',
+    kind = LEM.SettingType.ColorPicker,
+    default = DefaultColor("power", "color"),
+    hasOpacity = true,
+    get = power_bar_color_get,
+    set = power_bar_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Border Texture
+local function power_bar_border_texture_get(value)
+    local texture = LibSharedMedia:Fetch('border', value)
+
+    return RPGBB.db:Get("power", "border", "texture") == texture
+end
+
+local function power_bar_border_texture_set(value)
+    local texture = LibSharedMedia:Fetch('border', value)
+    RPGBB.db:Set("power", "border", "texture", texture)
+    RPGBB:UpdateFrames()
+end
+
+local function power_bar_border_texture_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "border", "texture")
+        RPGBB:UpdateFrames()
+    end
+end
+
+power_bar_border_texture_setting = {
+    name = 'Texture',
+    kind = LEM.SettingType.Dropdown,
+    default = defaults.power.border.texture,
+    set = power_bar_border_texture_default,
+    generator = function(owner, rootDescription)
+        rootDescription:SetScrollMode(400)
+
+        for _, name in ipairs(LibSharedMedia:List('border')) do
+            rootDescription:CreateCheckbox(
+                name,
+                power_bar_border_texture_get,
+                power_bar_border_texture_set,
+                name
+            )
+        end
+    end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Border Color
+local function power_bar_border_color_get()
+    return CreateColor(RPGBB.db:GetColor("power", "border", "color"))
+end
+
+local function power_bar_border_color_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "border", "color")
+    else
+        local r, g, b, a = value:GetRGBA()
+        RPGBB.db:SetColor(
+            "power",
+            "border",
+            "color",
+            { r = r, g = g, b = b, a = a }
+        )
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_border_color_setting = {
+    name = 'Color',
+    kind = LEM.SettingType.ColorPicker,
+    default = DefaultColor("power", "border", "color"),
+    hasOpacity = true,
+    get = power_bar_border_color_get,
+    set = power_bar_border_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Border Size
+local function power_bar_border_size_get()
+    return RPGBB.db:Get("power", "border", "size")
+end
+
+local function power_bar_border_size_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "border", "size")
+    else
+        RPGBB.db:Set("power", "border", "size", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_border_size_setting = {
+    name = 'Size',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.border.size,
+    get = power_bar_border_size_get,
+    set = power_bar_border_size_set,
+    minValue = 1,
+    maxValue = 32,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Border Offset
+local function power_bar_border_offset_get()
+    return RPGBB.db:Get("power", "border", "offset")
+end
+
+local function power_bar_border_offset_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "border", "offset")
+    else
+        RPGBB.db:Set("power", "border", "offset", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_border_offset_setting = {
+    name = 'Offset',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.border.offset,
+    get = power_bar_border_offset_get,
+    set = power_bar_border_offset_set,
+    minValue = 0,
+    maxValue = 20,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Frame Limit
+local function power_bar_hide_above_get()
+    return RPGBB.db:Get("power", "hide_above")
+end
+
+local function power_bar_hide_above_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "hide_above")
+    else
+        RPGBB.db:Set("power", "hide_above", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_hide_above_setting = {
+    name = 'Hide above # Frames',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.hide_above,
+    get = power_bar_hide_above_get,
+    set = power_bar_hide_above_set,
+    minValue = 1,
+    maxValue = 5,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Enabled
+local function power_bar_text_enabled_get()
+    return RPGBB.db:Get("power", "font", "enabled")
+end
+
+local function power_bar_text_enabled_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "enabled")
+    else
+        RPGBB.db:Set("power", "font", "enabled", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_text_enabled_setting = {
+    name = 'Enable Power Bar Text',
+    kind = LEM.SettingType.Checkbox,
+    default = defaults.power.font.enabled,
+    get = power_bar_text_enabled_get,
+    set = power_bar_text_enabled_set,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Percentage Symbol
+local function power_bar_text_show_percent_get()
+    return RPGBB.db:Get("power", "font", "show_percent")
+end
+
+local function power_bar_text_show_percent_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "show_percent")
+    else
+        RPGBB.db:Set("power", "font", "show_percent", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_text_show_percent_setting = {
+    name = 'Show % Symbol',
+    kind = LEM.SettingType.Checkbox,
+    default = defaults.power.font.show_percent,
+    get = power_bar_text_show_percent_get,
+    set = power_bar_text_show_percent_set,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Frame Limit
+local function power_bar_text_hide_above_get()
+    return RPGBB.db:Get("power", "font", "hide_above")
+end
+
+local function power_bar_text_hide_above_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "hide_above")
+    else
+        RPGBB.db:Set("power", "font", "hide_above", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_text_hide_above_setting = {
+    name = 'Hide above # Frames',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.font.hide_above,
+    get = power_bar_text_hide_above_get,
+    set = power_bar_text_hide_above_set,
+    minValue = 1,
+    maxValue = 5,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Font
 local function power_bar_font_get(value)
     local font = LibSharedMedia:Fetch('font', value)
     return RPGBB.db:Get("power", "font", "font") == font
@@ -1038,7 +1469,7 @@ local function power_bar_font_default(layoutName, value, fromReset)
 end
 
 power_bar_font_setting = {
-    name = 'Power Font',
+    name = 'Font',
     kind = LEM.SettingType.Dropdown,
     default = defaults.power.font.font,
     set = power_bar_font_default,
@@ -1051,7 +1482,7 @@ power_bar_font_setting = {
 }
 
 -------------------------------------------------------------------------------
---- Power Bar Font Size
+--- Power Bar Text Size
 local function power_bar_font_size_get()
     return RPGBB.db:Get("power", "font", "size")
 end
@@ -1067,7 +1498,7 @@ local function power_bar_font_size_set(layoutName, value, fromReset)
 end
 
 power_bar_font_size_setting = {
-    name = 'Power Font Size',
+    name = 'Size',
     kind = LEM.SettingType.Slider,
     default = defaults.power.font.size,
     get = power_bar_font_size_get,
@@ -1079,7 +1510,7 @@ power_bar_font_size_setting = {
 }
 
 -------------------------------------------------------------------------------
---- Power Bar Font Color
+--- Power Bar Text Color
 local function power_bar_font_color_get()
     return CreateColor(RPGBB.db:GetColor("power", "font", "color"))
 end
@@ -1096,12 +1527,177 @@ local function power_bar_font_color_set(layoutName, value, fromReset)
 end
 
 power_bar_font_color_setting = {
-    name = 'Power Font Color',
+    name = 'Color',
     kind = LEM.SettingType.ColorPicker,
     default = DefaultColor("power", "font", "color"),
     hasOpacity = true,
     get = power_bar_font_color_get,
     set = power_bar_font_color_set,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Anchor
+local power_text_anchors = {
+    {
+        name = "Top Left",
+        value = "TOPLEFT",
+    },
+    {
+        name = "Top",
+        value = "TOP",
+    },
+    {
+        name = "Top Right",
+        value = "TOPRIGHT",
+    },
+    {
+        name = "Left",
+        value = "LEFT",
+    },
+    {
+        name = "Center",
+        value = "CENTER",
+    },
+    {
+        name = "Right",
+        value = "RIGHT",
+    },
+    {
+        name = "Bottom Left",
+        value = "BOTTOMLEFT",
+    },
+    {
+        name = "Bottom",
+        value = "BOTTOM",
+    },
+    {
+        name = "Bottom Right",
+        value = "BOTTOMRIGHT",
+    },
+}
+
+local function power_bar_text_anchor_get(value)
+    return RPGBB.db:Get("power", "font", "position", "point") == value
+end
+
+local function power_bar_text_anchor_set(value)
+    RPGBB.db:Set("power", "font", "position", "point", value)
+    RPGBB:UpdateFrames()
+end
+
+local function power_bar_text_anchor_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "position", "point")
+        RPGBB:UpdateFrames()
+    end
+end
+
+power_bar_text_anchor_setting = {
+    name = 'Anchor to Text',
+    kind = LEM.SettingType.Dropdown,
+    default = defaults.power.font.position.point,
+    set = power_bar_text_anchor_default,
+    generator = function(owner, rootDescription)
+        for _, anchor in ipairs(power_text_anchors) do
+            rootDescription:CreateCheckbox(
+                anchor.name,
+                power_bar_text_anchor_get,
+                power_bar_text_anchor_set,
+                anchor.value
+            )
+        end
+    end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Frame Anchor
+local function power_bar_text_frame_anchor_get(value)
+    return RPGBB.db:Get("power", "font", "position", "relative_point") == value
+end
+
+local function power_bar_text_frame_anchor_set(value)
+    RPGBB.db:Set("power", "font", "position", "relative_point", value)
+    RPGBB:UpdateFrames()
+end
+
+local function power_bar_text_frame_anchor_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "position", "relative_point")
+        RPGBB:UpdateFrames()
+    end
+end
+
+power_bar_text_frame_anchor_setting = {
+    name = 'Anchor to Frame',
+    kind = LEM.SettingType.Dropdown,
+    default = defaults.power.font.position.relative_point,
+    set = power_bar_text_frame_anchor_default,
+    generator = function(owner, rootDescription)
+        for _, anchor in ipairs(power_text_anchors) do
+            rootDescription:CreateCheckbox(
+                anchor.name,
+                power_bar_text_frame_anchor_get,
+                power_bar_text_frame_anchor_set,
+                anchor.value
+            )
+        end
+    end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Offset X
+local function power_bar_text_offset_x_get()
+    return RPGBB.db:Get("power", "font", "position", "x")
+end
+
+local function power_bar_text_offset_x_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "position", "x")
+    else
+        RPGBB.db:Set("power", "font", "position", "x", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_text_offset_x_setting = {
+    name = 'Offset X',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.font.position.x,
+    get = power_bar_text_offset_x_get,
+    set = power_bar_text_offset_x_set,
+    minValue = -100,
+    maxValue = 100,
+    valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+-------------------------------------------------------------------------------
+--- Power Bar Text Offset Y
+local function power_bar_text_offset_y_get()
+    return RPGBB.db:Get("power", "font", "position", "y")
+end
+
+local function power_bar_text_offset_y_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "position", "y")
+    else
+        RPGBB.db:Set("power", "font", "position", "y", value)
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+power_bar_text_offset_y_setting = {
+    name = 'Offset Y',
+    kind = LEM.SettingType.Slider,
+    default = defaults.power.font.position.y,
+    get = power_bar_text_offset_y_get,
+    set = power_bar_text_offset_y_set,
+    minValue = -100,
+    maxValue = 100,
+    valueStep = 1,
+    formatter = function(value) return value end,
 }
 
 -------------------------------------------------------------------------------
@@ -1114,16 +1710,18 @@ LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
     profile_selector_setting,
     test_frame_count_setting,
-    { name = 'Frame Settings', kind = LEM.SettingType.Divider, collapsed = false, },
+    { name = 'Frame', kind = LEM.SettingType.Divider, collapsed = false, },
     frame_center_x_setting,
     frame_width_setting,
     frame_height_setting,
     frame_background_color_setting,
+    { name = 'Frame Border', kind = LEM.SettingType.Divider, collapsed = true, },
     frame_border_texture_setting,
     frame_border_color_setting,
     frame_border_size_setting,
     frame_border_offset_setting,
     { name = 'Boss Name Text', kind = LEM.SettingType.Divider, collapsed = true, },
+    name_text_enabled_setting,
     name_offset_y_setting,
     name_font_setting,
     name_font_size_setting,
@@ -1133,11 +1731,13 @@ LEM:AddFrameSettings(RPGBB.frame, {
     health_bar_texture_setting,
     health_bar_texture_color_setting,
     { name = 'Health Text', kind = LEM.SettingType.Divider, collapsed = true, },
+    health_text_enabled_setting,
     health_font_offset_y_setting,
     health_font_setting,
     health_font_size_setting,
     health_font_color_setting,
-    { name = 'Percentage Text', kind = LEM.SettingType.Divider, collapsed = true, },
+    { name = 'Health % Text', kind = LEM.SettingType.Divider, collapsed = true, },
+    health_percentage_enabled_setting,
     health_percentage_disable_above_setting,
     health_percentage_font_offset_x_setting,
     { name = 'Health Bar Spark', kind = LEM.SettingType.Divider, collapsed = true, },
@@ -1146,14 +1746,34 @@ LEM:AddFrameSettings(RPGBB.frame, {
     health_bar_spark_texture_setting,
     health_bar_spark_blend_mode_setting,
     health_bar_spark_color_setting,
-    { name = 'Accent Settings', kind = LEM.SettingType.Divider, collapsed = true, },
+    { name = 'Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     -- accent_copy_healthbar_texture_color_setting,
     accent_color_setting,
-    -- { name = 'Power Bar', kind = LEM.SettingType.Divider, },
-    -- power_bar_enabled_setting,
-    -- power_bar_font_setting,
-    -- power_bar_font_size_setting,
-    -- power_bar_font_color_setting,
+    { name = 'Power Bar', kind = LEM.SettingType.Divider, collapsed = true, },
+    power_bar_enabled_setting,
+    power_bar_hide_above_setting,
+    power_bar_percent_width_setting,
+    power_bar_height_setting,
+    power_bar_offset_y_setting,
+    { name = 'Power Bar Border', kind = LEM.SettingType.Divider, collapsed = true, },
+    power_bar_border_texture_setting,
+    power_bar_border_color_setting,
+    power_bar_border_size_setting,
+    power_bar_border_offset_setting,
+    { name = 'Power Bar Texture', kind = LEM.SettingType.Divider, collapsed = true, },
+    power_bar_texture_setting,
+    power_bar_color_setting,
+    { name = 'Power Bar Text', kind = LEM.SettingType.Divider, collapsed = true, },
+    power_bar_text_enabled_setting,
+    power_bar_text_show_percent_setting,
+    power_bar_text_hide_above_setting,
+    power_bar_font_setting,
+    power_bar_font_size_setting,
+    power_bar_font_color_setting,
+    power_bar_text_frame_anchor_setting,
+    power_bar_text_anchor_setting,
+    power_bar_text_offset_x_setting,
+    power_bar_text_offset_y_setting,
 })
 
 LEM:AddFrameSettingsButtons(RPGBB.frame, {

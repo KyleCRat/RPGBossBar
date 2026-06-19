@@ -13,6 +13,8 @@ local verbose = false
 local HEALTH_BAR_LEVEL   = 5
 local FRAME_BORDER_LEVEL = 10
 local SPARK_LEVEL        = 11
+local POWER_BAR_LEVEL    = 3
+local POWER_BORDER_LEVEL = 4
 local GRAPHICS_LEVEL     = 15
 
 
@@ -718,8 +720,10 @@ function RPGBB:ToggleTest(frame_count)
             local test_max_health = 214748364
             local test_health = math.random(1, test_max_health)
             local test_percent = (test_health / test_max_health) * 100
+            local test_power_percent = math.random(0, 100)
 
             RPGBB:RenderHealthChanges(boss_frame, test_health, test_max_health, test_percent)
+            RPGBB:RenderPowerChanges(boss_frame, test_power_percent)
         end
 
         RPGBB.current_boss_frames = test_boss_frames
@@ -734,6 +738,12 @@ end
 function RPGBB:UpdateHealth()
     for _, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:RenderHealthChanges(boss_frame)
+    end
+end
+
+function RPGBB:UpdatePower()
+    for _, boss_frame in ipairs(RPGBB.current_boss_frames) do
+        RPGBB:RenderPowerChanges(boss_frame)
     end
 end
 
@@ -758,6 +768,28 @@ function RPGBB:RenderHealthChanges(boss_frame, abs_health, max_health, per_healt
         -- make sure health frame is showing? shouldn't need.
         -- health_bar.frame:Show()
     end
+end
+
+function RPGBB:RenderPowerChanges(boss_frame, per_power)
+    local health_bar = RPGBB.health_bars[boss_frame]
+    if not health_bar or not health_bar.power_bar then
+        return
+    end
+
+    local per_power = per_power or UnitPowerPercent(
+        boss_frame,
+        nil,
+        false,
+        CurveConstants.ScaleTo100
+    ) or 0
+
+    health_bar.power_bar:SetMinMaxValues(0, 100)
+    health_bar.power_bar:SetValue(per_power)
+
+    local power_text_format = RPGBB.db:Get("power", "font", "show_percent")
+        and "%.0f%%"
+        or "%.0f"
+    health_bar.power_text:SetText(string.format(power_text_format, per_power))
 end
 
 function RPGBB:HaveBossFramesChanged(new_frames)
@@ -823,6 +855,8 @@ function RPGBB:UpdateFrames()
     for _, bf in pairs(RPGBB.health_bars) do
         bf.frame:Hide()
         if bf.spark_frame then bf.spark_frame:Hide() end
+        if bf.power_bar then bf.power_bar:Hide() end
+        if bf.power_border then bf.power_border:Hide() end
         if bf.mid_graphic_frame then bf.mid_graphic_frame:Hide() end
     end
 
@@ -834,6 +868,7 @@ function RPGBB:UpdateFrames()
     local hb_r, hb_b, hb_g, hb_a      = RPGBB.db:GetColor("health", "texture", "color")
 
     local health_font_offset_y = RPGBB.db:Get("health", "font", "offset", "y")
+    local health_text_enabled  = RPGBB.db:Get("health", "font", "enabled")
 
     local spark_atlas            = RPGBB.db:Get("health", "spark", "atlas")
     local sp_r, sp_b, sp_g, sp_a = RPGBB.db:GetColor("health", "spark", "color")
@@ -842,9 +877,34 @@ function RPGBB:UpdateFrames()
     local spark_height_multi     = RPGBB.db:Get("health", "spark", "height_multi")
 
     local name_y_offset = RPGBB.db:Get("name", "offset", "y")
+    local name_text_enabled = RPGBB.db:Get("name", "enabled")
 
     local health_percent_offset_x = RPGBB.db:Get("health", "percent_font", "offset", "x")
     local disable_per_above       = RPGBB.db:Get("health", "percent_font", "disable_above")
+    local health_percent_enabled  = RPGBB.db:Get("health", "percent_font", "enabled")
+
+    local power_bar_enabled       = RPGBB.db:Get("power", "enabled")
+    local power_bar_percent_width = RPGBB.db:Get("power", "percent_width")
+    local power_bar_height        = RPGBB.db:Get("power", "height")
+    local power_bar_offset_y      = RPGBB.db:Get("power", "offset_y")
+    local power_bar_texture       = RPGBB.db:Get("power", "texture")
+    local power_bar_hide_above    = RPGBB.db:Get("power", "hide_above")
+    local power_text_hide_above   = RPGBB.db:Get("power", "font", "hide_above")
+    local power_text_enabled      = RPGBB.db:Get("power", "font", "enabled")
+    local power_r, power_g, power_b, power_a = RPGBB.db:GetColor("power", "color")
+
+    local power_border_texture = RPGBB.db:Get("power", "border", "texture")
+    local power_border_enabled = power_border_texture and power_border_texture ~= ""
+    local power_border_size    = RPGBB.db:Get("power", "border", "size")
+    local power_border_offset  = RPGBB.db:Get("power", "border", "offset")
+    local power_border_r, power_border_g, power_border_b, power_border_a =
+        RPGBB.db:GetColor("power", "border", "color")
+
+    local power_text_point          = RPGBB.db:Get("power", "font", "position", "point")
+    local power_text_relative_point =
+        RPGBB.db:Get("power", "font", "position", "relative_point")
+    local power_text_x              = RPGBB.db:Get("power", "font", "position", "x")
+    local power_text_y              = RPGBB.db:Get("power", "font", "position", "y")
 
     local ac_r, ac_b, ac_g, ac_a = RPGBB.db:GetColor("accents", "color")
 
@@ -904,6 +964,7 @@ function RPGBB:UpdateFrames()
         -- Update each time for setting changes
         RPGBB.health_bars[boss_frame].health_text:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "CENTER", 0, health_font_offset_y)
         RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.health_font)
+        RPGBB.health_bars[boss_frame].health_text:SetShown(health_text_enabled)
 
         -- Healthbar percentage text (right side of bar)
         if not RPGBB.health_bars[boss_frame].percent_text then
@@ -921,12 +982,116 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
         RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
         RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or "Test Boss " .. boss_frame:match("%d+"))
+        RPGBB.health_bars[boss_frame].name_text:SetShown(name_text_enabled)
 
         -- Hide percentage if more than 2 bosses exist
-        if boss_frame_count > disable_per_above then
+        if not health_percent_enabled or boss_frame_count > disable_per_above then
             RPGBB.health_bars[boss_frame].percent_text:Hide()
         else
             RPGBB.health_bars[boss_frame].percent_text:Show()
+        end
+
+        -- Power bar centered beneath its health bar.
+        if not RPGBB.health_bars[boss_frame].power_bar then
+            local power_bar = CreateFrame(
+                "StatusBar",
+                "RPG" .. boss_frame .. "BarPowerBar",
+                RPGBB.frame
+            )
+            power_bar:SetFrameLevel(RPGBB.frame:GetFrameLevel() + POWER_BAR_LEVEL)
+
+            local background = power_bar:CreateTexture(nil, "BACKGROUND")
+            background:SetAllPoints(power_bar)
+
+            local power_text = power_bar:CreateFontString(nil, "OVERLAY")
+            power_text:SetPoint("CENTER", power_bar, "CENTER")
+
+            RPGBB.health_bars[boss_frame].power_bar = power_bar
+            RPGBB.health_bars[boss_frame].power_background = background
+            RPGBB.health_bars[boss_frame].power_text = power_text
+        end
+
+        if not RPGBB.health_bars[boss_frame].power_border then
+            local power_border = CreateFrame(
+                "Frame",
+                "RPG" .. boss_frame .. "BarPowerBorder",
+                RPGBB.frame,
+                "BackdropTemplate"
+            )
+            power_border:SetFrameLevel(RPGBB.frame:GetFrameLevel() + POWER_BORDER_LEVEL)
+            RPGBB.health_bars[boss_frame].power_border = power_border
+        end
+
+        local power_bar = RPGBB.health_bars[boss_frame].power_bar
+        local power_background = RPGBB.health_bars[boss_frame].power_background
+        local power_border = RPGBB.health_bars[boss_frame].power_border
+        local power_text = RPGBB.health_bars[boss_frame].power_text
+
+        power_bar:ClearAllPoints()
+        power_bar:SetPoint(
+            "TOP",
+            RPGBB.health_bars[boss_frame].frame,
+            "BOTTOM",
+            0,
+            power_bar_offset_y
+        )
+        power_bar:SetSize(health_bar_width * (power_bar_percent_width / 100), power_bar_height)
+        power_bar:SetStatusBarTexture(power_bar_texture)
+        power_bar:SetStatusBarColor(power_r, power_g, power_b, power_a)
+
+        power_background:SetTexture(power_bar_texture)
+        power_background:SetVertexColor(0.08, 0.08, 0.08, 0.9)
+
+        power_border:ClearAllPoints()
+        power_border:SetPoint(
+            "TOPLEFT",
+            power_bar,
+            "TOPLEFT",
+            -power_border_offset,
+            power_border_offset
+        )
+        power_border:SetPoint(
+            "BOTTOMRIGHT",
+            power_bar,
+            "BOTTOMRIGHT",
+            power_border_offset,
+            -power_border_offset
+        )
+        power_border:SetBackdrop({
+            edgeFile = power_border_enabled and power_border_texture or nil,
+            edgeSize = power_border_size,
+            insets = {
+                left = 0,
+                right = 0,
+                top = 0,
+                bottom = 0,
+            },
+        })
+        power_border:SetBackdropBorderColor(
+            power_border_r,
+            power_border_g,
+            power_border_b,
+            power_border_a
+        )
+
+        power_text:ClearAllPoints()
+        power_text:SetPoint(
+            power_text_point,
+            power_bar,
+            power_text_relative_point,
+            power_text_x,
+            power_text_y
+        )
+        power_text:SetFontObject(RPGBB.power_font)
+        power_text:SetShown(power_text_enabled and boss_frame_count <= power_text_hide_above)
+
+        if power_bar_enabled and boss_frame_count <= power_bar_hide_above then
+            power_bar:Show()
+            power_border:SetShown(power_border_enabled)
+            RPGBB:RenderPowerChanges(boss_frame, testing and 65 or nil)
+        else
+            power_bar:Hide()
+            power_border:Hide()
         end
 
         -- Don't create extra divider graphic elements
@@ -984,6 +1149,9 @@ local function EventHandler(self, event, arg1)
             -- Register boss health events for all 5 possible boss units
             RPGBB.frame:RegisterUnitEvent("UNIT_HEALTH", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterUnitEvent("UNIT_MAXHEALTH", "boss1", "boss2", "boss3", "boss4", "boss5")
+            RPGBB.frame:RegisterUnitEvent("UNIT_POWER_UPDATE", "boss1", "boss2", "boss3", "boss4", "boss5")
+            RPGBB.frame:RegisterUnitEvent("UNIT_MAXPOWER", "boss1", "boss2", "boss3", "boss4", "boss5")
+            RPGBB.frame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
             RPGBB.frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
@@ -998,12 +1166,17 @@ local function EventHandler(self, event, arg1)
                 RPGBB:UpdateHealth()
             end
         end
+    elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_MAXPOWER" or event == "UNIT_DISPLAYPOWER" then
+        if RPGBB:IsBossFramesToUpdate() and RPGBB.health_bars[arg1] then
+            RPGBB:RenderPowerChanges(arg1)
+        end
     elseif event == "PLAYER_REGEN_ENABLED" then
         -- Exited combat
         RPGBB.frame:Hide()
     elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
         if RPGBB:IsBossFramesToUpdate() then
             RPGBB:UpdateHealth()
+            RPGBB:UpdatePower()
         end
     end
 end
