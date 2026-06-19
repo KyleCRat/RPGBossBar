@@ -8,7 +8,7 @@ local function Frame(state, context)
     local offset_y = context.offset_y or 0
 
     -- SG Vigor side accents are made from three atlas pieces:
-    -- frame: the dark metal foreground frame, source ratio 44.5w x 62.5h
+    -- frame: the metal foreground frame, source ratio 44.5w x 62.5h
     -- fill: the tintable inner fill, 50/62.5 as tall as the frame, source ratio 36w x 50h
     -- decor: the outer diamond/spike accent, 75.5/62.5 as tall as the frame, source ratio 58.5w x 75.5h
     --
@@ -47,10 +47,10 @@ local function Frame(state, context)
         state.background:SetDesaturated(true)
 
         state.foreground = state.frame:CreateTexture(nil, "ARTWORK", nil, 2)
-        state.foreground:SetAtlas("dragonriding_sgvigor_frame_dark")
+        state.foreground:SetAtlas("dragonriding_sgvigor_frame_bronze")
 
         state.accent = state.frame:CreateTexture(nil, "ARTWORK", nil, 3)
-        state.accent:SetAtlas("dragonriding_sgvigor_decor_dark")
+        state.accent:SetAtlas("dragonriding_sgvigor_decor_bronze")
     end
 
     state.frame:ClearAllPoints()
@@ -80,8 +80,8 @@ local function Frame(state, context)
 end
 
 RPGBB:RegisterAccentGroup({
-    id = "sgvigor-dark-side",
-    name = "SG Vigor Dark",
+    id = "sgvigor-bronze-side",
+    name = "SG Vigor Bronze",
     slots = {
         left = true,
         right = true,

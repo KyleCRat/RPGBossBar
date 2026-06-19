@@ -910,6 +910,85 @@ accent_color_setting = {
 }
 
 -------------------------------------------------------------------------------
+--- Accent Groups
+local function CreateAccentGroupSetting(slot, name)
+    local function get(value)
+        return RPGBB.db:Get("accents", slot, "group") == value
+    end
+
+    local function set(value)
+        RPGBB.db:Set("accents", slot, "group", value)
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    local function reset(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, "group")
+            RPGBB:InitOrUpdateFrame()
+        end
+    end
+
+    return {
+        name = name,
+        kind = LEM.SettingType.Dropdown,
+        default = defaults.accents[slot].group,
+        set = reset,
+        generator = function(owner, rootDescription)
+            rootDescription:SetScrollMode(400)
+
+            for _, group in ipairs(RPGBB:GetAccentGroupsForSlot(slot)) do
+                rootDescription:CreateCheckbox(
+                    group.name or group.id,
+                    get,
+                    set,
+                    group.id
+                )
+            end
+        end,
+    }
+end
+
+local function CreateAccentOffsetSetting(slot, axis, name)
+    local function get()
+        return RPGBB.db:Get("accents", slot, "offset", axis)
+    end
+
+    local function set(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, "offset", axis)
+        else
+            RPGBB.db:Set("accents", slot, "offset", axis, value)
+        end
+
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    return {
+        name = name,
+        kind = LEM.SettingType.Slider,
+        default = defaults.accents[slot].offset[axis],
+        get = get,
+        set = set,
+        minValue = -200,
+        maxValue = 200,
+        valueStep = 1,
+        formatter = function(value) return value end,
+    }
+end
+
+accent_left_group_setting = CreateAccentGroupSetting("left", "Left Accent")
+accent_left_offset_x_setting = CreateAccentOffsetSetting("left", "x", "Left X Offset")
+accent_left_offset_y_setting = CreateAccentOffsetSetting("left", "y", "Left Y Offset")
+
+accent_center_group_setting = CreateAccentGroupSetting("center", "Center Accent")
+accent_center_offset_x_setting = CreateAccentOffsetSetting("center", "x", "Center X Offset")
+accent_center_offset_y_setting = CreateAccentOffsetSetting("center", "y", "Center Y Offset")
+
+accent_right_group_setting = CreateAccentGroupSetting("right", "Right Accent")
+accent_right_offset_x_setting = CreateAccentOffsetSetting("right", "x", "Right X Offset")
+accent_right_offset_y_setting = CreateAccentOffsetSetting("right", "y", "Right Y Offset")
+
+-------------------------------------------------------------------------------
 --- Boss Name Text Enabled
 local function name_text_enabled_get()
     return RPGBB.db:Get("name", "enabled")
@@ -1746,9 +1825,6 @@ LEM:AddFrameSettings(RPGBB.frame, {
     health_bar_spark_texture_setting,
     health_bar_spark_blend_mode_setting,
     health_bar_spark_color_setting,
-    { name = 'Accent', kind = LEM.SettingType.Divider, collapsed = true, },
-    -- accent_copy_healthbar_texture_color_setting,
-    accent_color_setting,
     { name = 'Power Bar', kind = LEM.SettingType.Divider, collapsed = true, },
     power_bar_enabled_setting,
     power_bar_hide_above_setting,
@@ -1774,6 +1850,18 @@ LEM:AddFrameSettings(RPGBB.frame, {
     power_bar_text_anchor_setting,
     power_bar_text_offset_x_setting,
     power_bar_text_offset_y_setting,
+    { name = 'Accents', kind = LEM.SettingType.Divider, collapsed = true, },
+    -- accent_copy_healthbar_texture_color_setting,
+    accent_color_setting,
+    accent_left_group_setting,
+    accent_left_offset_x_setting,
+    accent_left_offset_y_setting,
+    accent_center_group_setting,
+    accent_center_offset_x_setting,
+    accent_center_offset_y_setting,
+    accent_right_group_setting,
+    accent_right_offset_x_setting,
+    accent_right_offset_y_setting,
 })
 
 LEM:AddFrameSettingsButtons(RPGBB.frame, {

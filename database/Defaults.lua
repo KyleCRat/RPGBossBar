@@ -93,5 +93,26 @@ addon.db_defaults = {
     accents = {
         copy_healthbar_texture_color = false,
         color = { r = 70/255, g = 34/255, b = 106/255, a = 1 },
+        left = {
+            group = "sgvigor-dark-side",
+            offset = {
+                x = 0,
+                y = 0,
+            },
+        },
+        right = {
+            group = "sgvigor-dark-side",
+            offset = {
+                x = 0,
+                y = 0,
+            },
+        },
+        center = {
+            group = "sgvigor-dark-center",
+            offset = {
+                x = 0,
+                y = 0,
+            },
+        },
     }
 }

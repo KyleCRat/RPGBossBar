@@ -11,7 +11,7 @@ local function Frame(state, context)
     -- the outer decor piece used by the side accents. The width multiplier keeps
     -- the divider narrower while preserving the source atlas height ratios.
     --
-    -- frame: the dark metal foreground frame, source ratio 44.5w x 62.5h
+    -- frame: the metal foreground frame, source ratio 44.5w x 62.5h
     -- fill: the tintable inner fill, 50/62.5 as tall as the frame, source ratio 36w x 50h
     local vigor_frame_height = boss_bar_height * 1.8
     local vigor_frame_width = vigor_frame_height * (44.5 / 62.5) * width_multiplier
@@ -27,7 +27,7 @@ local function Frame(state, context)
         state.background:SetDesaturated(true)
 
         state.foreground = state.frame:CreateTexture(nil, "ARTWORK", nil, 2)
-        state.foreground:SetAtlas("dragonriding_sgvigor_frame_dark")
+        state.foreground:SetAtlas("dragonriding_sgvigor_frame_gold")
     end
 
     state.frame:ClearAllPoints()
@@ -46,8 +46,8 @@ local function Frame(state, context)
 end
 
 RPGBB:RegisterAccentGroup({
-    id = "sgvigor-dark-center",
-    name = "SG Vigor Dark Center",
+    id = "sgvigor-gold-center",
+    name = "SG Vigor Gold Center",
     slots = {
         center = true,
     },

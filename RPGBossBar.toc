@@ -17,6 +17,12 @@ database/Init.lua
 accents/Registry.lua
 accents/SGVigorDarkSide.lua
 accents/SGVigorDarkCenter.lua
+accents/SGVigorSilverSide.lua
+accents/SGVigorSilverCenter.lua
+accents/SGVigorGoldSide.lua
+accents/SGVigorGoldCenter.lua
+accents/SGVigorBronzeSide.lua
+accents/SGVigorBronzeCenter.lua
 Commands.lua
 RPGBossBar.lua
 Settings.lua
