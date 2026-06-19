@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibSimpleDB-1.0", 1
+local MAJOR, MINOR = "LibSimpleDB-1.0", 2
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then
 	return
@@ -24,7 +24,7 @@ local function traverseOrCreate(tbl, keys, startIdx, endIdx)
 	local current = tbl
 	for i = startIdx, endIdx do
 		local key = keys[i]
-		if current[key] == nil then
+		if type(current[key]) ~= "table" then
 			current[key] = {}
 		end
 		current = current[key]
@@ -364,7 +364,6 @@ function DBMethods:SetColor(...)
 		error("LibSimpleDB: SetColor: last argument must be a color table {r, g, b, a}", 2)
 	end
 
-	-- Try to update existing color object in-place
 	local keys = {}
 	for i = 1, numArgs - 1 do
 		keys[i] = args[i]
@@ -372,20 +371,26 @@ function DBMethods:SetColor(...)
 
 	local existing = traverse(self.data, keys, 1, #keys)
 	local dotPath = buildDotPath(keys, 1, #keys)
-	local oldR, oldG, oldB, oldA
+	local oldValue
 
-	if type(existing) == "table" then
-		oldR, oldG, oldB, oldA = existing.r, existing.g, existing.b, existing.a
+	if isColorTable(existing) then
+		oldValue = { r = existing.r, g = existing.g, b = existing.b, a = existing.a }
 		existing.r = new_color.r
 		existing.g = new_color.g
 		existing.b = new_color.b
 		existing.a = new_color.a
 	else
 		local parent = traverseOrCreate(self.data, keys, 1, #keys - 1)
-		parent[keys[#keys]] = { r = new_color.r, g = new_color.g, b = new_color.b, a = new_color.a }
+		oldValue = parent[keys[#keys]]
+		parent[keys[#keys]] = {
+			r = new_color.r,
+			g = new_color.g,
+			b = new_color.b,
+			a = new_color.a,
+		}
 	end
 
-	self:FireCallbacks(dotPath, new_color, oldR and { r = oldR, g = oldG, b = oldB, a = oldA })
+	self:FireCallbacks(dotPath, new_color, oldValue)
 end
 
 -------------------------------------------------------------------------------
