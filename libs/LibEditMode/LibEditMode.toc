@@ -1,13 +1,9 @@
 ## Interface: 110207, 120000, 120001
-## Author: p3lim
-## Version: 13
-## Title: Lib: EditMode
-## Notes: Library that allows easy frame integration with Edit Mode
+## Author: p3lim, RPGBossBar modifications
+## Version: 1
+## Title: Lib: EditMode - RPGBossBar Fork
+## Notes: RPGBossBar-specific Edit Mode integration fork
 ## OptionalDeps: LibStub
-
-## X-Curse-Project-ID: 699702
-## X-WoWI-ID: 26456
-## X-Wago-ID: ZQ6aWjGW
 
 #@non-debug@
 # LibStub\LibStub.lua

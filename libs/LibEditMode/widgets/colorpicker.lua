@@ -1,5 +1,5 @@
-local MINOR = 13
-local lib, minor = LibStub('LibEditMode')
+local MINOR = 1
+local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
 end

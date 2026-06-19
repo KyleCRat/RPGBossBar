@@ -1,10 +1,11 @@
-local MINOR = 13
-local lib = LibStub:NewLibrary('LibEditMode', MINOR)
+local MINOR = 1
+local lib = LibStub:NewLibrary('LibEditMode-RPGBossBar-1.0', MINOR)
 if not lib then
 	-- this or a newer version is already loaded
 	return
 end
 
+-- RPGBossBar fork of LibEditMode with a bounded, collapsible settings dialog.
 lib.internal = {} -- internal methods, do not use directly
 local internal = lib.internal
 

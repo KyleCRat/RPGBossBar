@@ -1,6 +1,6 @@
 local ADDON_NAME, RPGBB = ...
 
-local LEM = LibStub('LibEditMode')
+local LEM = LibStub('LibEditMode-RPGBossBar-1.0')
 
 -------------------------------------------------------------------------------
 --- Static Popups

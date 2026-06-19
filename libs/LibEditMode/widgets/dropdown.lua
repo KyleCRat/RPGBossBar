@@ -1,5 +1,5 @@
-local MINOR = 13
-local lib, minor = LibStub('LibEditMode')
+local MINOR = 1
+local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
 end
@@ -93,7 +93,8 @@ lib.internal:CreatePool(lib.SettingType.Dropdown, function()
 
 	local dropdown = CreateFrame('DropdownButton', nil, frame, 'WowStyle1DropdownTemplate')
 	dropdown:SetPoint('LEFT', label, 'RIGHT', 5, 0)
-	dropdown:SetSize(200, 30)
+	dropdown:SetPoint('RIGHT', frame, 'RIGHT', -4, 0)
+	dropdown:SetHeight(30)
 	frame.Dropdown = dropdown
 
 	return frame

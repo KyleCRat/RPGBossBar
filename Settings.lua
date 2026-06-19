@@ -23,7 +23,7 @@ for name, path in pairs(additional_borders) do
     LibSharedMedia:Register('border', name, path)
 end
 
-local LEM = LibStub('LibEditMode')
+local LEM = LibStub('LibEditMode-RPGBossBar-1.0')
 
 local defaults = RPGBB.db_defaults
 
@@ -1114,7 +1114,7 @@ LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
     profile_selector_setting,
     test_frame_count_setting,
-    { name = 'Frame Settings', kind = LEM.SettingType.Divider, },
+    { name = 'Frame Settings', kind = LEM.SettingType.Divider, collapsed = false, },
     frame_center_x_setting,
     frame_width_setting,
     frame_height_setting,
@@ -1123,30 +1123,30 @@ LEM:AddFrameSettings(RPGBB.frame, {
     frame_border_color_setting,
     frame_border_size_setting,
     frame_border_offset_setting,
-    { name = 'Boss Name Font', kind = LEM.SettingType.Divider, },
+    { name = 'Boss Name Text', kind = LEM.SettingType.Divider, collapsed = true, },
     name_offset_y_setting,
     name_font_setting,
     name_font_size_setting,
     name_font_color_setting,
-    { name = 'Health Bar Texture', kind = LEM.SettingType.Divider, },
+    { name = 'Health Bar Texture', kind = LEM.SettingType.Divider, collapsed = true, },
     health_bar_desaturated_setting,
     health_bar_texture_setting,
     health_bar_texture_color_setting,
-    { name = 'Health Font', kind = LEM.SettingType.Divider, },
+    { name = 'Health Text', kind = LEM.SettingType.Divider, collapsed = true, },
     health_font_offset_y_setting,
     health_font_setting,
     health_font_size_setting,
     health_font_color_setting,
-    { name = 'Percentage Font', kind = LEM.SettingType.Divider, },
+    { name = 'Percentage Text', kind = LEM.SettingType.Divider, collapsed = true, },
     health_percentage_disable_above_setting,
     health_percentage_font_offset_x_setting,
-    { name = 'Health Bar Spark', kind = LEM.SettingType.Divider, },
+    { name = 'Health Bar Spark', kind = LEM.SettingType.Divider, collapsed = true, },
     health_bar_spark_width_setting,
     health_bar_spark_height_multi_setting,
     health_bar_spark_texture_setting,
     health_bar_spark_blend_mode_setting,
     health_bar_spark_color_setting,
-    { name = 'Accent Settings', kind = LEM.SettingType.Divider, },
+    { name = 'Accent Settings', kind = LEM.SettingType.Divider, collapsed = true, },
     -- accent_copy_healthbar_texture_color_setting,
     accent_color_setting,
     -- { name = 'Power Bar', kind = LEM.SettingType.Divider, },

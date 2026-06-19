@@ -1,5 +1,5 @@
-local MINOR = 13
-local lib, minor = LibStub('LibEditMode')
+local MINOR = 1
+local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
 end
@@ -42,6 +42,14 @@ function sliderMixin:SetEnabled(enabled)
 	self.EditBox:SetShown(enabled)
 end
 
+local function positionEditBoxNormally(self)
+	local parent = self:GetParent()
+
+	self:ClearAllPoints()
+	self:SetPoint('RIGHT', parent, 'RIGHT', -4, 0)
+	self:SetSize(46, 24)
+end
+
 local function onEditFocus(self)
 	local parent = self:GetParent()
 
@@ -50,9 +58,9 @@ local function onEditFocus(self)
 
 	-- resize editbox to take up the available space
 	self:ClearAllPoints()
-	self:SetPoint('RIGHT', parent.Slider.RightText, 5, 0)
-	self:SetPoint('TOPLEFT', parent.Slider)
-	self:SetPoint('BOTTOMLEFT', parent.Slider)
+	self:SetPoint('LEFT', parent.Label, 'RIGHT', 5, 0)
+	self:SetPoint('RIGHT', parent, 'RIGHT', -4, 0)
+	self:SetHeight(24)
 
 	-- set editbox text to current slider value
 	-- TODO: maybe flatten the value here
@@ -83,10 +91,7 @@ local function onEditReset(self)
 	self:SetText('')
 	self:ClearFocus()
 
-	self:ClearAllPoints()
-	self:SetPoint('RIGHT', parent.Slider.RightText, 5, 0)
-	self:SetPoint('TOPLEFT', parent.Slider.RightText)
-	self:SetPoint('BOTTOMLEFT', parent.Slider.RightText)
+	positionEditBoxNormally(self)
 end
 
 lib.internal:CreatePool(lib.SettingType.Slider, function()
@@ -96,15 +101,11 @@ lib.internal:CreatePool(lib.SettingType.Slider, function()
 	Mixin(frame, sliderMixin)
 
 	frame:SetHeight(32)
-	frame.Slider:SetWidth(200)
 	frame.Slider.MinText:Hide()
 	frame.Slider.MaxText:Hide()
 	frame.Label:SetPoint('LEFT')
 
 	local editBox = CreateFrame('EditBox', nil, frame, 'InputBoxTemplate')
-	editBox:SetPoint('TOPLEFT', frame.Slider.RightText)
-	editBox:SetPoint('BOTTOMLEFT', frame.Slider.RightText)
-	editBox:SetPoint('RIGHT', frame.Slider.RightText, 5, 0)
 	editBox:SetAutoFocus(false)
 	editBox:SetJustifyH('CENTER')
 	editBox:SetScript('OnEditFocusGained', onEditFocus)
@@ -112,6 +113,14 @@ lib.internal:CreatePool(lib.SettingType.Slider, function()
 	editBox:SetScript('OnEscapePressed', onEditReset)
 	editBox:SetScript('OnEditFocusLost', onEditReset)
 	frame.EditBox = editBox
+	positionEditBoxNormally(editBox)
+
+	frame.Slider:ClearAllPoints()
+	frame.Slider:SetPoint('LEFT', frame.Label, 'RIGHT', 5, 0)
+	frame.Slider:SetPoint('RIGHT', editBox, 'LEFT', -5, 0)
+
+	frame.Slider.RightText:ClearAllPoints()
+	frame.Slider.RightText:SetPoint('CENTER', editBox)
 
 	frame:OnLoad()
 	return frame
