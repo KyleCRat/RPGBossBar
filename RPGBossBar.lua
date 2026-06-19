@@ -146,12 +146,6 @@ RPGBB.nine_slice_border_styles = {
         layout = UNIQUE_CORNERS_BORDER_LAYOUT,
         textureKit = "Marine",
     },
-    -- {
-    --     name = "Hi-Res Horizontal",
-    --     value = "nineslice:hires-horizontal",
-    --     topAtlas = "_UI-Frame-Bot-HiRes",
-    --     bottomAtlas = "_UI-Frame-Bot-HiRes",
-    -- },
     {
         name = "Plunderstorm",
         value = "nineslice:plunderstorm",
