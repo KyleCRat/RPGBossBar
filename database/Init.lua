@@ -8,6 +8,7 @@ function RPGBB.InitializeDB()
     RPGBossBarProfiles = RPGBossBarProfiles or {}
     RPGBossBarProfiles.profileKeys = RPGBossBarProfiles.profileKeys or {}
     RPGBossBarProfiles.profiles = RPGBossBarProfiles.profiles or {}
+    RPGBossBarProfiles.profileMeta = RPGBossBarProfiles.profileMeta or {}
 
     local profileKey = RPGBB.GetActiveProfileKey()
     RPGBossBarProfiles.profiles[profileKey] = RPGBossBarProfiles.profiles[profileKey] or {}
@@ -53,6 +54,7 @@ function RPGBB.CreateProfile(name)
     end
 
     RPGBossBarProfiles.profiles[name] = {}
+    RPGBossBarProfiles.profileMeta[name] = nil
 
     return true
 end
@@ -67,6 +69,7 @@ function RPGBB.DeleteProfile(name)
     end
 
     RPGBossBarProfiles.profiles[name] = nil
+    RPGBossBarProfiles.profileMeta[name] = nil
 
     for charKey, profileKey in pairs(RPGBossBarProfiles.profileKeys) do
         if profileKey == name then
@@ -92,6 +95,8 @@ function RPGBB.RenameProfile(oldName, newName)
 
     RPGBossBarProfiles.profiles[newName] = RPGBossBarProfiles.profiles[oldName]
     RPGBossBarProfiles.profiles[oldName] = nil
+    RPGBossBarProfiles.profileMeta[newName] = RPGBossBarProfiles.profileMeta[oldName]
+    RPGBossBarProfiles.profileMeta[oldName] = nil
 
     for charKey, profileKey in pairs(RPGBossBarProfiles.profileKeys) do
         if profileKey == oldName then
@@ -118,6 +123,12 @@ function RPGBB.CopyProfile(sourceName)
         else
             dest[k] = v
         end
+    end
+
+    if RPGBossBarProfiles.profileMeta[sourceName] then
+        RPGBossBarProfiles.profileMeta[activeKey] = CopyTable(RPGBossBarProfiles.profileMeta[sourceName])
+    else
+        RPGBossBarProfiles.profileMeta[activeKey] = nil
     end
 
     return true
@@ -156,6 +167,7 @@ function RPGBB.MigrateOldDB()
     -- First-ever migration: set up the new structure
     RPGBossBarProfiles.profileKeys = {}
     RPGBossBarProfiles.profiles = {}
+    RPGBossBarProfiles.profileMeta = {}
 
     -- Migrate old global data into "Global" profile
     if RPGBossBarGlobalDB and next(RPGBossBarGlobalDB) then

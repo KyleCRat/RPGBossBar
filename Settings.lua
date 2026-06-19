@@ -1916,19 +1916,14 @@ end)
 -------------------------------------------------------------------------------
 
 StaticPopupDialogs["RPGBB_RESET_SETTINGS"] = {
-    text = "Reset the active profile's settings to defaults?\n\nThis cannot be undone.",
+    text = "Reset the active profile's settings to its defaults?\n\nProfiles created from a default skin reset to that skin. This cannot be undone.",
     button1 = "Reset",
     button2 = "Cancel",
     OnAccept = function()
         local dialog = LEM.internal.dialog
-        local settings, num = LEM.internal:GetFrameSettings(dialog.selection.parent)
-        if num > 0 then
-            for _, data in next, settings do
-                if data.set then
-                    data.set(LEM:GetActiveLayoutName(), data.default, true)
-                end
-            end
-
+        if RPGBB:ResetActiveProfile() then
+            RPGBB:InitOrUpdateFrame()
+            LEM:RefreshFrameSettings(RPGBB.frame)
             dialog:Update(dialog.selection)
         end
     end,

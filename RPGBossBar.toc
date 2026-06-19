@@ -13,6 +13,11 @@ libs\LibSharedMedia-3.0\lib.xml
 
 Media.lua
 database/Defaults.lua
+profiles/Registry.lua
+profiles/vigor_dark.lua
+profiles/vigor_silver.lua
+profiles/vigor_gold.lua
+profiles/vigor_bronze.lua
 database/Init.lua
 accents/Registry.lua
 accents/SGVigorDarkSide.lua

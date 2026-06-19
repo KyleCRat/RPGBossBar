@@ -2,6 +2,80 @@ local ADDON_NAME, RPGBB = ...
 
 local LEM = LibStub('LibEditMode-RPGBossBar-1.0')
 
+local selectedDefaultSkinID = RPGBB:GetFirstDefaultSkinID()
+
+local function GetSelectedDefaultSkinID()
+    if selectedDefaultSkinID and RPGBB:GetDefaultSkin(selectedDefaultSkinID) then
+        return selectedDefaultSkinID
+    end
+
+    selectedDefaultSkinID = RPGBB:GetFirstDefaultSkinID()
+
+    return selectedDefaultSkinID
+end
+
+local function RefreshProfileUI()
+    RPGBB:InitOrUpdateFrame()
+    LEM:RefreshFrameSettings(RPGBB.frame)
+
+    if RPGBB.activeProfileSetting then
+        RPGBB.activeProfileSetting:SetValue(RPGBB.GetActiveProfileKey())
+    end
+
+    RPGBB.RefreshProfileSettings()
+end
+
+local function ApplyDefaultSkinToCurrentProfile(skinID)
+    local activeKey = RPGBB.GetActiveProfileKey()
+    local skin = RPGBB:GetDefaultSkin(skinID)
+
+    if not skin or not RPGBB:ApplyDefaultSkinToProfile(activeKey, skinID) then
+        RPGBB:Print("Could not apply default skin.")
+
+        return
+    end
+
+    RPGBB:Print("Applied default skin \"" .. skin.name .. "\" to profile: " .. activeKey)
+    RefreshProfileUI()
+end
+
+local function CreateProfileFromSkin(skinID, profileName)
+    local skin = RPGBB:GetDefaultSkin(skinID)
+    if not skin then
+        RPGBB:Print("Could not create profile. Default skin was not found.")
+
+        return
+    end
+
+    if not RPGBB:CreateProfileFromDefaultSkin(skinID, profileName) then
+        RPGBB:Print("Could not create profile. Name may already exist or be empty.")
+
+        return
+    end
+
+    RPGBB.SetActiveProfile(profileName)
+    RPGBB:Print("Created profile \"" .. profileName .. "\" from default skin: " .. skin.name)
+    RefreshProfileUI()
+end
+
+local function CreateProfileFromSelectedSkin()
+    local skinID = GetSelectedDefaultSkinID()
+    local skin = RPGBB:GetDefaultSkin(skinID)
+    if not skin then
+        RPGBB:Print("No default skin selected.")
+
+        return
+    end
+
+    if RPGBossBarProfiles.profiles[skin.name] then
+        StaticPopup_Show("RPGBB_CREATE_PROFILE_FROM_SKIN", skin.name, nil, skinID)
+
+        return
+    end
+
+    CreateProfileFromSkin(skinID, skin.name)
+end
+
 -------------------------------------------------------------------------------
 --- Static Popups
 -------------------------------------------------------------------------------
@@ -113,6 +187,45 @@ StaticPopupDialogs["RPGBB_COPY_PROFILE"] = {
     whileDead = true,
     hideOnEscape = true,
     showAlert = true,
+    preferredIndex = 3,
+}
+
+StaticPopupDialogs["RPGBB_APPLY_DEFAULT_SKIN"] = {
+    text = "Apply default skin \"%s\" to active profile \"%s\"?\n\nThis overlays only the skin settings and keeps unrelated profile settings such as frame position.",
+    button1 = "Apply",
+    button2 = "Cancel",
+    OnAccept = function(self, skinID)
+        ApplyDefaultSkinToCurrentProfile(skinID)
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    showAlert = true,
+    preferredIndex = 3,
+}
+
+StaticPopupDialogs["RPGBB_CREATE_PROFILE_FROM_SKIN"] = {
+    text = "A profile named \"%s\" already exists.\n\nCreating another profile from this skin may duplicate the same skin. Enter a new profile name:",
+    button1 = "Create",
+    button2 = "Cancel",
+    hasEditBox = true,
+    editBoxWidth = 240,
+    OnAccept = function(self, skinID)
+        local name = self.EditBox:GetText():trim()
+        CreateProfileFromSkin(skinID, name)
+    end,
+    EditBoxOnEnterPressed = function(self)
+        local parent = self:GetParent()
+        local name = parent.EditBox:GetText():trim()
+        CreateProfileFromSkin(parent.data, name)
+        parent:Hide()
+    end,
+    EditBoxOnEscapePressed = function(self)
+        self:GetParent():Hide()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
     preferredIndex = 3,
 }
 
@@ -278,6 +391,7 @@ local function showImport()
             for k, v in pairs(data) do
                 dest[k] = v
             end
+            RPGBossBarProfiles.profileMeta[activeKey] = nil
 
             RPGBB:Print("Imported settings into profile: " .. activeKey)
             RPGBB:InitOrUpdateFrame()
@@ -331,6 +445,63 @@ function RPGBB.RegisterProfileSettings()
     local activeProfileSetting = RPGBB.activeProfileSetting
     Settings.CreateDropdown(category, activeProfileSetting, GetProfileOptions,
         "Select which profile to use for this character.")
+
+    ---- Default Skins
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Default Skins"))
+
+    local function GetDefaultSkinOptions()
+        local container = Settings.CreateControlTextContainer()
+        for _, skin in ipairs(RPGBB:GetDefaultSkinList()) do
+            container:Add(skin.id, skin.name)
+        end
+
+        return container:GetData()
+    end
+
+    local function GetDefaultSkin()
+        return GetSelectedDefaultSkinID() or ""
+    end
+
+    local function SetDefaultSkin(value)
+        selectedDefaultSkinID = value
+    end
+
+    local defaultSkinSetting = Settings.RegisterProxySetting(
+        category, "RPGBB_DEFAULT_SKIN",
+        Settings.VarType.String, "Default Skin",
+        RPGBB:GetFirstDefaultSkinID() or "", GetDefaultSkin, SetDefaultSkin
+    )
+    Settings.CreateDropdown(category, defaultSkinSetting, GetDefaultSkinOptions,
+        "Select a built-in skin to apply or use as a new profile.")
+
+    local applySkinInitializer = CreateSettingsButtonInitializer(
+        "Apply To Current Profile", "Apply",
+        function()
+            local skinID = GetSelectedDefaultSkinID()
+            local skin = RPGBB:GetDefaultSkin(skinID)
+            if skin then
+                StaticPopup_Show(
+                    "RPGBB_APPLY_DEFAULT_SKIN",
+                    skin.name,
+                    RPGBB.GetActiveProfileKey(),
+                    skinID
+                )
+            end
+        end,
+        "Overlay the selected skin onto the active profile without changing unrelated settings.",
+        false
+    )
+    layout:AddInitializer(applySkinInitializer)
+
+    local createSkinProfileInitializer = CreateSettingsButtonInitializer(
+        "Create Profile From Skin", "Create",
+        function()
+            CreateProfileFromSelectedSkin()
+        end,
+        "Create a new profile from addon defaults plus the selected skin.",
+        false
+    )
+    layout:AddInitializer(createSkinProfileInitializer)
 
     ---- Profile Management
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Profile Management"))
