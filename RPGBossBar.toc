@@ -14,6 +14,9 @@ libs\LibSharedMedia-3.0\lib.xml
 Media.lua
 database/Defaults.lua
 database/Init.lua
+accents/Registry.lua
+accents/SGVigorDarkSide.lua
+accents/SGVigorDarkCenter.lua
 Commands.lua
 RPGBossBar.lua
 Settings.lua
