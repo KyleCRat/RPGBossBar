@@ -1,4 +1,4 @@
-local MINOR = 1
+local MINOR = 15
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -11,6 +11,19 @@ local function showTooltip(self)
 		SettingsTooltip:SetText(self.setting.name, 1, 1, 1)
 		SettingsTooltip:AddLine(self.setting.desc)
 		SettingsTooltip:Show()
+	end
+end
+
+local function refreshOwnerWidgets(widget)
+	local owner = widget:GetParent()
+	owner = owner and owner:GetParent()
+
+	if owner and not owner.RefreshWidgets then
+		owner = owner:GetParent()
+	end
+
+	if owner and owner.RefreshWidgets then
+		owner:RefreshWidgets()
 	end
 end
 
@@ -37,7 +50,7 @@ end
 function sliderMixin:Setup(data)
 	self.setting = data
 	self.Label:SetText(data.name)
-	self:SetEnabled(not isDisabled(data))
+	self:Refresh()
 
 	self.initInProgress = true
 	self.formatters = {}
@@ -49,6 +62,18 @@ function sliderMixin:Setup(data)
 	self.initInProgress = false
 end
 
+function sliderMixin:Refresh()
+	local data = self.setting
+	self:SetEnabled(not isDisabled(data))
+
+	local hidden = data.hidden
+	if type(hidden) == 'function' then
+		hidden = hidden(lib:GetActiveLayoutName(), data)
+	end
+
+	self:SetShown(not hidden)
+end
+
 function sliderMixin:OnSliderValueChanged(value)
 	if not self.initInProgress and not self.suppressSliderChange then
 		if self.setting.snapToStep then
@@ -56,6 +81,8 @@ function sliderMixin:OnSliderValueChanged(value)
 		end
 
 		self.setting.set(lib:GetActiveLayoutName(), value, false)
+
+		refreshOwnerWidgets(self)
 	end
 end
 
@@ -113,6 +140,7 @@ local function onEditSubmit(self)
 		parent.suppressSliderChange = false
 		parent.Slider:FormatValue(value)
 		parent.setting.set(lib:GetActiveLayoutName(), value, false)
+		refreshOwnerWidgets(parent)
 	end
 
 	self:ClearFocus()

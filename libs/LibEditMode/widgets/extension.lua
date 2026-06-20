@@ -1,4 +1,4 @@
-local MINOR = 1
+local MINOR = 15
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -29,7 +29,21 @@ function extensionMixin:Update(systemID, subSystemID)
 	self:Layout()
 end
 
+function extensionMixin:RefreshWidgets()
+	for _, widget in next, self.Settings.widgets do
+		if widget.Refresh then
+			widget:Refresh()
+		end
+	end
+
+	if self:IsShown() then
+		self:Layout()
+	end
+end
+
 function extensionMixin:UpdateSettings()
+	self.Settings.widgets = table.wipe(self.Settings.widgets or {})
+
 	local settings, num = internal:GetSystemSettings(self.systemID, self.subSystemID)
 	local isEmpty = num == 0
 	if not isEmpty then
@@ -39,7 +53,8 @@ function extensionMixin:UpdateSettings()
 				local setting = pool:Acquire(self.Settings)
 				setting.layoutIndex = index
 				setting:Setup(data)
-				setting:Show()
+
+				table.insert(self.Settings.widgets, setting)
 			end
 		end
 	end

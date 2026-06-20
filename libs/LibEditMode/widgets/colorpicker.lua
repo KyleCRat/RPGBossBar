@@ -1,4 +1,4 @@
-local MINOR = 1
+local MINOR = 15
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -11,6 +11,19 @@ local function showTooltip(self)
 		SettingsTooltip:SetText(self.setting.name, 1, 1, 1)
 		SettingsTooltip:AddLine(self.setting.desc)
 		SettingsTooltip:Show()
+	end
+end
+
+local function refreshOwnerWidgets(widget)
+	local owner = widget:GetParent()
+	owner = owner and owner:GetParent()
+
+	if owner and not owner.RefreshWidgets then
+		owner = owner:GetParent()
+	end
+
+	if owner and owner.RefreshWidgets then
+		owner:RefreshWidgets()
 	end
 end
 
@@ -32,7 +45,7 @@ local colorPickerMixin = {}
 function colorPickerMixin:Setup(data)
 	self.setting = data
 	self.Label:SetText(data.name)
-	self:SetEnabled(not data.disabled)
+	self:Refresh()
 
 	local value = data.get(lib:GetActiveLayoutName())
 	if value == nil then
@@ -54,6 +67,23 @@ function colorPickerMixin:Setup(data)
 	self.Swatch:SetColorRGB(r, g, b)
 end
 
+function colorPickerMixin:Refresh()
+	local data = self.setting
+	local disabled = data.disabled
+	if type(disabled) == 'function' then
+		disabled = disabled(lib:GetActiveLayoutName(), data)
+	end
+
+	self:SetEnabled(not disabled)
+
+	local hidden = data.hidden
+	if type(hidden) == 'function' then
+		hidden = hidden(lib:GetActiveLayoutName(), data)
+	end
+
+	self:SetShown(not hidden)
+end
+
 function colorPickerMixin:OnColorChanged(color)
 	self.setting.set(lib:GetActiveLayoutName(), color, false)
 
@@ -65,6 +95,8 @@ function colorPickerMixin:OnColorChanged(color)
 	self.colorInfo.g = g
 	self.colorInfo.b = b
 	self.colorInfo.opacity = a
+
+	refreshOwnerWidgets(self)
 end
 
 function colorPickerMixin:SetEnabled(enabled)

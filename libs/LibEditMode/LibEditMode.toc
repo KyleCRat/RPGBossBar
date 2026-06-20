@@ -1,6 +1,6 @@
-## Interface: 110207, 120000, 120001
+## Interface: 120000, 120001, 120007, 20505
 ## Author: p3lim, RPGBossBar modifications
-## Version: 1
+## Version: 15-rpgbb
 ## Title: Lib: EditMode - RPGBossBar Fork
 ## Notes: RPGBossBar-specific Edit Mode integration fork
 ## OptionalDeps: LibStub

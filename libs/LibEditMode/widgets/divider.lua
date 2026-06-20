@@ -1,4 +1,4 @@
-local MINOR = 1
+local MINOR = 15
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -9,7 +9,7 @@ lib.SettingType.Divider = 'divider'
 local dividerMixin = {}
 function dividerMixin:Setup(data)
 	self.setting = data
-	self.Label:SetText(data.name)
+	self.Label:SetText(data.hideLabel and '' or data.name)
 	self.Toggle:SetNormalAtlas(
 		data.collapsed and "common-button-dropdown-closed" or "common-button-dropdown-open",
 		true
@@ -19,10 +19,21 @@ function dividerMixin:Setup(data)
 		true
 	)
 	self.Toggle:SetShown(self.onToggle ~= nil)
+	self:Refresh()
 end
 
 function dividerMixin:SetOnToggleHandler(handler)
 	self.onToggle = handler
+end
+
+function dividerMixin:Refresh()
+	local data = self.setting
+	local hidden = data.hidden
+	if type(hidden) == 'function' then
+		hidden = hidden(lib:GetActiveLayoutName(), data)
+	end
+
+	self:SetShown(not hidden)
 end
 
 function dividerMixin:OnClick()

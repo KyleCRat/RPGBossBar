@@ -1,4 +1,4 @@
-local MINOR = 1
+local MINOR = 15
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -11,6 +11,19 @@ local function showTooltip(self)
 		SettingsTooltip:SetText(self.setting.name, 1, 1, 1)
 		SettingsTooltip:AddLine(self.setting.desc)
 		SettingsTooltip:Show()
+	end
+end
+
+local function refreshOwnerWidgets(widget)
+	local owner = widget:GetParent()
+	owner = owner and owner:GetParent()
+
+	if owner and not owner.RefreshWidgets then
+		owner = owner:GetParent()
+	end
+
+	if owner and owner.RefreshWidgets then
+		owner:RefreshWidgets()
 	end
 end
 
@@ -27,7 +40,7 @@ end
 function checkboxMixin:Setup(data)
 	self.setting = data
 	self.Label:SetText(data.name)
-	self:SetEnabled(not isDisabled(data))
+	self:Refresh()
 
 	local value = data.get(lib:GetActiveLayoutName())
 	if value == nil then
@@ -38,10 +51,24 @@ function checkboxMixin:Setup(data)
 	self.Button:SetChecked(not not value) -- force boolean
 end
 
+function checkboxMixin:Refresh()
+	local data = self.setting
+	self:SetEnabled(not isDisabled(data))
+
+	local hidden = data.hidden
+	if type(hidden) == 'function' then
+		hidden = hidden(lib:GetActiveLayoutName(), data)
+	end
+
+	self:SetShown(not hidden)
+end
+
 function checkboxMixin:OnCheckButtonClick()
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON)
 	self.checked = not self.checked
 	self.setting.set(lib:GetActiveLayoutName(), not not self.checked, false)
+
+	refreshOwnerWidgets(self)
 end
 
 function checkboxMixin:SetEnabled(enabled)
@@ -53,6 +80,7 @@ lib.internal:CreatePool(lib.SettingType.Checkbox, function()
 	local frame = CreateFrame('Frame', nil, UIParent, 'EditModeSettingCheckboxTemplate')
 	frame:SetScript('OnLeave', DefaultTooltipMixin.OnLeave)
 	frame:SetScript('OnEnter', showTooltip)
+	frame.Button:SetPropagateMouseMotion(true)
 	return Mixin(frame, checkboxMixin)
 end, function(_, frame)
 	frame:Hide()

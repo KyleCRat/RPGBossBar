@@ -1,4 +1,4 @@
-local MINOR = 1
+local MINOR = 15
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -37,9 +37,8 @@ function dialogMixin:Update(selection)
 	self:SetTitle(selection.system:GetSystemName())
 	self:UpdateSettings()
 	self:UpdateButtons()
-	self:UpdateSettingsViewport()
-
 	self:Show()
+	self:UpdateSettingsViewport()
 end
 
 function dialogMixin:ToggleSection(section)
@@ -47,8 +46,22 @@ function dialogMixin:ToggleSection(section)
 	self:Update(self.selection)
 end
 
+function dialogMixin:RefreshWidgets()
+	for _, widget in next, self.Settings.widgets do
+		if widget.Refresh then
+			widget:Refresh()
+		end
+	end
+
+	if self:IsShown() then
+		self:UpdateSettingsViewport()
+	end
+end
+
 function dialogMixin:UpdateSettings()
 	internal.ReleaseAllPools()
+
+	self.Settings.widgets = table.wipe(self.Settings.widgets or {})
 
 	local settings, num = internal:GetFrameSettings(self.selection.parent)
 	local sectionCollapsed = false
@@ -72,7 +85,8 @@ function dialogMixin:UpdateSettings()
 					setting:SetOnToggleHandler(GenerateClosure(self.ToggleSection, self))
 				end
 				setting:Setup(data)
-				setting:Show()
+
+				table.insert(self.Settings.widgets, setting)
 			end
 		end
 	end
@@ -152,7 +166,6 @@ function dialogMixin:UpdateButtons()
 					control:SetFixedWidth(SETTINGS_CONTAINER_WIDTH)
 				end
 				control:Setup(data)
-				control:Show()
 			end
 		end
 	end
@@ -165,7 +178,6 @@ function dialogMixin:UpdateButtons()
 		click = GenerateClosure(self.ResetPosition, self),
 		disabled = isDefaultPosition(parent),
 	})
-	resetPosition:Show()
 	self.Buttons.ResetPositionButton = resetPosition
 end
 

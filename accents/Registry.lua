@@ -428,11 +428,11 @@ function RPGBB:RenderAccentSelection(id, state, context)
 
     if custom_atlas then
         return RPGBB:RenderAtlasAccent(
-            option,
+            nil,
             state,
             context,
             custom_atlas,
-            "atlas"
+            "custom_atlas"
         )
     end
 

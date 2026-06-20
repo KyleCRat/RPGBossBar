@@ -1,4 +1,4 @@
-local MINOR = 1
+local MINOR = 15
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -11,6 +11,19 @@ local function showTooltip(self)
 		SettingsTooltip:SetText(self.setting.name, 1, 1, 1)
 		SettingsTooltip:AddLine(self.setting.desc)
 		SettingsTooltip:Show()
+	end
+end
+
+local function refreshOwnerWidgets(widget)
+	local owner = widget:GetParent()
+	owner = owner and owner:GetParent()
+
+	if owner and not owner.RefreshWidgets then
+		owner = owner:GetParent()
+	end
+
+	if owner and owner.RefreshWidgets then
+		owner:RefreshWidgets()
 	end
 end
 
@@ -33,6 +46,10 @@ end
 
 local function set(data)
 	data.set(lib:GetActiveLayoutName(), data.value, false)
+
+	if data.widget then
+		refreshOwnerWidgets(data.widget)
+	end
 end
 
 local function createGeneratedMenuDescription(rootDescription, data)
@@ -68,17 +85,11 @@ function dropdownMixin:Setup(data)
 	self.Label:SetText(data.name)
 	self.Dropdown:ClearMenuState()
 	self.Dropdown:SetDefaultText(data.defaultText or data.name)
-
-	local disabled = data.disabled
-	if type(disabled) == 'function' then
-		disabled = disabled()
-	end
-
-	self:SetEnabled(not disabled)
+	self:Refresh()
 
 	if data.generator then
 		self.Dropdown:SetupMenu(function(owner, rootDescription)
-			data.generator(owner, createGeneratedMenuDescription(rootDescription, data), data)
+			pcall(data.generator, owner, createGeneratedMenuDescription(rootDescription, data), data)
 		end)
 	elseif data.values then
 		self.Dropdown:SetupMenu(function(_, rootDescription)
@@ -86,13 +97,19 @@ function dropdownMixin:Setup(data)
 				rootDescription:SetScrollMode(data.height)
 			end
 
-			for _, value in next, data.values do
+			local values = data.values
+			if type(values) == 'function' then
+				values = values()
+			end
+
+			for _, value in next, values do
 				if data.multiple then
 					rootDescription:CreateCheckbox(value.text, get, set, {
 						get = data.get,
 						set = data.set,
 						value = value.value or value.text,
 						multiple = data.multiple,
+						widget = self,
 					})
 				else
 					rootDescription:CreateRadio(value.text, get, set, {
@@ -100,11 +117,29 @@ function dropdownMixin:Setup(data)
 						set = data.set,
 						value = value.value or value.text,
 						multiple = data.multiple,
+						widget = self,
 					})
 				end
 			end
 		end)
 	end
+end
+
+function dropdownMixin:Refresh()
+	local data = self.setting
+	local disabled = data.disabled
+	if type(disabled) == 'function' then
+		disabled = disabled(lib:GetActiveLayoutName(), data)
+	end
+
+	self:SetEnabled(not disabled)
+
+	local hidden = data.hidden
+	if type(hidden) == 'function' then
+		hidden = hidden(lib:GetActiveLayoutName(), data)
+	end
+
+	self:SetShown(not hidden)
 end
 
 function dropdownMixin:SetEnabled(enabled)
