@@ -13,12 +13,6 @@ libs\LibSharedMedia-3.0\lib.xml
 
 Media.lua
 database/Defaults.lua
-profiles/Registry.lua
-profiles/vigor_dark.lua
-profiles/vigor_silver.lua
-profiles/vigor_gold.lua
-profiles/vigor_bronze.lua
-database/Init.lua
 accents/Registry.lua
 accents/SGVigorDarkSide.lua
 accents/SGVigorDarkCenter.lua
@@ -28,6 +22,12 @@ accents/SGVigorGoldSide.lua
 accents/SGVigorGoldCenter.lua
 accents/SGVigorBronzeSide.lua
 accents/SGVigorBronzeCenter.lua
+skins/Registry.lua
+skins/vigor_dark.lua
+skins/vigor_silver.lua
+skins/vigor_gold.lua
+skins/vigor_bronze.lua
+database/Init.lua
 Commands.lua
 RPGBossBar.lua
 Settings.lua

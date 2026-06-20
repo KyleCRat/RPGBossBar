@@ -472,7 +472,7 @@ function lib:AddFrameSettingsButtons(frame, buttons)
 		lib.frameButtons[frame] = {}
 	end
 
-	for _, button in next, buttons do
+	for _, button in ipairs(buttons) do
 		table.insert(lib.frameButtons[frame], button)
 	end
 end
@@ -835,7 +835,9 @@ One of:
 - `Checkbox`
 - `Slider`
 - `Divider`
+- `Button`
 - `ColorPicker`
 --]]
 lib.SettingType = CopyTable(Enum.EditModeSettingDisplayType)
+lib.SettingType.Button = 'button'
 lib.SettingType.ColorPicker = 10 -- leave some room for blizzard expansion

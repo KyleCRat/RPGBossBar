@@ -40,7 +40,9 @@ lib.internal:CreatePool(lib.SettingType.Divider, function()
 	frame:SetScript('OnClick', frame.OnClick)
 
 	local texture = frame:CreateTexture(nil, 'ARTWORK')
-	texture:SetAllPoints()
+	texture:SetPoint('BOTTOMLEFT', 0, -2)
+	texture:SetPoint('BOTTOMRIGHT', 0, -2)
+	texture:SetHeight(16)
 	texture:SetTexture([[Interface\FriendsFrame\UI-FriendsFrame-OnlineDivider]])
 
 	local toggle = CreateFrame('Button', nil, frame)

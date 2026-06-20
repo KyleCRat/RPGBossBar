@@ -77,8 +77,11 @@ function dialogMixin:UpdateSettings()
 		end
 	end
 
+	local hideResetButton = self.selection.parent.hideDefaultSettingsResetButton
 	self.Settings.ResetButton.layoutIndex = visibleIndex + 1
-	self.Settings.ResetButton:SetEnabled(num > 0)
+	self.Settings.ResetButton.ignoreInLayout = hideResetButton
+	self.Settings.ResetButton:SetShown(not hideResetButton)
+	self.Settings.ResetButton:SetEnabled(num > 0 and not hideResetButton)
 end
 
 function dialogMixin:UpdateSettingsViewport()
@@ -138,24 +141,31 @@ function dialogMixin:UpdateButtons()
 	local parent = self.selection.parent
 	local buttons, num = internal:GetFrameButtons(parent)
 	if num > 0 then
-		for index, data in next, buttons do
-			local button = internal:GetPool('button'):Acquire(self.Buttons)
-			button.layoutIndex = index
-			button:SetWidth(SETTINGS_CONTAINER_WIDTH)
-			button:SetText(data.text)
-			button:SetOnClickHandler(data.click)
-			button:Show()
-			button:SetEnabled(true) -- reset from pool
+		for index, data in ipairs(buttons) do
+			local kind = data.kind or lib.SettingType.Button
+			local pool = internal:GetPool(kind)
+			if pool then
+				local control = pool:Acquire(self.Buttons)
+				control.layoutIndex = index
+				control:SetWidth(SETTINGS_CONTAINER_WIDTH)
+				if control.SetFixedWidth then
+					control:SetFixedWidth(SETTINGS_CONTAINER_WIDTH)
+				end
+				control:Setup(data)
+				control:Show()
+			end
 		end
 	end
 
-	local resetPosition = internal:GetPool('button'):Acquire(self.Buttons)
+	local resetPosition = internal:GetPool(lib.SettingType.Button):Acquire(self.Buttons)
 	resetPosition.layoutIndex = num + 1
 	resetPosition:SetWidth(SETTINGS_CONTAINER_WIDTH)
-	resetPosition:SetText(HUD_EDIT_MODE_RESET_POSITION)
-	resetPosition:SetOnClickHandler(GenerateClosure(self.ResetPosition, self))
+	resetPosition:Setup({
+		text = HUD_EDIT_MODE_RESET_POSITION,
+		click = GenerateClosure(self.ResetPosition, self),
+		disabled = isDefaultPosition(parent),
+	})
 	resetPosition:Show()
-	resetPosition:SetEnabled(not isDefaultPosition(parent))
 	self.Buttons.ResetPositionButton = resetPosition
 end
 

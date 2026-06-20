@@ -2,19 +2,36 @@ local ADDON_NAME, RPGBB = ...
 
 local LEM = LibStub('LibEditMode-RPGBossBar-1.0')
 
-local selectedDefaultSkinID = RPGBB:GetFirstDefaultSkinID()
+local selectedDefaultSkinID
+local selectedDefaultSkinProfile
+
+local function SyncSelectedDefaultSkin()
+    if not RPGBossBarProfiles then
+        return
+    end
+
+    local activeProfile = RPGBB.GetActiveProfileKey()
+    if selectedDefaultSkinProfile == activeProfile then
+        return
+    end
+
+    selectedDefaultSkinProfile = activeProfile
+    selectedDefaultSkinID = RPGBB:GetActiveProfileDefaultSkinID()
+end
 
 local function GetSelectedDefaultSkinID()
+    SyncSelectedDefaultSkin()
+
     if selectedDefaultSkinID and RPGBB:GetDefaultSkin(selectedDefaultSkinID) then
         return selectedDefaultSkinID
     end
 
-    selectedDefaultSkinID = RPGBB:GetFirstDefaultSkinID()
+    selectedDefaultSkinID = RPGBB:GetDefaultProfileSkinID()
 
     return selectedDefaultSkinID
 end
 
-local function RefreshProfileUI()
+local function RefreshProfileUI(refreshProfileSettings)
     RPGBB:InitOrUpdateFrame()
     LEM:RefreshFrameSettings(RPGBB.frame)
 
@@ -22,27 +39,29 @@ local function RefreshProfileUI()
         RPGBB.activeProfileSetting:SetValue(RPGBB.GetActiveProfileKey())
     end
 
-    RPGBB.RefreshProfileSettings()
+    if refreshProfileSettings then
+        RPGBB.RefreshProfileSettings()
+    end
 end
 
-local function ApplyDefaultSkinToCurrentProfile(skinID)
+local function ApplyDefaultSkinToCurrentProfile(skinID, refreshProfileSettings)
     local activeKey = RPGBB.GetActiveProfileKey()
     local skin = RPGBB:GetDefaultSkin(skinID)
 
     if not skin or not RPGBB:ApplyDefaultSkinToProfile(activeKey, skinID) then
-        RPGBB:Print("Could not apply default skin.")
+        RPGBB:Print("Could not apply profile skin.")
 
         return
     end
 
-    RPGBB:Print("Applied default skin \"" .. skin.name .. "\" to profile: " .. activeKey)
-    RefreshProfileUI()
+    RPGBB:Print("Applied profile skin \"" .. skin.name .. "\" to profile: " .. activeKey)
+    RefreshProfileUI(refreshProfileSettings)
 end
 
 local function CreateProfileFromSkin(skinID, profileName)
     local skin = RPGBB:GetDefaultSkin(skinID)
     if not skin then
-        RPGBB:Print("Could not create profile. Default skin was not found.")
+        RPGBB:Print("Could not create profile. Profile skin was not found.")
 
         return
     end
@@ -54,15 +73,15 @@ local function CreateProfileFromSkin(skinID, profileName)
     end
 
     RPGBB.SetActiveProfile(profileName)
-    RPGBB:Print("Created profile \"" .. profileName .. "\" from default skin: " .. skin.name)
-    RefreshProfileUI()
+    RPGBB:Print("Created profile \"" .. profileName .. "\" from profile skin: " .. skin.name)
+    RefreshProfileUI(true)
 end
 
 local function CreateProfileFromSelectedSkin()
     local skinID = GetSelectedDefaultSkinID()
     local skin = RPGBB:GetDefaultSkin(skinID)
     if not skin then
-        RPGBB:Print("No default skin selected.")
+        RPGBB:Print("No profile skin selected.")
 
         return
     end
@@ -191,11 +210,19 @@ StaticPopupDialogs["RPGBB_COPY_PROFILE"] = {
 }
 
 StaticPopupDialogs["RPGBB_APPLY_DEFAULT_SKIN"] = {
-    text = "Apply default skin \"%s\" to active profile \"%s\"?\n\nThis overlays only the skin settings and keeps unrelated profile settings such as frame position.",
+    text = "Apply profile skin \"%s\" to active profile \"%s\"?\n\nThis overlays only the skin settings and keeps unrelated profile settings such as frame position.",
     button1 = "Apply",
     button2 = "Cancel",
-    OnAccept = function(self, skinID)
-        ApplyDefaultSkinToCurrentProfile(skinID)
+    OnAccept = function(self, data)
+        local skinID = data
+        local refreshProfileSettings = false
+
+        if type(data) == "table" then
+            skinID = data.skinID
+            refreshProfileSettings = data.refreshProfileSettings
+        end
+
+        ApplyDefaultSkinToCurrentProfile(skinID, refreshProfileSettings)
     end,
     timeout = 0,
     whileDead = true,
@@ -432,8 +459,8 @@ function RPGBB.RegisterProfileSettings()
 
     local function SetActiveProfile(value)
         RPGBB.SetActiveProfile(value)
-        RPGBB:InitOrUpdateFrame()
-        LEM:RefreshFrameSettings(RPGBB.frame)
+        selectedDefaultSkinProfile = nil
+        RefreshProfileUI(true)
         RPGBB:Print("Switched to profile: " .. value)
     end
 
@@ -446,8 +473,8 @@ function RPGBB.RegisterProfileSettings()
     Settings.CreateDropdown(category, activeProfileSetting, GetProfileOptions,
         "Select which profile to use for this character.")
 
-    ---- Default Skins
-    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Default Skins"))
+    ---- Profile Skin
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Profile Skin"))
 
     local function GetDefaultSkinOptions()
         local container = Settings.CreateControlTextContainer()
@@ -463,16 +490,17 @@ function RPGBB.RegisterProfileSettings()
     end
 
     local function SetDefaultSkin(value)
+        selectedDefaultSkinProfile = RPGBB.GetActiveProfileKey()
         selectedDefaultSkinID = value
     end
 
     local defaultSkinSetting = Settings.RegisterProxySetting(
         category, "RPGBB_DEFAULT_SKIN",
-        Settings.VarType.String, "Default Skin",
-        RPGBB:GetFirstDefaultSkinID() or "", GetDefaultSkin, SetDefaultSkin
+        Settings.VarType.String, "Skin",
+        RPGBB:GetDefaultProfileSkinID() or "", GetDefaultSkin, SetDefaultSkin
     )
     Settings.CreateDropdown(category, defaultSkinSetting, GetDefaultSkinOptions,
-        "Select a built-in skin to apply or use as a new profile.")
+        "Select a profile skin to apply or use as a new profile.")
 
     local applySkinInitializer = CreateSettingsButtonInitializer(
         "Apply To Current Profile", "Apply",
@@ -484,7 +512,10 @@ function RPGBB.RegisterProfileSettings()
                     "RPGBB_APPLY_DEFAULT_SKIN",
                     skin.name,
                     RPGBB.GetActiveProfileKey(),
-                    skinID
+                    {
+                        skinID = skinID,
+                        refreshProfileSettings = true,
+                    }
                 )
             end
         end,

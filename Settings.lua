@@ -100,6 +100,113 @@ profile_selector_setting = {
     end,
 }
 
+--- Reset Current Profile
+local function ConfirmResetCurrentProfile()
+    StaticPopup_Show("RPGBB_RESET_SETTINGS")
+end
+
+local profile_reset_setting = {
+    name = 'Reset Current Profile',
+    kind = LEM.SettingType.Button,
+    text = 'Reset Current Profile',
+    click = ConfirmResetCurrentProfile,
+    desc = 'Reset the current profile to its selected profile skin.',
+}
+
+--- Profile Skin selector
+local selected_profile_skin_id
+local selected_profile_skin_profile
+
+local function GetActiveProfileSkinID()
+    return RPGBB:GetActiveProfileDefaultSkinID()
+end
+
+local function SyncSelectedProfileSkin()
+    if not RPGBossBarProfiles then
+        return
+    end
+
+    local active_profile = RPGBB.GetActiveProfileKey()
+    if selected_profile_skin_profile == active_profile then
+        return
+    end
+
+    selected_profile_skin_profile = active_profile
+    selected_profile_skin_id = GetActiveProfileSkinID()
+end
+
+local function GetSelectedProfileSkinID()
+    SyncSelectedProfileSkin()
+
+    if selected_profile_skin_id and RPGBB:GetDefaultSkin(selected_profile_skin_id) then
+        return selected_profile_skin_id
+    end
+
+    selected_profile_skin_id = RPGBB:GetDefaultProfileSkinID()
+
+    return selected_profile_skin_id
+end
+
+local function profile_skin_selector_get(value)
+    return GetSelectedProfileSkinID() == value
+end
+
+local function profile_skin_selector_set(value)
+    selected_profile_skin_profile = RPGBossBarProfiles and RPGBB.GetActiveProfileKey()
+    selected_profile_skin_id = value
+end
+
+local function profile_skin_selector_default(layoutName, value, fromReset)
+    if fromReset then return end
+end
+
+local profile_skin_selector_setting = {
+    name = 'Skin',
+    kind = LEM.SettingType.Dropdown,
+    default = RPGBB:GetDefaultProfileSkinID() or "",
+    set = profile_skin_selector_default,
+    generator = function(owner, rootDescription)
+        for _, skin in ipairs(RPGBB:GetDefaultSkinList()) do
+            rootDescription:CreateCheckbox(
+                skin.name,
+                profile_skin_selector_get,
+                profile_skin_selector_set,
+                skin.id
+            )
+        end
+    end,
+}
+
+local function ConfirmApplySelectedProfileSkin()
+    local skin_id = GetSelectedProfileSkinID()
+    local skin = RPGBB:GetDefaultSkin(skin_id)
+
+    if not skin then
+        RPGBB:Print("No profile skin selected.")
+
+        return
+    end
+
+    local active_profile = RPGBB.GetActiveProfileKey()
+    StaticPopup_Show(
+        "RPGBB_APPLY_DEFAULT_SKIN",
+        skin.name,
+        active_profile,
+        {
+            skinID = skin_id,
+            refreshProfileSettings = false,
+        }
+    )
+end
+
+local profile_skin_apply_setting = {
+    name = 'Apply Skin',
+    kind = LEM.SettingType.Button,
+    text = 'Apply To Current Profile',
+    click = ConfirmApplySelectedProfileSkin,
+    desc = 'Overlay the selected profile skin onto the active profile.',
+}
+
 --- Test Frames
 local function test_frame_count_get()
     return #RPGBB.current_boss_frames
@@ -976,17 +1083,17 @@ local function CreateAccentOffsetSetting(slot, axis, name)
     }
 end
 
-accent_left_group_setting = CreateAccentGroupSetting("left", "Left Accent")
-accent_left_offset_x_setting = CreateAccentOffsetSetting("left", "x", "Left X Offset")
-accent_left_offset_y_setting = CreateAccentOffsetSetting("left", "y", "Left Y Offset")
+accent_left_group_setting = CreateAccentGroupSetting("left", "Texture")
+accent_left_offset_x_setting = CreateAccentOffsetSetting("left", "x", "Offset X")
+accent_left_offset_y_setting = CreateAccentOffsetSetting("left", "y", "Offset Y")
 
-accent_center_group_setting = CreateAccentGroupSetting("center", "Center Accent")
-accent_center_offset_x_setting = CreateAccentOffsetSetting("center", "x", "Center X Offset")
-accent_center_offset_y_setting = CreateAccentOffsetSetting("center", "y", "Center Y Offset")
+accent_center_group_setting = CreateAccentGroupSetting("center", "Texture")
+accent_center_offset_x_setting = CreateAccentOffsetSetting("center", "x", "Offset X")
+accent_center_offset_y_setting = CreateAccentOffsetSetting("center", "y", "Offset Y")
 
-accent_right_group_setting = CreateAccentGroupSetting("right", "Right Accent")
-accent_right_offset_x_setting = CreateAccentOffsetSetting("right", "x", "Right X Offset")
-accent_right_offset_y_setting = CreateAccentOffsetSetting("right", "y", "Right Y Offset")
+accent_right_group_setting = CreateAccentGroupSetting("right", "Texture")
+accent_right_offset_x_setting = CreateAccentOffsetSetting("right", "x", "Offset X")
+accent_right_offset_y_setting = CreateAccentOffsetSetting("right", "y", "Offset Y")
 
 -------------------------------------------------------------------------------
 --- Boss Name Text Enabled
@@ -1785,11 +1892,14 @@ power_bar_text_offset_y_setting = {
 local default_position = CopyTable(defaults.frame.position)
 
 RPGBB.frame.editModeName = 'RPG Boss Bar'
+RPGBB.frame.hideDefaultSettingsResetButton = true
 LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
-    profile_selector_setting,
     test_frame_count_setting,
-    { name = 'Frame', kind = LEM.SettingType.Divider, collapsed = false, },
+    { name = 'Profile Skin', kind = LEM.SettingType.Divider, collapsed = false, },
+    profile_skin_selector_setting,
+    profile_skin_apply_setting,
+    { name = 'Frame', kind = LEM.SettingType.Divider, collapsed = true, },
     frame_center_x_setting,
     frame_width_setting,
     frame_height_setting,
@@ -1850,21 +1960,26 @@ LEM:AddFrameSettings(RPGBB.frame, {
     power_bar_text_anchor_setting,
     power_bar_text_offset_x_setting,
     power_bar_text_offset_y_setting,
-    { name = 'Accents', kind = LEM.SettingType.Divider, collapsed = true, },
+    { name = 'Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     -- accent_copy_healthbar_texture_color_setting,
     accent_color_setting,
+    { name = 'Left Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_left_group_setting,
     accent_left_offset_x_setting,
     accent_left_offset_y_setting,
+    { name = 'Center Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_center_group_setting,
     accent_center_offset_x_setting,
     accent_center_offset_y_setting,
+    { name = 'Right Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_right_group_setting,
     accent_right_offset_x_setting,
     accent_right_offset_y_setting,
 })
 
 LEM:AddFrameSettingsButtons(RPGBB.frame, {
+    profile_selector_setting,
+    profile_reset_setting,
     {
         text = "Manage Profiles",
         click = function()
@@ -1912,11 +2027,11 @@ LEM.internal.dialog:HookScript('OnHide', function(self)
 end)
 
 -------------------------------------------------------------------------------
---- Intercept Reset to Default with confirmation dialog
+--- Reset Current Profile confirmation dialog
 -------------------------------------------------------------------------------
 
 StaticPopupDialogs["RPGBB_RESET_SETTINGS"] = {
-    text = "Reset the active profile's settings to its defaults?\n\nProfiles created from a default skin reset to that skin. This cannot be undone.",
+    text = "Reset the current profile's settings to its defaults?\n\nProfiles reset to their selected profile skin. This cannot be undone.",
     button1 = "Reset",
     button2 = "Cancel",
     OnAccept = function()
@@ -1933,18 +2048,6 @@ StaticPopupDialogs["RPGBB_RESET_SETTINGS"] = {
     showAlert = true,
     preferredIndex = 3,
 }
-
-local resetButton = LEM.internal.dialog.Settings.ResetButton
-resetButton:SetOnClickHandler(function()
-    local dialog = LEM.internal.dialog
-    if dialog.selection and dialog.selection.parent == RPGBB.frame then
-        StaticPopup_Show("RPGBB_RESET_SETTINGS")
-
-        return
-    end
-
-    dialog:ResetSettings()
-end)
 
 LEM:RegisterCallback('enter', function()
     RPGBB:Lock(false)

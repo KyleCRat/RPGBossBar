@@ -1,5 +1,25 @@
 local ADDON_NAME, addon = ...
 
+local anchor_points = {
+    BOTTOM = true,
+    BOTTOMLEFT = true,
+    BOTTOMRIGHT = true,
+    CENTER = true,
+    LEFT = true,
+    RIGHT = true,
+    TOP = true,
+    TOPLEFT = true,
+    TOPRIGHT = true,
+}
+
+local blend_modes = {
+    ADD = true,
+    ALPHAKEY = true,
+    BLEND = true,
+    DISABLE = true,
+    MOD = true,
+}
+
 addon.db_defaults = {
     frame = {
         width = 1100,
@@ -115,4 +135,33 @@ addon.db_defaults = {
             },
         },
     }
+}
+
+addon.db_validation = {
+    anchor_points = anchor_points,
+    blend_modes = blend_modes,
+    accent_group_paths = {
+        ["accents.center.group"] = "center",
+        ["accents.left.group"] = "left",
+        ["accents.right.group"] = "right",
+    },
+    anchor_point_paths = {
+        ["frame.position.point"] = true,
+        ["frame.position.relative_point"] = true,
+        ["power.font.position.point"] = true,
+        ["power.font.position.relative_point"] = true,
+    },
+    blend_mode_paths = {
+        ["health.spark.blend_mode"] = true,
+    },
+
+    -- These fields store raw media references that may intentionally be false.
+    -- Validate only the safe value shape; do not require the texture or atlas
+    -- to exist locally.
+    string_or_false_paths = {
+        ["frame.border.texture"] = true,
+        ["health.texture.atlas_texture"] = true,
+        ["health.texture.texture"] = true,
+        ["power.border.texture"] = true,
+    },
 }
