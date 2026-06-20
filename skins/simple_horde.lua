@@ -5,19 +5,9 @@ RPGBB:RegisterDefaultSkin({
     name = "Simple Horde",
     overrides = {
         frame = {
-            background_color = {
-                a = 0.8,
-                b = 0,
-                g = 0,
-                r = 0,
-            },
+            background_color = { r = 0, g = 0, b = 0, a = 0.8 },
             border = {
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 offset = 5,
                 size = 24,
                 texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\ActionBar-Border.tga",
@@ -25,6 +15,7 @@ RPGBB:RegisterDefaultSkin({
         },
         accents = {
             center = {
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 custom_atlas = "Quest-Horde-WaxSeal",
                 height_scale = 1,
                 mirror_x = false,
@@ -38,13 +29,8 @@ RPGBB:RegisterDefaultSkin({
                 selected = "none",
                 width_scale = 1,
             },
-            color = {
-                a = 1,
-                b = 1,
-                g = 1,
-                r = 1,
-            },
             left = {
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 custom_atlas = "",
                 height_scale = 1,
                 mirror_x = false,
@@ -59,6 +45,7 @@ RPGBB:RegisterDefaultSkin({
                 width_scale = 1,
             },
             right = {
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 custom_atlas = "",
                 height_scale = 1,
                 mirror_x = false,
@@ -76,12 +63,7 @@ RPGBB:RegisterDefaultSkin({
         name = {
             enabled = true,
             font = {
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 font = "Fonts\\FRIZQT__.TTF",
                 size = 28,
             },
@@ -94,12 +76,7 @@ RPGBB:RegisterDefaultSkin({
                 enabled = true,
                 font = "Fonts\\FRIZQT__.TTF",
                 size = 23,
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 offset = {
                     y = -1,
                 },
@@ -111,22 +88,12 @@ RPGBB:RegisterDefaultSkin({
                 },
             },
             spark = {
-                color = {
-                    a = 1,
-                    b = 54 / 255,
-                    g = 96 / 255,
-                    r = 220 / 255,
-                },
+                color = { r = 220 / 255, g = 96 / 255, b = 54 / 255, a = 1 },
             },
             texture = {
                 atlas = false,
                 atlas_texture = false,
-                color = {
-                    a = 1,
-                    r = 140 / 255,
-                    g = 22 / 255,
-                    b = 22 / 255,
-                },
+                color = { r = 140 / 255, g = 22 / 255, b = 22 / 255, a = 1 },
                 desaturated = false,
                 texture = "Interface\\Buttons\\WHITE8X8",
             },
@@ -138,22 +105,12 @@ RPGBB:RegisterDefaultSkin({
             percent_width = 80,
             texture = "Interface\\Buttons\\WHITE8X8",
             border = {
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 offset = 2,
                 size = 10,
                 texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\ActionBar-Border.tga",
             },
-            color = {
-                a = 1,
-                r = 1,
-                g = 1,
-                b = 0,
-            },
+            color = { r = 1, g = 1, b = 0, a = 1 },
             font = {
                 enabled = false,
             },

@@ -5,19 +5,9 @@ RPGBB:RegisterDefaultSkin({
     name = "Vigor Dark",
     overrides = {
         frame = {
-            background_color = {
-                a = 0.8,
-                b = 0,
-                g = 0,
-                r = 0,
-            },
+            background_color = { r = 0, g = 0, b = 0, a = 0.8 },
             border = {
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 offset = 4,
                 size = 32,
                 texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_dark.tga",
@@ -25,6 +15,7 @@ RPGBB:RegisterDefaultSkin({
         },
         accents = {
             center = {
+                color = { r = 70 / 255, g = 34 / 255, b = 106 / 255, a = 1 },
                 custom_atlas = "",
                 height_scale = 1,
                 mirror_x = false,
@@ -38,13 +29,8 @@ RPGBB:RegisterDefaultSkin({
                 selected = "sgvigor-dark-center",
                 width_scale = 1,
             },
-            color = {
-                a = 1,
-                b = 106 / 255,
-                g = 34 / 255,
-                r = 70 / 255,
-            },
             left = {
+                color = { r = 70 / 255, g = 34 / 255, b = 106 / 255, a = 1 },
                 custom_atlas = "",
                 height_scale = 1,
                 mirror_x = false,
@@ -59,6 +45,7 @@ RPGBB:RegisterDefaultSkin({
                 width_scale = 1,
             },
             right = {
+                color = { r = 70 / 255, g = 34 / 255, b = 106 / 255, a = 1 },
                 custom_atlas = "",
                 height_scale = 1,
                 mirror_x = false,
@@ -76,12 +63,7 @@ RPGBB:RegisterDefaultSkin({
         name = {
             enabled = true,
             font = {
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
                 size = 32,
             },
@@ -94,12 +76,7 @@ RPGBB:RegisterDefaultSkin({
                 enabled = true,
                 font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
                 size = 20,
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 offset = {
                     y = 0,
                 },
@@ -111,22 +88,12 @@ RPGBB:RegisterDefaultSkin({
                 },
             },
             spark = {
-                color = {
-                    a = 1,
-                    b = 255 / 255,
-                    g = 167 / 255,
-                    r = 229 / 255,
-                },
+                color = { r = 229 / 255, g = 167 / 255, b = 255 / 255, a = 1 },
             },
             texture = {
                 atlas = true,
                 atlas_texture = "Unit_Priest_Insanity_Fill",
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 desaturated = false,
                 texture = false,
             },
@@ -138,22 +105,12 @@ RPGBB:RegisterDefaultSkin({
             percent_width = 80,
             texture = "Interface\\Buttons\\WHITE8X8",
             border = {
-                color = {
-                    a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
-                },
+                color = { r = 1, g = 1, b = 1, a = 1 },
                 offset = 2,
                 size = 10,
                 texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_dark.tga",
             },
-            color = {
-                a = 1,
-                b = 0,
-                g = 1,
-                r = 1,
-            },
+            color = { r = 1, g = 1, b = 0, a = 1 },
             font = {
                 enabled = false,
             },

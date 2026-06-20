@@ -992,29 +992,31 @@ health_bar_spark_height_multi_setting = {
 
 -------------------------------------------------------------------------------
 --- Accent Color
-local function accent_color_get()
-    return CreateColor(RPGBB.db:GetColor("accents", "color"))
-end
-
-local function accent_color_set(layoutName, value, fromReset)
-    if fromReset then
-        RPGBB.db:SetDefault("accents", "color")
-    else
-        local r, g, b, a = value:GetRGBA()
-        RPGBB.db:SetColor("accents", "color", { r = r, g = g, b = b, a = a })
+local function CreateAccentColorSetting(slot)
+    local function get()
+        return CreateColor(RPGBB.db:GetColor("accents", slot, "color"))
     end
 
-    RPGBB:InitOrUpdateFrame()
-end
+    local function set(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, "color")
+        else
+            local r, g, b, a = value:GetRGBA()
+            RPGBB.db:SetColor("accents", slot, "color", { r = r, g = g, b = b, a = a })
+        end
 
-accent_color_setting = {
-    name = 'Color',
-    kind = LEM.SettingType.ColorPicker,
-    default = DefaultColor("accents", "color"),
-    hasOpacity = true,
-    get = accent_color_get,
-    set = accent_color_set,
-}
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    return {
+        name = 'Color',
+        kind = LEM.SettingType.ColorPicker,
+        default = DefaultColor("accents", slot, "color"),
+        hasOpacity = true,
+        get = get,
+        set = set,
+    }
+end
 
 -------------------------------------------------------------------------------
 --- Accent Selection
@@ -1195,6 +1197,7 @@ local function CreateAccentMirrorSetting(slot, key, name)
 end
 
 accent_left_selection_setting = CreateAccentSelectionSetting("left", "Texture")
+accent_left_color_setting = CreateAccentColorSetting("left")
 accent_left_offset_x_setting = CreateAccentOffsetSetting("left", "x", "Offset X")
 accent_left_offset_y_setting = CreateAccentOffsetSetting("left", "y", "Offset Y")
 accent_left_custom_atlas_setting = CreateAccentCustomAtlasSetting("left")
@@ -1206,6 +1209,7 @@ accent_left_mirror_x_setting = CreateAccentMirrorSetting("left", "mirror_x", "Mi
 accent_left_mirror_y_setting = CreateAccentMirrorSetting("left", "mirror_y", "Mirror Vertically")
 
 accent_center_selection_setting = CreateAccentSelectionSetting("center", "Texture")
+accent_center_color_setting = CreateAccentColorSetting("center")
 accent_center_offset_x_setting = CreateAccentOffsetSetting("center", "x", "Offset X")
 accent_center_offset_y_setting = CreateAccentOffsetSetting("center", "y", "Offset Y")
 accent_center_custom_atlas_setting = CreateAccentCustomAtlasSetting("center")
@@ -1217,6 +1221,7 @@ accent_center_mirror_x_setting = CreateAccentMirrorSetting("center", "mirror_x",
 accent_center_mirror_y_setting = CreateAccentMirrorSetting("center", "mirror_y", "Mirror Vertically")
 
 accent_right_selection_setting = CreateAccentSelectionSetting("right", "Texture")
+accent_right_color_setting = CreateAccentColorSetting("right")
 accent_right_offset_x_setting = CreateAccentOffsetSetting("right", "x", "Offset X")
 accent_right_offset_y_setting = CreateAccentOffsetSetting("right", "y", "Offset Y")
 accent_right_custom_atlas_setting = CreateAccentCustomAtlasSetting("right")
@@ -2092,11 +2097,9 @@ LEM:AddFrameSettings(RPGBB.frame, {
     power_bar_text_anchor_setting,
     power_bar_text_offset_x_setting,
     power_bar_text_offset_y_setting,
-    { name = 'Accent', kind = LEM.SettingType.Divider, collapsed = true, },
-    -- accent_copy_healthbar_texture_color_setting,
-    accent_color_setting,
     { name = 'Left Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_left_selection_setting,
+    accent_left_color_setting,
     accent_left_offset_x_setting,
     accent_left_offset_y_setting,
     { name = 'Left Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
@@ -2109,6 +2112,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     accent_left_mirror_y_setting,
     { name = 'Center Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_center_selection_setting,
+    accent_center_color_setting,
     accent_center_offset_x_setting,
     accent_center_offset_y_setting,
     { name = 'Center Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
@@ -2121,6 +2125,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     accent_center_mirror_y_setting,
     { name = 'Right Accent', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_right_selection_setting,
+    accent_right_color_setting,
     accent_right_offset_x_setting,
     accent_right_offset_y_setting,
     { name = 'Right Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },

@@ -308,6 +308,17 @@ local function UpdateFrameBorder()
     end
 end
 
+local function GetAccentColor(slot)
+    local r, g, b, a = RPGBB.db:GetColor("accents", slot, "color")
+
+    return {
+        r = r,
+        g = g,
+        b = b,
+        a = a,
+    }
+end
+
 
 ---------------------------------------------------------------------------
 --- Main Frame / Container
@@ -353,22 +364,16 @@ function RPGBB:InitOrUpdateFrame()
 
     local left_accent = RPGBB.db:Get("accents", "left")
     local right_accent = RPGBB.db:Get("accents", "right")
-    local accent_r, accent_g, accent_b, accent_a = RPGBB.db:GetColor("accents", "color")
     local accent_context = {
         parent = RPGBB.frame,
         anchor = RPGBB.frame,
         frame_height = frame_height,
         frame_level = RPGBB.frame:GetFrameLevel() + GRAPHICS_LEVEL,
-        color = {
-            r = accent_r,
-            g = accent_g,
-            b = accent_b,
-            a = accent_a,
-        },
     }
 
     accent_context.side = "left"
     accent_context.config = left_accent
+    accent_context.color = GetAccentColor("left")
     accent_context.offset_x = RPGBB.db:Get("accents", "left", "offset", "x")
     accent_context.offset_y = RPGBB.db:Get("accents", "left", "offset", "y")
     RPGBB.leftAccentGroup = RPGBB:RenderAccentSelection(
@@ -379,6 +384,7 @@ function RPGBB:InitOrUpdateFrame()
 
     accent_context.side = "right"
     accent_context.config = right_accent
+    accent_context.color = GetAccentColor("right")
     accent_context.offset_x = RPGBB.db:Get("accents", "right", "offset", "x")
     accent_context.offset_y = RPGBB.db:Get("accents", "right", "offset", "y")
     RPGBB.rightAccentGroup = RPGBB:RenderAccentSelection(
@@ -680,13 +686,7 @@ function RPGBB:UpdateFrames()
     local power_text_y              = RPGBB.db:Get("power", "font", "position", "y")
 
     local center_accent = RPGBB.db:Get("accents", "center")
-    local ac_r, ac_g, ac_b, ac_a = RPGBB.db:GetColor("accents", "color")
-    local accent_color = {
-        r = ac_r,
-        g = ac_g,
-        b = ac_b,
-        a = ac_a,
-    }
+    local center_accent_color = GetAccentColor("center")
 
     for i, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
@@ -889,7 +889,7 @@ function RPGBB:UpdateFrames()
                 offset_y = RPGBB.db:Get("accents", "center", "offset", "y"),
                 frame_height = frame_height,
                 frame_level = RPGBB.health_bars[boss_frame].frame:GetFrameLevel() + GRAPHICS_LEVEL,
-                color = accent_color,
+                color = center_accent_color,
                 width_multiplier = 0.7,
             }
         )
