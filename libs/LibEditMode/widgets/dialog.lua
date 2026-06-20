@@ -203,9 +203,48 @@ end
 
 local BIG_STEP = 10
 local SMALL_STEP = 1
+local MENU_KEY_SCROLL_STEP = 0.1
+
+local function ScrollOpenMenu(key)
+	if key ~= 'UP' and key ~= 'DOWN' and key ~= 'LEFT' and key ~= 'RIGHT' then
+		return false
+	end
+
+	if not Menu or not Menu.GetManager then
+		return false
+	end
+
+	local manager = Menu.GetManager()
+	if not manager or not manager:IsAnyMenuOpen() then
+		return false
+	end
+
+	if key ~= 'UP' and key ~= 'DOWN' then
+		return true
+	end
+
+	local menu = manager:GetOpenMenu()
+	if not menu then
+		return true
+	end
+
+	local direction = key == 'DOWN' and 1 or -1
+	if menu.ScrollBar and menu.ScrollBar:IsShown() then
+		menu.ScrollBar:ScrollStepInDirection(direction)
+	elseif menu.ScrollBox and menu.ScrollBox:IsShown() then
+		menu.ScrollBox:ScrollInDirection(MENU_KEY_SCROLL_STEP, direction)
+	end
+
+	return true
+end
 
 function dialogMixin:OnKeyDown(key)
 	if InCombatLockdown() then
+		return
+	end
+
+	if ScrollOpenMenu(key) then
+		self:SetPropagateKeyboardInput(false) -- protected
 		return
 	end
 

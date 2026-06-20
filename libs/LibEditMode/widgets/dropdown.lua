@@ -35,16 +35,50 @@ local function set(data)
 	data.set(lib:GetActiveLayoutName(), data.value, false)
 end
 
+local function createGeneratedMenuDescription(rootDescription, data)
+	if data.multiple then
+		return rootDescription
+	end
+
+	local description = {}
+	setmetatable(description, {
+		__index = function(_, key)
+			local value = rootDescription[key]
+
+			if type(value) == 'function' then
+				return function(_, ...)
+					return value(rootDescription, ...)
+				end
+			end
+
+			return value
+		end,
+	})
+
+	function description:CreateCheckbox(text, isSelected, setSelected, value)
+		return rootDescription:CreateRadio(text, isSelected, setSelected, value)
+	end
+
+	return description
+end
+
 local dropdownMixin = {}
 function dropdownMixin:Setup(data)
 	self.setting = data
 	self.Label:SetText(data.name)
-	self:SetEnabled(not data.disabled)
+	self.Dropdown:ClearMenuState()
+	self.Dropdown:SetDefaultText(data.defaultText or data.name)
+
+	local disabled = data.disabled
+	if type(disabled) == 'function' then
+		disabled = disabled()
+	end
+
+	self:SetEnabled(not disabled)
 
 	if data.generator then
-		-- let the user have full control
 		self.Dropdown:SetupMenu(function(owner, rootDescription)
-			pcall(data.generator, owner, rootDescription, data)
+			data.generator(owner, createGeneratedMenuDescription(rootDescription, data), data)
 		end)
 	elseif data.values then
 		self.Dropdown:SetupMenu(function(_, rootDescription)
@@ -99,6 +133,8 @@ lib.internal:CreatePool(lib.SettingType.Dropdown, function()
 
 	return frame
 end, function(_, frame)
+	frame.Dropdown:ClearMenuState()
 	frame:Hide()
 	frame.layoutIndex = nil
+	frame.setting = nil
 end)

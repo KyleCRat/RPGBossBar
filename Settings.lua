@@ -976,6 +976,23 @@ local function global_font_get(value)
         and RPGBB.db:Get("power", "font", "font") == font
 end
 
+local global_font_refresh_pending = false
+
+local function RefreshGlobalFontSettings()
+    if global_font_refresh_pending then
+        return
+    end
+
+    global_font_refresh_pending = true
+    C_Timer.After(0, function()
+        global_font_refresh_pending = false
+
+        if RPGBB.frame then
+            LEM:RefreshFrameSettings(RPGBB.frame)
+        end
+    end)
+end
+
 local function global_font_set(value)
     local font = LibSharedMedia:Fetch('font', value)
 
@@ -983,10 +1000,7 @@ local function global_font_set(value)
     RPGBB.db:Set("health", "font", "font", font)
     RPGBB.db:Set("power", "font", "font", font)
     RPGBB:InitOrUpdateFrame()
-
-    if RPGBB.frame then
-        LEM:RefreshFrameSettings(RPGBB.frame)
-    end
+    RefreshGlobalFontSettings()
 end
 
 local function global_font_default(layoutName, value, fromReset)
@@ -995,10 +1009,7 @@ local function global_font_default(layoutName, value, fromReset)
         RPGBB.db:SetDefault("health", "font", "font")
         RPGBB.db:SetDefault("power", "font", "font")
         RPGBB:InitOrUpdateFrame()
-
-        if RPGBB.frame then
-            LEM:RefreshFrameSettings(RPGBB.frame)
-        end
+        RefreshGlobalFontSettings()
     end
 end
 
