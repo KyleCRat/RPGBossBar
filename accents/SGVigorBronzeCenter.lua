@@ -19,22 +19,6 @@ local function Frame(state, context)
     local tint_fill_height = vigor_frame_height * (50 / 62.5)
     local tint_fill_width = tint_fill_height * (36 / 50) * width_multiplier
 
-    if not state.frame then
-        state.frame = CreateFrame("Frame", nil, context.parent)
-
-        state.background = state.frame:CreateTexture(nil, "ARTWORK", nil, 1)
-        state.background:SetAtlas("dragonriding_sgvigor_fillfull")
-        state.background:SetDesaturated(true)
-
-        state.foreground = state.frame:CreateTexture(nil, "ARTWORK", nil, 2)
-        state.foreground:SetAtlas("dragonriding_sgvigor_frame_bronze")
-    end
-
-    state.frame:ClearAllPoints()
-    state.frame:SetAllPoints(context.parent)
-    state.frame:SetFrameLevel(context.frame_level)
-    state.frame:Show()
-
     state.foreground:ClearAllPoints()
     state.foreground:SetPoint("CENTER", context.anchor, "RIGHT", offset_x, offset_y)
     state.foreground:SetSize(vigor_frame_width, vigor_frame_height)
@@ -50,6 +34,21 @@ RPGBB:RegisterAccentGroup({
     name = "SG Vigor Bronze Center",
     slots = {
         center = true,
+    },
+    textures = {
+        {
+            key = "background",
+            layer = "ARTWORK",
+            sublevel = 1,
+            atlas = "dragonriding_sgvigor_fillfull",
+            desaturated = true,
+        },
+        {
+            key = "foreground",
+            layer = "ARTWORK",
+            sublevel = 2,
+            atlas = "dragonriding_sgvigor_frame_bronze",
+        },
     },
     Render = Frame,
 })

@@ -12,7 +12,7 @@ local color_channels = {
 }
 
 local db_validation = RPGBB.db_validation or {}
-local accent_group_paths = db_validation.accent_group_paths or {}
+local accent_selection_paths = db_validation.accent_selection_paths or {}
 local anchor_points = db_validation.anchor_points or {}
 local anchor_point_paths = db_validation.anchor_point_paths or {}
 local blend_modes = db_validation.blend_modes or {}
@@ -96,24 +96,24 @@ local function ValidateColor(path, value, errors)
     end
 end
 
-local function ValidateAccentGroup(path, value, errors)
+local function ValidateAccentSelection(path, value, errors)
     local path_string = PathToString(path)
-    local slot = accent_group_paths[path_string]
+    local slot = accent_selection_paths[path_string]
 
     if not slot then
         return
     end
 
-    local group = RPGBB:GetAccentGroup(value)
+    local option = RPGBB:GetAccentOption(value)
 
-    if not group then
-        AddValidationError(errors, path, "references an unknown accent group")
+    if not option then
+        AddValidationError(errors, path, "references an unknown accent")
 
         return
     end
 
-    if not RPGBB:AccentGroupSupportsSlot(group, slot) then
-        AddValidationError(errors, path, "references an accent group that does not support this slot")
+    if not RPGBB:AccentOptionSupportsSlot(option, slot) then
+        AddValidationError(errors, path, "references an accent that does not support this slot")
     end
 end
 
@@ -125,7 +125,7 @@ local function ValidateStringValue(path, value, errors)
     elseif blend_mode_paths[path_string] and not blend_modes[value] then
         AddValidationError(errors, path, "must be a valid blend mode")
     else
-        ValidateAccentGroup(path, value, errors)
+        ValidateAccentSelection(path, value, errors)
     end
 end
 

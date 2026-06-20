@@ -19,11 +19,16 @@ local GRAPHICS_LEVEL     = 15
 
 
 -------------------------------------------------------------------------------
---- Init Health bar storage
+--- Runtime State
 -------------------------------------------------------------------------------
 
 RPGBB.health_bars = {}
 RPGBB.current_boss_frames = {}
+
+
+-------------------------------------------------------------------------------
+--- Border Rendering
+-------------------------------------------------------------------------------
 
 local NINE_SLICE_PIECES = {
     "TopLeftCorner",
@@ -36,187 +41,6 @@ local NINE_SLICE_PIECES = {
     "RightEdge",
     "Center",
 }
-
-local UNIQUE_CORNERS_BORDER_LAYOUT = {
-    TopRightCorner = { atlas = "%s-NineSlice-CornerTopRight" },
-    TopLeftCorner = { atlas = "%s-NineSlice-CornerTopLeft" },
-    BottomLeftCorner = { atlas = "%s-NineSlice-CornerBottomLeft" },
-    BottomRightCorner = { atlas = "%s-NineSlice-CornerBottomRight" },
-    TopEdge = { atlas = "_%s-NineSlice-EdgeTop" },
-    BottomEdge = { atlas = "_%s-NineSlice-EdgeBottom" },
-    LeftEdge = { atlas = "!%s-NineSlice-EdgeLeft" },
-    RightEdge = { atlas = "!%s-NineSlice-EdgeRight" },
-}
-
-RPGBB.nine_slice_border_styles = {
-    {
-        name = "Midnight",
-        value = "nineslice:midnight",
-        fullAtlas = {
-            atlas = "ui-frame-midnight-border",
-            sampleLeft = 0.25,
-            sampleRight = 0.75,
-            topBottom = 0.10,
-            bottomTop = 0.90,
-        },
-    },
-    {
-        name = "The War Within",
-        value = "nineslice:thewarwithin",
-        fullAtlas = {
-            atlas = "ui-frame-thewarwithin-border",
-            sampleLeft = 0.25,
-            sampleRight = 0.75,
-            topBottom = 0.10,
-            bottomTop = 0.90,
-        },
-    },
-    {
-        name = "Dragonflight",
-        value = "nineslice:dragonflight",
-        layoutName = "DragonflightMissionFrame",
-    },
-    {
-        name = "ActionBar Frame",
-        value = "nineslice:ui-hud-actionbar-frame",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "UI-HUD-ActionBar-Frame",
-    },
-    {
-        name = "Modern Diamond Metal",
-        value = "nineslice:diamond-metal",
-        topAtlas = "_UI-Frame-DiamondMetal-EdgeTop",
-        bottomAtlas = "_UI-Frame-DiamondMetal-EdgeBottom",
-    },
-    {
-        name = "Shadowlands: Oribos",
-        value = "nineslice:oribos",
-        layoutName = "CovenantMissionFrame",
-    },
-    {
-        name = "Shadowlands: Kyrian",
-        value = "nineslice:kyrian",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "kyrian",
-    },
-    {
-        name = "Shadowlands: Necrolord",
-        value = "nineslice:necrolord",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "necrolord",
-    },
-    {
-        name = "Shadowlands: Night Fae",
-        value = "nineslice:nightfae",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "nightfae",
-    },
-    {
-        name = "Shadowlands: Venthyr",
-        value = "nineslice:venthyr",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "venthyr",
-    },
-    {
-        name = "Shadowlands: Adventures",
-        value = "nineslice:adventures",
-        layoutName = "AdventuresMissionComplete",
-    },
-    {
-        name = "Alliance",
-        value = "nineslice:alliance",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "Alliance",
-    },
-    {
-        name = "Horde",
-        value = "nineslice:horde",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "Horde",
-    },
-    {
-        name = "Mechagon",
-        value = "nineslice:mechagon",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "Mechagon",
-    },
-    {
-        name = "Marine",
-        value = "nineslice:marine",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "Marine",
-    },
-    {
-        name = "Plunderstorm",
-        value = "nineslice:plunderstorm",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "plunderstorm",
-    },
-    {
-        name = "Neutral Wood",
-        value = "nineslice:neutral",
-        layoutName = "WoodenNeutralFrameTemplate",
-    },
-    {
-        name = "Text Panel",
-        value = "nineslice:text-panel",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "TextPanel",
-    },
-    {
-        name = "Clean Generic Metal",
-        value = "nineslice:generic-metal-2",
-        layout = UNIQUE_CORNERS_BORDER_LAYOUT,
-        textureKit = "GenericMetal2",
-    },
-    {
-        name = "Generic Metal",
-        value = "nineslice:generic-metal",
-        layoutName = "GenericMetal",
-    },
-}
-
-local function GetNineSliceStyleLayout(style)
-    if style.layout then
-        return style.layout
-    end
-
-    return NineSliceLayouts and NineSliceLayouts[style.layoutName]
-end
-
-local function GetNineSliceAtlasName(atlas, textureKit)
-    if textureKit then
-        return atlas:format(textureKit)
-    end
-
-    return atlas
-end
-
-local function GetHorizontalBorderAtlases(style)
-    if style.topAtlas and style.bottomAtlas then
-        return style.topAtlas, style.bottomAtlas
-    end
-
-    local layout = GetNineSliceStyleLayout(style)
-    if not layout or not layout.TopEdge or not layout.BottomEdge then
-        return
-    end
-
-    return GetNineSliceAtlasName(layout.TopEdge.atlas, style.textureKit),
-        GetNineSliceAtlasName(layout.BottomEdge.atlas, style.textureKit)
-end
-
-function RPGBB:GetNineSliceBorderStyle(value)
-    for _, style in ipairs(RPGBB.nine_slice_border_styles) do
-        if style.value == value then
-            return style
-        end
-    end
-end
-
-function RPGBB:GetAvailableNineSliceBorderStyles()
-    return RPGBB.nine_slice_border_styles
-end
 
 local function HideNineSliceBorder(frame)
     if not frame then
@@ -362,7 +186,7 @@ local function ShowModernBorder(frame, style, borderSize, r, g, b, a)
     end
 
     if not style.topAtlas then
-        local layout = GetNineSliceStyleLayout(style)
+        local layout = RPGBB:GetNineSliceStyleLayout(style)
         NineSliceUtil.ApplyLayout(frame, layout, style.textureKit)
 
         for _, pieceName in ipairs(NINE_SLICE_PIECES) do
@@ -408,7 +232,7 @@ local function ShowModernBorder(frame, style, borderSize, r, g, b, a)
     frame.HorizontalBottomEdge:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT")
     frame.HorizontalBottomEdge:SetHeight(borderSize)
 
-    local topAtlas, bottomAtlas = GetHorizontalBorderAtlases(style)
+    local topAtlas, bottomAtlas = RPGBB:GetHorizontalBorderAtlases(style)
 
     frame.HorizontalTopEdge:SetAtlas(topAtlas, false, nil, true)
     frame.HorizontalTopEdge:ClearTextureSlice()
@@ -424,43 +248,7 @@ local function ShowModernBorder(frame, style, borderSize, r, g, b, a)
     frame:Show()
 end
 
-
----------------------------------------------------------------------------
---- Main Frame / Container
----------------------------------------------------------------------------
-
-RPGBB.frame = CreateFrame("Frame", "RPGBossBarFrame", UIParent)
-RPGBB.frame:SetPoint("TOP", UIParent, "TOP", 0, -80)
-RPGBB.frame:SetClampedToScreen(true)
-RPGBB.frame:Hide()
-
-
--------------------------------------------------------------------------------
---- Functions
--------------------------------------------------------------------------------
-
-function RPGBB:InitOrUpdateFrame()
-    RPGBB:VPrint("InitOrUpdateFrame fired")
-
-    local frame_height = RPGBB.db:Get("frame", "height")
-    local frame_width  = RPGBB.db:Get("frame", "width")
-
-    RPGBB.frame:ClearAllPoints()
-    RPGBB.frame:SetPoint(RPGBB.db:Get("frame", "position", "point"),
-                         UIParent,
-                         RPGBB.db:Get("frame", "position", "relative_point"),
-                         RPGBB.db:Get("frame", "position", "x"),
-                         RPGBB.db:Get("frame", "position", "y"))
-    RPGBB.frame:SetSize(frame_width, frame_height)
-
-    -- Create container's background
-    if not RPGBB.frame.bg then
-        RPGBB.frame.bg = RPGBB.frame:CreateTexture(nil, "BACKGROUND")
-        RPGBB.frame.bg:SetAllPoints(RPGBB.frame)
-    end
-    RPGBB.frame.bg:SetColorTexture(RPGBB.db:GetColor("frame", "background_color"))
-
-    -- Create container's border
+local function UpdateFrameBorder()
     local border_texture = RPGBB.db:Get("frame", "border", "texture")
     local border_r, border_g, border_b, border_a = RPGBB.db:GetColor("frame", "border", "color")
     local border_size = RPGBB.db:Get("frame", "border", "size")
@@ -512,20 +300,59 @@ function RPGBB:InitOrUpdateFrame()
                 left = 0,
                 right = 0,
                 top = 0,
-                bottom = 0
-            }
+                bottom = 0,
+            },
         })
         RPGBB.border:SetBackdropBorderColor(border_r, border_g, border_b, border_a)
         RPGBB.border:Show()
     end
+end
+
+
+---------------------------------------------------------------------------
+--- Main Frame / Container
+---------------------------------------------------------------------------
+
+RPGBB.frame = CreateFrame("Frame", "RPGBossBarFrame", UIParent)
+RPGBB.frame:SetPoint("TOP", UIParent, "TOP", 0, -80)
+RPGBB.frame:SetClampedToScreen(true)
+RPGBB.frame:Hide()
+
+
+-------------------------------------------------------------------------------
+--- Frame Lifecycle
+-------------------------------------------------------------------------------
+
+function RPGBB:InitOrUpdateFrame()
+    RPGBB:VPrint("InitOrUpdateFrame fired")
+
+    local frame_height = RPGBB.db:Get("frame", "height")
+    local frame_width  = RPGBB.db:Get("frame", "width")
+
+    RPGBB.frame:ClearAllPoints()
+    RPGBB.frame:SetPoint(RPGBB.db:Get("frame", "position", "point"),
+                         UIParent,
+                         RPGBB.db:Get("frame", "position", "relative_point"),
+                         RPGBB.db:Get("frame", "position", "x"),
+                         RPGBB.db:Get("frame", "position", "y"))
+    RPGBB.frame:SetSize(frame_width, frame_height)
+
+    -- Create container's background
+    if not RPGBB.frame.bg then
+        RPGBB.frame.bg = RPGBB.frame:CreateTexture(nil, "BACKGROUND")
+        RPGBB.frame.bg:SetAllPoints(RPGBB.frame)
+    end
+    RPGBB.frame.bg:SetColorTexture(RPGBB.db:GetColor("frame", "background_color"))
+
+    UpdateFrameBorder()
 
 
     ---------------------------------------------------------------------------
     --- Accent Groups
     ---------------------------------------------------------------------------
 
-    local left_accent_group = RPGBB.db:Get("accents", "left", "group")
-    local right_accent_group = RPGBB.db:Get("accents", "right", "group")
+    local left_accent = RPGBB.db:Get("accents", "left")
+    local right_accent = RPGBB.db:Get("accents", "right")
     local accent_r, accent_g, accent_b, accent_a = RPGBB.db:GetColor("accents", "color")
     local accent_context = {
         parent = RPGBB.frame,
@@ -541,19 +368,21 @@ function RPGBB:InitOrUpdateFrame()
     }
 
     accent_context.side = "left"
+    accent_context.config = left_accent
     accent_context.offset_x = RPGBB.db:Get("accents", "left", "offset", "x")
     accent_context.offset_y = RPGBB.db:Get("accents", "left", "offset", "y")
-    RPGBB.leftAccentGroup = RPGBB:RenderAccentGroup(
-        left_accent_group,
+    RPGBB.leftAccentGroup = RPGBB:RenderAccentSelection(
+        left_accent.selected,
         RPGBB.leftAccentGroup,
         accent_context
     )
 
     accent_context.side = "right"
+    accent_context.config = right_accent
     accent_context.offset_x = RPGBB.db:Get("accents", "right", "offset", "x")
     accent_context.offset_y = RPGBB.db:Get("accents", "right", "offset", "y")
-    RPGBB.rightAccentGroup = RPGBB:RenderAccentGroup(
-        right_accent_group,
+    RPGBB.rightAccentGroup = RPGBB:RenderAccentSelection(
+        right_accent.selected,
         RPGBB.rightAccentGroup,
         accent_context
     )
@@ -589,6 +418,11 @@ function RPGBB:InitOrUpdateFrame()
     --- Update Frames after changing Init Frame settings
     RPGBB:UpdateFrames()
 end
+
+
+-------------------------------------------------------------------------------
+--- Debug and Test Mode
+-------------------------------------------------------------------------------
 
 function RPGBB:Print(msg)
     print("|c" .. addon_color .. ADDON_NAME .. ":|r " .. msg)
@@ -668,6 +502,11 @@ function RPGBB:ToggleTest(frame_count)
         RPGBB.frame:Hide()
     end
 end
+
+
+-------------------------------------------------------------------------------
+--- Boss Frame Updates
+-------------------------------------------------------------------------------
 
 function RPGBB:UpdateHealth()
     for _, boss_frame in ipairs(RPGBB.current_boss_frames) do
@@ -840,7 +679,7 @@ function RPGBB:UpdateFrames()
     local power_text_x              = RPGBB.db:Get("power", "font", "position", "x")
     local power_text_y              = RPGBB.db:Get("power", "font", "position", "y")
 
-    local center_accent_group = RPGBB.db:Get("accents", "center", "group")
+    local center_accent = RPGBB.db:Get("accents", "center")
     local ac_r, ac_g, ac_b, ac_a = RPGBB.db:GetColor("accents", "color")
     local accent_color = {
         r = ac_r,
@@ -1038,13 +877,14 @@ function RPGBB:UpdateFrames()
         -- Don't create extra divider graphic elements
         if i == boss_frame_count then break end
 
-        RPGBB.health_bars[boss_frame].centerAccentGroup = RPGBB:RenderAccentGroup(
-            center_accent_group,
+        RPGBB.health_bars[boss_frame].centerAccentGroup = RPGBB:RenderAccentSelection(
+            center_accent.selected,
             RPGBB.health_bars[boss_frame].centerAccentGroup,
             {
                 parent = RPGBB.health_bars[boss_frame].frame,
                 anchor = RPGBB.health_bars[boss_frame].frame,
                 side = "center",
+                config = center_accent,
                 offset_x = RPGBB.db:Get("accents", "center", "offset", "x"),
                 offset_y = RPGBB.db:Get("accents", "center", "offset", "y"),
                 frame_height = frame_height,

@@ -39,25 +39,6 @@ local function Frame(state, context)
     local decor_frame_anchor_point = is_right_side and "BOTTOMRIGHT" or "BOTTOMLEFT"
     local decor_anchor_offset_x = is_right_side and -decor_frame_overlap_x or decor_frame_overlap_x
 
-    if not state.frame then
-        state.frame = CreateFrame("Frame", nil, context.parent)
-
-        state.background = state.frame:CreateTexture(nil, "ARTWORK", nil, 1)
-        state.background:SetAtlas("dragonriding_sgvigor_fillfull")
-        state.background:SetDesaturated(true)
-
-        state.foreground = state.frame:CreateTexture(nil, "ARTWORK", nil, 2)
-        state.foreground:SetAtlas("dragonriding_sgvigor_frame_bronze")
-
-        state.accent = state.frame:CreateTexture(nil, "ARTWORK", nil, 3)
-        state.accent:SetAtlas("dragonriding_sgvigor_decor_bronze")
-    end
-
-    state.frame:ClearAllPoints()
-    state.frame:SetAllPoints(context.parent)
-    state.frame:SetFrameLevel(context.frame_level)
-    state.frame:Show()
-
     state.foreground:ClearAllPoints()
     state.foreground:SetPoint("CENTER", context.anchor, frame_anchor_point, frame_anchor_offset_x, offset_y)
     state.foreground:SetSize(vigor_frame_width, vigor_frame_height)
@@ -88,5 +69,26 @@ RPGBB:RegisterAccentGroup({
     },
     mirrorable = true,
     native_side = "right",
+    textures = {
+        {
+            key = "background",
+            layer = "ARTWORK",
+            sublevel = 1,
+            atlas = "dragonriding_sgvigor_fillfull",
+            desaturated = true,
+        },
+        {
+            key = "foreground",
+            layer = "ARTWORK",
+            sublevel = 2,
+            atlas = "dragonriding_sgvigor_frame_bronze",
+        },
+        {
+            key = "accent",
+            layer = "ARTWORK",
+            sublevel = 3,
+            atlas = "dragonriding_sgvigor_decor_bronze",
+        },
+    },
     Render = Frame,
 })

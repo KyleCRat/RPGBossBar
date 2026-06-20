@@ -1017,20 +1017,20 @@ accent_color_setting = {
 }
 
 -------------------------------------------------------------------------------
---- Accent Groups
-local function CreateAccentGroupSetting(slot, name)
+--- Accent Selection
+local function CreateAccentSelectionSetting(slot, name)
     local function get(value)
-        return RPGBB.db:Get("accents", slot, "group") == value
+        return RPGBB.db:Get("accents", slot, "selected") == value
     end
 
     local function set(value)
-        RPGBB.db:Set("accents", slot, "group", value)
+        RPGBB.db:Set("accents", slot, "selected", value)
         RPGBB:InitOrUpdateFrame()
     end
 
     local function reset(layoutName, value, fromReset)
         if fromReset then
-            RPGBB.db:SetDefault("accents", slot, "group")
+            RPGBB.db:SetDefault("accents", slot, "selected")
             RPGBB:InitOrUpdateFrame()
         end
     end
@@ -1038,20 +1038,45 @@ local function CreateAccentGroupSetting(slot, name)
     return {
         name = name,
         kind = LEM.SettingType.Dropdown,
-        default = defaults.accents[slot].group,
+        default = defaults.accents[slot].selected,
         set = reset,
         generator = function(owner, rootDescription)
             rootDescription:SetScrollMode(400)
 
-            for _, group in ipairs(RPGBB:GetAccentGroupsForSlot(slot)) do
+            for _, option in ipairs(RPGBB:GetAccentOptionsForSlot(slot)) do
                 rootDescription:CreateCheckbox(
-                    group.name or group.id,
+                    option.name or option.id,
                     get,
                     set,
-                    group.id
+                    option.id
                 )
             end
         end,
+    }
+end
+
+local function CreateAccentCustomAtlasSetting(slot)
+    local function get()
+        return RPGBB.db:Get("accents", slot, "custom_atlas") or ""
+    end
+
+    local function set(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, "custom_atlas")
+        else
+            RPGBB.db:Set("accents", slot, "custom_atlas", value or "")
+        end
+
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    return {
+        name = "Custom Atlas",
+        kind = LEM.SettingType.TextInput,
+        default = defaults.accents[slot].custom_atlas,
+        get = get,
+        set = set,
+        desc = "Optional atlas name. When set, this overrides the selected accent texture.",
     }
 end
 
@@ -1083,17 +1108,124 @@ local function CreateAccentOffsetSetting(slot, axis, name)
     }
 end
 
-accent_left_group_setting = CreateAccentGroupSetting("left", "Texture")
+local function CreateAccentScaleSetting(slot, key, name)
+    local function formatScaleValue(value)
+        return string.format("%.2f", tonumber(value) or 0)
+    end
+
+    local function get()
+        return RPGBB.db:Get("accents", slot, key)
+    end
+
+    local function set(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, key)
+        else
+            RPGBB.db:Set("accents", slot, key, value)
+        end
+
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    return {
+        name = name,
+        kind = LEM.SettingType.Slider,
+        default = defaults.accents[slot][key],
+        get = get,
+        set = set,
+        minValue = 0.1,
+        maxValue = 5,
+        valueStep = 0.1,
+        snapToStep = true,
+        formatter = formatScaleValue,
+        editFormatter = formatScaleValue,
+    }
+end
+
+local function CreateAccentRotationSetting(slot)
+    local function get()
+        return RPGBB.db:Get("accents", slot, "rotation")
+    end
+
+    local function set(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, "rotation")
+        else
+            RPGBB.db:Set("accents", slot, "rotation", value)
+        end
+
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    return {
+        name = "Rotation",
+        kind = LEM.SettingType.Slider,
+        default = defaults.accents[slot].rotation,
+        get = get,
+        set = set,
+        minValue = -180,
+        maxValue = 180,
+        valueStep = 1,
+        formatter = function(value) return value end,
+    }
+end
+
+local function CreateAccentMirrorSetting(slot, key, name)
+    local function get()
+        return RPGBB.db:Get("accents", slot, key)
+    end
+
+    local function set(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, key)
+        else
+            RPGBB.db:Set("accents", slot, key, value)
+        end
+
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    return {
+        name = name,
+        kind = LEM.SettingType.Checkbox,
+        default = defaults.accents[slot][key],
+        get = get,
+        set = set,
+    }
+end
+
+accent_left_selection_setting = CreateAccentSelectionSetting("left", "Texture")
 accent_left_offset_x_setting = CreateAccentOffsetSetting("left", "x", "Offset X")
 accent_left_offset_y_setting = CreateAccentOffsetSetting("left", "y", "Offset Y")
+accent_left_custom_atlas_setting = CreateAccentCustomAtlasSetting("left")
+accent_left_scale_setting = CreateAccentScaleSetting("left", "scale", "Scale")
+accent_left_width_scale_setting = CreateAccentScaleSetting("left", "width_scale", "Width Scale")
+accent_left_height_scale_setting = CreateAccentScaleSetting("left", "height_scale", "Height Scale")
+accent_left_rotation_setting = CreateAccentRotationSetting("left")
+accent_left_mirror_x_setting = CreateAccentMirrorSetting("left", "mirror_x", "Mirror Horizontally")
+accent_left_mirror_y_setting = CreateAccentMirrorSetting("left", "mirror_y", "Mirror Vertically")
 
-accent_center_group_setting = CreateAccentGroupSetting("center", "Texture")
+accent_center_selection_setting = CreateAccentSelectionSetting("center", "Texture")
 accent_center_offset_x_setting = CreateAccentOffsetSetting("center", "x", "Offset X")
 accent_center_offset_y_setting = CreateAccentOffsetSetting("center", "y", "Offset Y")
+accent_center_custom_atlas_setting = CreateAccentCustomAtlasSetting("center")
+accent_center_scale_setting = CreateAccentScaleSetting("center", "scale", "Scale")
+accent_center_width_scale_setting = CreateAccentScaleSetting("center", "width_scale", "Width Scale")
+accent_center_height_scale_setting = CreateAccentScaleSetting("center", "height_scale", "Height Scale")
+accent_center_rotation_setting = CreateAccentRotationSetting("center")
+accent_center_mirror_x_setting = CreateAccentMirrorSetting("center", "mirror_x", "Mirror Horizontally")
+accent_center_mirror_y_setting = CreateAccentMirrorSetting("center", "mirror_y", "Mirror Vertically")
 
-accent_right_group_setting = CreateAccentGroupSetting("right", "Texture")
+accent_right_selection_setting = CreateAccentSelectionSetting("right", "Texture")
 accent_right_offset_x_setting = CreateAccentOffsetSetting("right", "x", "Offset X")
 accent_right_offset_y_setting = CreateAccentOffsetSetting("right", "y", "Offset Y")
+accent_right_custom_atlas_setting = CreateAccentCustomAtlasSetting("right")
+accent_right_scale_setting = CreateAccentScaleSetting("right", "scale", "Scale")
+accent_right_width_scale_setting = CreateAccentScaleSetting("right", "width_scale", "Width Scale")
+accent_right_height_scale_setting = CreateAccentScaleSetting("right", "height_scale", "Height Scale")
+accent_right_rotation_setting = CreateAccentRotationSetting("right")
+accent_right_mirror_x_setting = CreateAccentMirrorSetting("right", "mirror_x", "Mirror Horizontally")
+accent_right_mirror_y_setting = CreateAccentMirrorSetting("right", "mirror_y", "Mirror Vertically")
 
 -------------------------------------------------------------------------------
 --- Boss Name Text Enabled
@@ -1964,17 +2096,41 @@ LEM:AddFrameSettings(RPGBB.frame, {
     -- accent_copy_healthbar_texture_color_setting,
     accent_color_setting,
     { name = 'Left Accent', kind = LEM.SettingType.Divider, collapsed = true, },
-    accent_left_group_setting,
+    accent_left_selection_setting,
     accent_left_offset_x_setting,
     accent_left_offset_y_setting,
+    { name = 'Left Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
+    accent_left_custom_atlas_setting,
+    accent_left_scale_setting,
+    accent_left_width_scale_setting,
+    accent_left_height_scale_setting,
+    accent_left_rotation_setting,
+    accent_left_mirror_x_setting,
+    accent_left_mirror_y_setting,
     { name = 'Center Accent', kind = LEM.SettingType.Divider, collapsed = true, },
-    accent_center_group_setting,
+    accent_center_selection_setting,
     accent_center_offset_x_setting,
     accent_center_offset_y_setting,
+    { name = 'Center Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
+    accent_center_custom_atlas_setting,
+    accent_center_scale_setting,
+    accent_center_width_scale_setting,
+    accent_center_height_scale_setting,
+    accent_center_rotation_setting,
+    accent_center_mirror_x_setting,
+    accent_center_mirror_y_setting,
     { name = 'Right Accent', kind = LEM.SettingType.Divider, collapsed = true, },
-    accent_right_group_setting,
+    accent_right_selection_setting,
     accent_right_offset_x_setting,
     accent_right_offset_y_setting,
+    { name = 'Right Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
+    accent_right_custom_atlas_setting,
+    accent_right_scale_setting,
+    accent_right_width_scale_setting,
+    accent_right_height_scale_setting,
+    accent_right_rotation_setting,
+    accent_right_mirror_x_setting,
+    accent_right_mirror_y_setting,
 })
 
 LEM:AddFrameSettingsButtons(RPGBB.frame, {

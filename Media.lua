@@ -26,6 +26,10 @@ local border_media = {
         path = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_silver.tga",
     },
     {
+        name = "RPGBB: Action Bar Border",
+        path = "Interface\\AddOns\\RPGBossBar\\media\\art\\ActionBar-Border.tga",
+    },
+    {
         name = "Blizzard Arena",
         path = "Interface\\ArenaEnemyFrame\\UI-Arena-Border",
     },

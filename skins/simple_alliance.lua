@@ -1,8 +1,8 @@
 local ADDON_NAME, RPGBB = ...
 
 RPGBB:RegisterDefaultSkin({
-    id = "vigor_dark",
-    name = "Vigor Dark",
+    id = "simple_alliance",
+    name = "Simple Alliance",
     overrides = {
         frame = {
             background_color = {
@@ -18,14 +18,14 @@ RPGBB:RegisterDefaultSkin({
                     g = 1,
                     r = 1,
                 },
-                offset = 4,
-                size = 32,
-                texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_dark.tga",
+                offset = 5,
+                size = 24,
+                texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\ActionBar-Border.tga",
             },
         },
         accents = {
             center = {
-                custom_atlas = "",
+                custom_atlas = "Quest-Alliance-WaxSeal",
                 height_scale = 1,
                 mirror_x = false,
                 mirror_y = false,
@@ -34,15 +34,15 @@ RPGBB:RegisterDefaultSkin({
                     y = 0,
                 },
                 rotation = 0,
-                scale = 1,
-                selected = "sgvigor-dark-center",
+                scale = .7,
+                selected = "none",
                 width_scale = 1,
             },
             color = {
                 a = 1,
-                b = 106 / 255,
-                g = 34 / 255,
-                r = 70 / 255,
+                b = 1,
+                g = 1,
+                r = 1,
             },
             left = {
                 custom_atlas = "",
@@ -50,12 +50,12 @@ RPGBB:RegisterDefaultSkin({
                 mirror_x = false,
                 mirror_y = false,
                 offset = {
-                    x = 0,
-                    y = 0,
+                    x = 22,
+                    y = 8,
                 },
                 rotation = 0,
                 scale = 1,
-                selected = "sgvigor-dark-side",
+                selected = "simple-alliance-gryphon-left",
                 width_scale = 1,
             },
             right = {
@@ -64,12 +64,12 @@ RPGBB:RegisterDefaultSkin({
                 mirror_x = false,
                 mirror_y = false,
                 offset = {
-                    x = 0,
-                    y = 0,
+                    x = -22,
+                    y = 8,
                 },
                 rotation = 0,
                 scale = 1,
-                selected = "sgvigor-dark-side",
+                selected = "simple-alliance-gryphon-right",
                 width_scale = 1,
             },
         },
@@ -82,8 +82,8 @@ RPGBB:RegisterDefaultSkin({
                     g = 1,
                     r = 1,
                 },
-                font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
-                size = 32,
+                font = "Fonts\\FRIZQT__.TTF",
+                size = 28,
             },
             offset = {
                 y = 2,
@@ -92,8 +92,8 @@ RPGBB:RegisterDefaultSkin({
         health = {
             font = {
                 enabled = true,
-                font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
-                size = 20,
+                font = "Fonts\\FRIZQT__.TTF",
+                size = 23,
                 color = {
                     a = 1,
                     b = 1,
@@ -101,40 +101,40 @@ RPGBB:RegisterDefaultSkin({
                     r = 1,
                 },
                 offset = {
-                    y = 0,
+                    y = -1,
                 },
             },
             percent_font = {
                 enabled = true,
                 offset = {
-                    x = -24,
+                    x = -28,
                 },
             },
             spark = {
                 color = {
                     a = 1,
                     b = 255 / 255,
-                    g = 167 / 255,
-                    r = 229 / 255,
+                    g = 205 / 255,
+                    r = 100 / 255,
                 },
             },
             texture = {
-                atlas = true,
-                atlas_texture = "Unit_Priest_Insanity_Fill",
+                atlas = false,
+                atlas_texture = false,
                 color = {
                     a = 1,
-                    b = 1,
-                    g = 1,
-                    r = 1,
+                    r = 0 / 255,
+                    g = 90 / 255,
+                    b = 179 / 255,
                 },
                 desaturated = false,
-                texture = false,
+                texture = "Interface\\Buttons\\WHITE8X8",
             },
         },
         power = {
             enabled = true,
             height = 12,
-            offset_y = 0,
+            offset_y = -2,
             percent_width = 80,
             texture = "Interface\\Buttons\\WHITE8X8",
             border = {
@@ -146,13 +146,13 @@ RPGBB:RegisterDefaultSkin({
                 },
                 offset = 2,
                 size = 10,
-                texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_dark.tga",
+                texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\ActionBar-Border.tga",
             },
             color = {
                 a = 1,
-                b = 0,
-                g = 1,
                 r = 1,
+                g = 1,
+                b = 0,
             },
             font = {
                 enabled = false,

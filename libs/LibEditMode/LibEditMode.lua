@@ -806,8 +806,12 @@ Table containing the following entries:
 | maxValue  | upper bound for the slider        | number   | no       | 1       |
 | valueStep | step increment between each value | number   | no       | 1       |
 | formatter | formatter for the display value   | function | no       |         |
+| editFormatter | formatter for the edit box value | function | no       |         |
+| snapToStep | round slider-originated changes to `valueStep` | boolean | no | false |
 
-- The formatter passes `value` as the sole argument and expects a number value in return.
+- The formatter passes `value` as the sole argument and expects a display value in return.
+- `editFormatter` only affects the value shown when the text input is focused.
+- `snapToStep` does not round manually typed values.
 
 ### ColorPicker ![](https://img.shields.io/badge/object-teal)
 
@@ -836,8 +840,10 @@ One of:
 - `Slider`
 - `Divider`
 - `Button`
+- `TextInput`
 - `ColorPicker`
 --]]
 lib.SettingType = CopyTable(Enum.EditModeSettingDisplayType)
 lib.SettingType.Button = 'button'
+lib.SettingType.TextInput = 'textinput'
 lib.SettingType.ColorPicker = 10 -- leave some room for blizzard expansion

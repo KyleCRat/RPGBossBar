@@ -15,6 +15,17 @@ local function showTooltip(self)
 end
 
 local sliderMixin = {}
+
+local function snapValueToStep(value, minValue, stepSize)
+	if not stepSize or stepSize <= 0 then
+		return value
+	end
+
+	local snappedValue = minValue + (math.floor(((value - minValue) / stepSize) + 0.5) * stepSize)
+
+	return tonumber(string.format('%.10f', snappedValue))
+end
+
 function sliderMixin:Setup(data)
 	self.setting = data
 	self.Label:SetText(data.name)
@@ -31,7 +42,11 @@ function sliderMixin:Setup(data)
 end
 
 function sliderMixin:OnSliderValueChanged(value)
-	if not self.initInProgress then
+	if not self.initInProgress and not self.suppressSliderChange then
+		if self.setting.snapToStep then
+			value = snapValueToStep(value, self.setting.minValue or 0, self.setting.valueStep)
+		end
+
 		self.setting.set(lib:GetActiveLayoutName(), value, false)
 	end
 end
@@ -52,6 +67,7 @@ end
 
 local function onEditFocus(self)
 	local parent = self:GetParent()
+	local value = parent.Slider.Slider:GetValue()
 
 	-- hide slider
 	parent.Slider:Hide()
@@ -63,8 +79,12 @@ local function onEditFocus(self)
 	self:SetHeight(24)
 
 	-- set editbox text to current slider value
-	-- TODO: maybe flatten the value here
-	self:SetText(parent.Slider.Slider:GetValue())
+	if parent.setting and parent.setting.editFormatter then
+		self:SetText(parent.setting.editFormatter(value))
+	else
+		self:SetText(value)
+	end
+
 	self:SetCursorPosition(0)
 end
 
@@ -73,12 +93,18 @@ local function onEditSubmit(self)
 
 	-- get bounds and value
 	local min, max = parent.Slider.Slider:GetMinMaxValues()
-	local value = self:GetText()
+	local value = tonumber(self:GetText())
 
 	-- trigger change if value is a valid number
-	if tonumber(value) then
+	if value then
 		-- use bounds when updating value
-		parent.Slider:SetValue(math.min(math.max(value, min), max))
+		value = math.min(math.max(value, min), max)
+
+		parent.suppressSliderChange = true
+		parent.Slider:SetValue(value)
+		parent.suppressSliderChange = false
+		parent.Slider:FormatValue(value)
+		parent.setting.set(lib:GetActiveLayoutName(), value, false)
 	end
 
 	self:ClearFocus()

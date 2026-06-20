@@ -114,21 +114,42 @@ addon.db_defaults = {
         copy_healthbar_texture_color = false,
         color = { r = 70/255, g = 34/255, b = 106/255, a = 1 },
         left = {
-            group = "sgvigor-dark-side",
+            selected = "sgvigor-dark-side",
+            custom_atlas = "",
+            scale = 1,
+            width_scale = 1,
+            height_scale = 1,
+            rotation = 0,
+            mirror_x = false,
+            mirror_y = false,
             offset = {
                 x = 0,
                 y = 0,
             },
         },
         right = {
-            group = "sgvigor-dark-side",
+            selected = "sgvigor-dark-side",
+            custom_atlas = "",
+            scale = 1,
+            width_scale = 1,
+            height_scale = 1,
+            rotation = 0,
+            mirror_x = false,
+            mirror_y = false,
             offset = {
                 x = 0,
                 y = 0,
             },
         },
         center = {
-            group = "sgvigor-dark-center",
+            selected = "sgvigor-dark-center",
+            custom_atlas = "",
+            scale = 1,
+            width_scale = 1,
+            height_scale = 1,
+            rotation = 0,
+            mirror_x = false,
+            mirror_y = false,
             offset = {
                 x = 0,
                 y = 0,
@@ -140,10 +161,10 @@ addon.db_defaults = {
 addon.db_validation = {
     anchor_points = anchor_points,
     blend_modes = blend_modes,
-    accent_group_paths = {
-        ["accents.center.group"] = "center",
-        ["accents.left.group"] = "left",
-        ["accents.right.group"] = "right",
+    accent_selection_paths = {
+        ["accents.center.selected"] = "center",
+        ["accents.left.selected"] = "left",
+        ["accents.right.selected"] = "right",
     },
     anchor_point_paths = {
         ["frame.position.point"] = true,
