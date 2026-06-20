@@ -204,7 +204,7 @@ local profile_skin_apply_setting = {
     kind = LEM.SettingType.Button,
     text = 'Apply To Current Profile',
     click = ConfirmApplySelectedProfileSkin,
-    desc = 'Overlay the selected profile skin onto the active profile.',
+    desc = 'Choose how to apply the selected profile skin to the active profile.',
 }
 
 --- Test Frames

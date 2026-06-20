@@ -381,6 +381,27 @@ function RPGBB:ResetProfileToDefaults(profileName)
     return true
 end
 
+function RPGBB:ResetProfileToDefaultSkin(profileName, skinID)
+    local profile = RPGBossBarProfiles.profiles[profileName]
+    local skin = RPGBB:GetDefaultSkin(skinID)
+
+    if not profile or not skin then
+        return false
+    end
+
+    ReplaceTable(profile, RPGBB:BuildProfileFromDefaultSkin(skinID))
+
+    RPGBossBarProfiles.profileMeta = RPGBossBarProfiles.profileMeta or {}
+    RPGBossBarProfiles.profileMeta[profileName] = RPGBossBarProfiles.profileMeta[profileName] or {}
+    RPGBossBarProfiles.profileMeta[profileName].defaultSkin = skinID
+
+    if profileName == RPGBB.GetActiveProfileKey() then
+        RPGBB.db:SetData(profile)
+    end
+
+    return true
+end
+
 function RPGBB:ResetActiveProfile()
     return RPGBB:ResetProfileToDefaults(RPGBB.GetActiveProfileKey())
 end

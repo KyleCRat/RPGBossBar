@@ -58,6 +58,20 @@ local function ApplyDefaultSkinToCurrentProfile(skinID, refreshProfileSettings)
     RefreshProfileUI(refreshProfileSettings)
 end
 
+local function ResetAndApplyDefaultSkinToCurrentProfile(skinID, refreshProfileSettings)
+    local activeKey = RPGBB.GetActiveProfileKey()
+    local skin = RPGBB:GetDefaultSkin(skinID)
+
+    if not skin or not RPGBB:ResetProfileToDefaultSkin(activeKey, skinID) then
+        RPGBB:Print("Could not reset and apply profile skin.")
+
+        return
+    end
+
+    RPGBB:Print("Reset profile and applied profile skin \"" .. skin.name .. "\": " .. activeKey)
+    RefreshProfileUI(refreshProfileSettings)
+end
+
 local function CreateProfileFromSkin(skinID, profileName)
     local skin = RPGBB:GetDefaultSkin(skinID)
     if not skin then
@@ -210,9 +224,10 @@ StaticPopupDialogs["RPGBB_COPY_PROFILE"] = {
 }
 
 StaticPopupDialogs["RPGBB_APPLY_DEFAULT_SKIN"] = {
-    text = "Apply profile skin \"%s\" to active profile \"%s\"?\n\nThis overlays only the skin settings and keeps unrelated profile settings such as frame position.",
+    text = "Apply profile skin \"%s\" to active profile \"%s\"?\n\nApply overlays only the skin settings and keeps unrelated profile settings such as frame position.\n\nReset and Apply resets the profile to defaults first, then applies the selected skin.",
     button1 = "Apply",
-    button2 = "Cancel",
+    button2 = "Reset and Apply",
+    button3 = "Cancel",
     OnAccept = function(self, data)
         local skinID = data
         local refreshProfileSettings = false
@@ -223,6 +238,23 @@ StaticPopupDialogs["RPGBB_APPLY_DEFAULT_SKIN"] = {
         end
 
         ApplyDefaultSkinToCurrentProfile(skinID, refreshProfileSettings)
+    end,
+    OnCancel = function(self, data, reason)
+        if reason ~= "clicked" then
+            return
+        end
+
+        local skinID = data
+        local refreshProfileSettings = false
+
+        if type(data) == "table" then
+            skinID = data.skinID
+            refreshProfileSettings = data.refreshProfileSettings
+        end
+
+        ResetAndApplyDefaultSkinToCurrentProfile(skinID, refreshProfileSettings)
+    end,
+    OnAlt = function()
     end,
     timeout = 0,
     whileDead = true,
@@ -519,7 +551,7 @@ function RPGBB.RegisterProfileSettings()
                 )
             end
         end,
-        "Overlay the selected skin onto the active profile without changing unrelated settings.",
+        "Choose how to apply the selected skin to the active profile.",
         false
     )
     layout:AddInitializer(applySkinInitializer)
