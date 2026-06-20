@@ -966,6 +966,55 @@ health_bar_spark_height_multi_setting = {
     formatter = function(value) return value end,
 }
 
+-------------------------------------------------------------------------------
+--- Global Font
+local function global_font_get(value)
+    local font = LibSharedMedia:Fetch('font', value)
+
+    return RPGBB.db:Get("name", "font", "font") == font
+        and RPGBB.db:Get("health", "font", "font") == font
+        and RPGBB.db:Get("power", "font", "font") == font
+end
+
+local function global_font_set(value)
+    local font = LibSharedMedia:Fetch('font', value)
+
+    RPGBB.db:Set("name", "font", "font", font)
+    RPGBB.db:Set("health", "font", "font", font)
+    RPGBB.db:Set("power", "font", "font", font)
+    RPGBB:InitOrUpdateFrame()
+
+    if RPGBB.frame then
+        LEM:RefreshFrameSettings(RPGBB.frame)
+    end
+end
+
+local function global_font_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("name", "font", "font")
+        RPGBB.db:SetDefault("health", "font", "font")
+        RPGBB.db:SetDefault("power", "font", "font")
+        RPGBB:InitOrUpdateFrame()
+
+        if RPGBB.frame then
+            LEM:RefreshFrameSettings(RPGBB.frame)
+        end
+    end
+end
+
+global_font_setting = {
+    name = 'Font',
+    kind = LEM.SettingType.Dropdown,
+    default = defaults.name.font.font,
+    set = global_font_default,
+    generator = function(owner, rootDescription)
+        rootDescription:SetScrollMode(400)
+        for _, name in ipairs(LibSharedMedia:List('font')) do
+            rootDescription:CreateCheckbox(name, global_font_get, global_font_set, name)
+        end
+    end,
+}
+
 -- -------------------------------------------------------------------------------
 -- --- Accent Copy Healthbar Texture Color
 -- local function accent_copy_healthbar_texture_color_get()
@@ -1018,6 +1067,31 @@ local function CreateAccentColorSetting(slot)
     }
 end
 
+local function RefreshAccentSettings()
+    RPGBB:InitOrUpdateFrame()
+
+    if RPGBB.frame then
+        LEM:RefreshFrameSettings(RPGBB.frame)
+    end
+end
+
+local function AccentHasCustomAtlas(slot)
+    local custom_atlas = RPGBB.db:Get("accents", slot, "custom_atlas")
+
+    return type(custom_atlas) == "string" and custom_atlas ~= ""
+end
+
+local function AccentAdvancedSettingDisabled(slot, capability)
+    if AccentHasCustomAtlas(slot) then
+        return false
+    end
+
+    local selected = RPGBB.db:Get("accents", slot, "selected")
+    local option = RPGBB:GetAccentOption(selected)
+
+    return not RPGBB:AccentOptionSupportsAdvanced(option, capability)
+end
+
 -------------------------------------------------------------------------------
 --- Accent Selection
 local function CreateAccentSelectionSetting(slot, name)
@@ -1027,13 +1101,13 @@ local function CreateAccentSelectionSetting(slot, name)
 
     local function set(value)
         RPGBB.db:Set("accents", slot, "selected", value)
-        RPGBB:InitOrUpdateFrame()
+        RefreshAccentSettings()
     end
 
     local function reset(layoutName, value, fromReset)
         if fromReset then
             RPGBB.db:SetDefault("accents", slot, "selected")
-            RPGBB:InitOrUpdateFrame()
+            RefreshAccentSettings()
         end
     end
 
@@ -1069,7 +1143,7 @@ local function CreateAccentCustomAtlasSetting(slot)
             RPGBB.db:Set("accents", slot, "custom_atlas", value or "")
         end
 
-        RPGBB:InitOrUpdateFrame()
+        RefreshAccentSettings()
     end
 
     return {
@@ -1141,6 +1215,9 @@ local function CreateAccentScaleSetting(slot, key, name)
         snapToStep = true,
         formatter = formatScaleValue,
         editFormatter = formatScaleValue,
+        disabled = function()
+            return AccentAdvancedSettingDisabled(slot, "scale")
+        end,
     }
 end
 
@@ -1169,6 +1246,9 @@ local function CreateAccentRotationSetting(slot)
         maxValue = 180,
         valueStep = 1,
         formatter = function(value) return value end,
+        disabled = function()
+            return AccentAdvancedSettingDisabled(slot, "rotation")
+        end,
     }
 end
 
@@ -1193,6 +1273,9 @@ local function CreateAccentMirrorSetting(slot, key, name)
         default = defaults.accents[slot][key],
         get = get,
         set = set,
+        disabled = function()
+            return AccentAdvancedSettingDisabled(slot, "mirror")
+        end,
     }
 end
 
@@ -1542,14 +1625,29 @@ power_bar_color_setting = {
 
 -------------------------------------------------------------------------------
 --- Power Bar Border Texture
-local function power_bar_border_texture_get(value)
-    local texture = LibSharedMedia:Fetch('border', value)
+local POWER_BAR_BORDER_NONE = "__none"
 
-    return RPGBB.db:Get("power", "border", "texture") == texture
+local function power_bar_border_texture_get(value)
+    local selected_texture = RPGBB.db:Get("power", "border", "texture")
+
+    if value == POWER_BAR_BORDER_NONE then
+        return selected_texture == false or selected_texture == ""
+    end
+
+    local texture = LibSharedMedia:Fetch('border', value, true)
+
+    return selected_texture == texture
 end
 
 local function power_bar_border_texture_set(value)
-    local texture = LibSharedMedia:Fetch('border', value)
+    if value == POWER_BAR_BORDER_NONE then
+        RPGBB.db:Set("power", "border", "texture", false)
+        RPGBB:UpdateFrames()
+
+        return
+    end
+
+    local texture = LibSharedMedia:Fetch('border', value, true)
     RPGBB.db:Set("power", "border", "texture", texture)
     RPGBB:UpdateFrames()
 end
@@ -1568,14 +1666,22 @@ power_bar_border_texture_setting = {
     set = power_bar_border_texture_default,
     generator = function(owner, rootDescription)
         rootDescription:SetScrollMode(400)
+        rootDescription:CreateCheckbox(
+            "None",
+            power_bar_border_texture_get,
+            power_bar_border_texture_set,
+            POWER_BAR_BORDER_NONE
+        )
 
         for _, name in ipairs(LibSharedMedia:List('border')) do
-            rootDescription:CreateCheckbox(
-                name,
-                power_bar_border_texture_get,
-                power_bar_border_texture_set,
-                name
-            )
+            if name ~= "None" then
+                rootDescription:CreateCheckbox(
+                    name,
+                    power_bar_border_texture_get,
+                    power_bar_border_texture_set,
+                    name
+                )
+            end
         end
     end,
 }
@@ -2046,6 +2152,8 @@ LEM:AddFrameSettings(RPGBB.frame, {
     frame_border_color_setting,
     frame_border_size_setting,
     frame_border_offset_setting,
+    { name = 'Global Font', kind = LEM.SettingType.Divider, collapsed = true, },
+    global_font_setting,
     { name = 'Boss Name Text', kind = LEM.SettingType.Divider, collapsed = true, },
     name_text_enabled_setting,
     name_offset_y_setting,

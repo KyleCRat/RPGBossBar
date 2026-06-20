@@ -28,6 +28,51 @@ local function HideAccentTexture(texture)
     end
 end
 
+local function ApplyTextureMirror(texture, mirror_x, mirror_y)
+    if not mirror_x and not mirror_y then
+        return
+    end
+
+    local ul_x, ul_y, bl_x, bl_y, ur_x, ur_y, br_x, br_y = texture:GetTexCoord()
+
+    if not br_y then
+        return
+    end
+
+    if mirror_x then
+        local original_ul_x, original_ul_y = ul_x, ul_y
+        local original_bl_x, original_bl_y = bl_x, bl_y
+
+        ul_x, ul_y = ur_x, ur_y
+        bl_x, bl_y = br_x, br_y
+        ur_x, ur_y = original_ul_x, original_ul_y
+        br_x, br_y = original_bl_x, original_bl_y
+    end
+
+    if mirror_y then
+        local original_ul_x, original_ul_y = ul_x, ul_y
+        local original_ur_x, original_ur_y = ur_x, ur_y
+
+        ul_x, ul_y = bl_x, bl_y
+        bl_x, bl_y = original_ul_x, original_ul_y
+        ur_x, ur_y = br_x, br_y
+        br_x, br_y = original_ur_x, original_ur_y
+    end
+
+    texture:SetTexCoord(ul_x, ul_y, bl_x, bl_y, ur_x, ur_y, br_x, br_y)
+end
+
+local function ResetTextureAtlasCoords(texture, atlas)
+    if type(atlas) ~= "string" or atlas == "" then
+        return
+    end
+
+    local ok = pcall(texture.SetAtlas, texture, atlas, false, nil, true)
+    if not ok then
+        pcall(texture.SetAtlas, texture, atlas)
+    end
+end
+
 function RPGBB:EnsureAccentFrame(state, parent)
     if not state.frame then
         state.frame = CreateFrame("Frame", nil, parent)
@@ -73,9 +118,11 @@ local function PrepareAccentGroupState(group, state, context)
     end
 
     state.managed_texture_keys = state.managed_texture_keys or {}
+    state.managed_texture_atlases = state.managed_texture_atlases or {}
 
     for _, texture in ipairs(group.textures) do
         state.managed_texture_keys[texture.key] = true
+        state.managed_texture_atlases[texture.key] = texture.atlas or false
 
         RPGBB:EnsureAccentTexture(
             state,
@@ -85,6 +132,63 @@ local function PrepareAccentGroupState(group, state, context)
             texture.atlas,
             texture.desaturated
         )
+    end
+end
+
+local function ApplyAccentGroupTransforms(group, state, context)
+    if not state or not state.managed_texture_keys then
+        return
+    end
+
+    local config = context.config or {}
+    local scale = tonumber(config.scale) or 1
+    local width_scale = tonumber(config.width_scale) or 1
+    local height_scale = tonumber(config.height_scale) or 1
+    local rotation = tonumber(config.rotation) or 0
+    local mirror_x = config.mirror_x or false
+    local mirror_y = config.mirror_y or false
+    local supports_scale = group.supportsScale == true
+    local supports_rotation = group.supportsRotation == true
+    local supports_mirror = group.supportsMirror == true
+
+    if not supports_scale then
+        scale = 1
+        width_scale = 1
+        height_scale = 1
+    end
+
+    local effective_width_scale = scale * width_scale
+    local effective_height_scale = scale * height_scale
+
+    if effective_width_scale == 1
+        and effective_height_scale == 1
+        and not supports_rotation
+        and not supports_mirror then
+        return
+    end
+
+    for key in pairs(state.managed_texture_keys) do
+        local texture = state[key]
+
+        if texture then
+            local width, height = texture:GetSize()
+
+            if supports_mirror and state.managed_texture_atlases then
+                ResetTextureAtlasCoords(texture, state.managed_texture_atlases[key])
+            end
+
+            if width and height and width > 0 and height > 0 then
+                texture:SetSize(width * effective_width_scale, height * effective_height_scale)
+            end
+
+            if supports_rotation and texture.SetRotation then
+                texture:SetRotation(math.rad(rotation))
+            end
+
+            if supports_mirror then
+                ApplyTextureMirror(texture, mirror_x, mirror_y)
+            end
+        end
     end
 end
 
@@ -175,6 +279,33 @@ function RPGBB:AccentOptionSupportsSlot(option, slot)
     return option.slots and option.slots[slot]
 end
 
+function RPGBB:AccentOptionSupportsAdvanced(option, capability)
+    if not option then
+        return false
+    end
+
+    if option.kind == "atlas" then
+        return true
+    end
+
+    if option.kind == "group" then
+        local group = RPGBB:GetAccentGroup(option.group or option.id)
+        if not group then
+            return false
+        end
+
+        if capability == "scale" then
+            return group.supportsScale == true
+        elseif capability == "rotation" then
+            return group.supportsRotation == true
+        elseif capability == "mirror" then
+            return group.supportsMirror == true
+        end
+    end
+
+    return false
+end
+
 function RPGBB:GetAccentOptionsForSlot(slot)
     local options = {}
 
@@ -227,6 +358,10 @@ function RPGBB:HideAccentGroup(state)
         wipe(state.managed_texture_keys)
     end
 
+    if state.managed_texture_atlases then
+        wipe(state.managed_texture_atlases)
+    end
+
     if state.frame then
         state.frame:Hide()
         state.frame:ClearAllPoints()
@@ -264,6 +399,7 @@ function RPGBB:RenderAccentGroup(id, state, context)
     state.group_id = id
     PrepareAccentGroupState(group, state, render_context)
     group.Render(state, render_context)
+    ApplyAccentGroupTransforms(group, state, render_context)
 
     return state
 end

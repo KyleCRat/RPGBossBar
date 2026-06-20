@@ -10,11 +10,12 @@ local testing = false
 local verbose = false
 
 --- Strata levels
+local POWER_BAR_LEVEL    = 3
+local POWER_BORDER_LEVEL = 4
 local HEALTH_BAR_LEVEL   = 5
 local FRAME_BORDER_LEVEL = 10
 local SPARK_LEVEL        = 11
-local POWER_BAR_LEVEL    = 3
-local POWER_BORDER_LEVEL = 4
+local TEXT_LEVEL         = 12
 local GRAPHICS_LEVEL     = 15
 
 
@@ -634,6 +635,7 @@ function RPGBB:UpdateFrames()
     for _, bf in pairs(RPGBB.health_bars) do
         bf.frame:Hide()
         if bf.spark_frame then bf.spark_frame:Hide() end
+        if bf.text_frame then bf.text_frame:Hide() end
         if bf.power_bar then bf.power_bar:Hide() end
         if bf.power_border then bf.power_border:Hide() end
         if bf.centerAccentGroup then RPGBB:HideAccentGroup(bf.centerAccentGroup) end
@@ -673,7 +675,7 @@ function RPGBB:UpdateFrames()
     local power_r, power_g, power_b, power_a = RPGBB.db:GetColor("power", "color")
 
     local power_border_texture = RPGBB.db:Get("power", "border", "texture")
-    local power_border_enabled = power_border_texture and power_border_texture ~= ""
+    local power_border_enabled = type(power_border_texture) == "string" and power_border_texture ~= ""
     local power_border_size    = RPGBB.db:Get("power", "border", "size")
     local power_border_offset  = RPGBB.db:Get("power", "border", "offset")
     local power_border_r, power_border_g, power_border_b, power_border_a =
@@ -737,27 +739,39 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].spark:SetBlendMode(spark_blend_mode)
         RPGBB.health_bars[boss_frame].spark:SetSize(spark_width, frame_height * spark_height_multi)
 
+        -- Boss text renders above the frame border.
+        if not RPGBB.health_bars[boss_frame].text_frame then
+            RPGBB.health_bars[boss_frame].text_frame = CreateFrame("Frame", nil, RPGBB.frame)
+        end
+        RPGBB.health_bars[boss_frame].text_frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + TEXT_LEVEL)
+        RPGBB.health_bars[boss_frame].text_frame:ClearAllPoints()
+        RPGBB.health_bars[boss_frame].text_frame:SetAllPoints(RPGBB.frame)
+        RPGBB.health_bars[boss_frame].text_frame:Show()
+
         -- Healthbar absolute value health text
         if not RPGBB.health_bars[boss_frame].health_text then
-            RPGBB.health_bars[boss_frame].health_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
+            RPGBB.health_bars[boss_frame].health_text = RPGBB.health_bars[boss_frame].text_frame:CreateFontString(nil, "OVERLAY")
         end
         -- Update each time for setting changes
+        RPGBB.health_bars[boss_frame].health_text:ClearAllPoints()
         RPGBB.health_bars[boss_frame].health_text:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "CENTER", 0, health_font_offset_y)
         RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.health_font)
         RPGBB.health_bars[boss_frame].health_text:SetShown(health_text_enabled)
 
         -- Healthbar percentage text (right side of bar)
         if not RPGBB.health_bars[boss_frame].percent_text then
-            RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
+            RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].text_frame:CreateFontString(nil, "OVERLAY")
         end
+        RPGBB.health_bars[boss_frame].percent_text:ClearAllPoints()
         RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", health_percent_offset_x, health_font_offset_y)
         RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
 
         -- Healthbar name text (above frame)
         if not RPGBB.health_bars[boss_frame].name_text then
-            RPGBB.health_bars[boss_frame].name_text = RPGBB.health_bars[boss_frame].frame:CreateFontString(nil, "OVERLAY")
+            RPGBB.health_bars[boss_frame].name_text = RPGBB.health_bars[boss_frame].text_frame:CreateFontString(nil, "OVERLAY")
             RPGBB.health_bars[boss_frame].name_text:SetWordWrap(false)
         end
+        RPGBB.health_bars[boss_frame].name_text:ClearAllPoints()
         RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, name_y_offset)
         RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
         RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)

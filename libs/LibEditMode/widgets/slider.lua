@@ -16,6 +16,14 @@ end
 
 local sliderMixin = {}
 
+local function isDisabled(data)
+	if type(data.disabled) == 'function' then
+		return data.disabled(lib:GetActiveLayoutName(), data)
+	end
+
+	return data.disabled
+end
+
 local function snapValueToStep(value, minValue, stepSize)
 	if not stepSize or stepSize <= 0 then
 		return value
@@ -29,7 +37,7 @@ end
 function sliderMixin:Setup(data)
 	self.setting = data
 	self.Label:SetText(data.name)
-	self:SetEnabled(not data.disabled)
+	self:SetEnabled(not isDisabled(data))
 
 	self.initInProgress = true
 	self.formatters = {}

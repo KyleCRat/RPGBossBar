@@ -15,10 +15,19 @@ local function showTooltip(self)
 end
 
 local checkboxMixin = {}
+
+local function isDisabled(data)
+	if type(data.disabled) == 'function' then
+		return data.disabled(lib:GetActiveLayoutName(), data)
+	end
+
+	return data.disabled
+end
+
 function checkboxMixin:Setup(data)
 	self.setting = data
 	self.Label:SetText(data.name)
-	self:SetEnabled(not data.disabled)
+	self:SetEnabled(not isDisabled(data))
 
 	local value = data.get(lib:GetActiveLayoutName())
 	if value == nil then

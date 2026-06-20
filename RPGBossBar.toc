@@ -18,6 +18,7 @@ accents/Registry.lua
 accents/Atlas.lua
 accents/SimpleHordeWyvern.lua
 accents/SimpleAllianceGryphon.lua
+accents/KyrianSanctumReservoir.lua
 accents/SGVigorDarkSide.lua
 accents/SGVigorDarkCenter.lua
 accents/SGVigorSilverSide.lua
@@ -27,6 +28,7 @@ accents/SGVigorGoldCenter.lua
 accents/SGVigorBronzeSide.lua
 accents/SGVigorBronzeCenter.lua
 skins/Registry.lua
+skins/kyrian.lua
 skins/vigor_dark.lua
 skins/vigor_silver.lua
 skins/vigor_gold.lua
