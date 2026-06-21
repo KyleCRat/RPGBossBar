@@ -88,7 +88,11 @@ RPGBB:RegisterDefaultSkin({
                 },
             },
             spark = {
+                atlas = "GarrMission_EncounterBar-Spark",
+                blend_mode = "ADD",
                 color = { r = 100 / 255, g = 205 / 255, b = 255 / 255, a = 1 },
+                height_multi = 2.3,
+                width = 10,
             },
             texture = {
                 atlas = false,
@@ -101,8 +105,8 @@ RPGBB:RegisterDefaultSkin({
         power = {
             enabled = true,
             height = 12,
-            offset_y = -2,
             percent_width = 80,
+            offset_y = -2,
             texture = "Interface\\Buttons\\WHITE8X8",
             border = {
                 color = { r = 1, g = 1, b = 1, a = 1 },

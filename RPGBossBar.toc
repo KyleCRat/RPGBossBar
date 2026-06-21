@@ -35,6 +35,8 @@ skins/vigor_gold.lua
 skins/vigor_bronze.lua
 skins/simple_horde.lua
 skins/simple_alliance.lua
+skins/horde.lua
+skins/alliance.lua
 database/Init.lua
 Commands.lua
 RPGBossBar.lua
