@@ -17,6 +17,7 @@ RPGBB:RegisterDefaultSkin({
             center = {
                 color = { r = 214 / 255, g = 154 / 255, b = 45 / 255, a = 1 },
                 custom_atlas = "",
+                desaturated = false,
                 height_scale = 1,
                 mirror_x = false,
                 mirror_y = false,
@@ -32,6 +33,7 @@ RPGBB:RegisterDefaultSkin({
             left = {
                 color = { r = 214 / 255, g = 154 / 255, b = 45 / 255, a = 1 },
                 custom_atlas = "",
+                desaturated = false,
                 height_scale = 1,
                 mirror_x = false,
                 mirror_y = false,
@@ -47,6 +49,7 @@ RPGBB:RegisterDefaultSkin({
             right = {
                 color = { r = 214 / 255, g = 154 / 255, b = 45 / 255, a = 1 },
                 custom_atlas = "",
+                desaturated = false,
                 height_scale = 1,
                 mirror_x = false,
                 mirror_y = false,

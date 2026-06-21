@@ -1167,6 +1167,33 @@ local function CreateAccentCustomAtlasSetting(slot)
     }
 end
 
+local function CreateAccentDesaturatedSetting(slot)
+    local function get()
+        return RPGBB.db:Get("accents", slot, "desaturated")
+    end
+
+    local function set(layoutName, value, fromReset)
+        if fromReset then
+            RPGBB.db:SetDefault("accents", slot, "desaturated")
+        else
+            RPGBB.db:Set("accents", slot, "desaturated", value)
+        end
+
+        RPGBB:InitOrUpdateFrame()
+    end
+
+    return {
+        name = "Desaturate",
+        kind = LEM.SettingType.Checkbox,
+        default = defaults.accents[slot].desaturated,
+        get = get,
+        set = set,
+        disabled = function()
+            return not AccentHasCustomAtlas(slot)
+        end,
+    }
+end
+
 local function CreateAccentOffsetSetting(slot, axis, name)
     local function get()
         return RPGBB.db:Get("accents", slot, "offset", axis)
@@ -1295,6 +1322,7 @@ accent_left_color_setting = CreateAccentColorSetting("left")
 accent_left_offset_x_setting = CreateAccentOffsetSetting("left", "x", "Offset X")
 accent_left_offset_y_setting = CreateAccentOffsetSetting("left", "y", "Offset Y")
 accent_left_custom_atlas_setting = CreateAccentCustomAtlasSetting("left")
+accent_left_desaturated_setting = CreateAccentDesaturatedSetting("left")
 accent_left_scale_setting = CreateAccentScaleSetting("left", "scale", "Scale")
 accent_left_width_scale_setting = CreateAccentScaleSetting("left", "width_scale", "Width Scale")
 accent_left_height_scale_setting = CreateAccentScaleSetting("left", "height_scale", "Height Scale")
@@ -1307,6 +1335,7 @@ accent_center_color_setting = CreateAccentColorSetting("center")
 accent_center_offset_x_setting = CreateAccentOffsetSetting("center", "x", "Offset X")
 accent_center_offset_y_setting = CreateAccentOffsetSetting("center", "y", "Offset Y")
 accent_center_custom_atlas_setting = CreateAccentCustomAtlasSetting("center")
+accent_center_desaturated_setting = CreateAccentDesaturatedSetting("center")
 accent_center_scale_setting = CreateAccentScaleSetting("center", "scale", "Scale")
 accent_center_width_scale_setting = CreateAccentScaleSetting("center", "width_scale", "Width Scale")
 accent_center_height_scale_setting = CreateAccentScaleSetting("center", "height_scale", "Height Scale")
@@ -1319,6 +1348,7 @@ accent_right_color_setting = CreateAccentColorSetting("right")
 accent_right_offset_x_setting = CreateAccentOffsetSetting("right", "x", "Offset X")
 accent_right_offset_y_setting = CreateAccentOffsetSetting("right", "y", "Offset Y")
 accent_right_custom_atlas_setting = CreateAccentCustomAtlasSetting("right")
+accent_right_desaturated_setting = CreateAccentDesaturatedSetting("right")
 accent_right_scale_setting = CreateAccentScaleSetting("right", "scale", "Scale")
 accent_right_width_scale_setting = CreateAccentScaleSetting("right", "width_scale", "Width Scale")
 accent_right_height_scale_setting = CreateAccentScaleSetting("right", "height_scale", "Height Scale")
@@ -2223,6 +2253,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     accent_left_offset_y_setting,
     { name = 'Left Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_left_custom_atlas_setting,
+    accent_left_desaturated_setting,
     accent_left_scale_setting,
     accent_left_width_scale_setting,
     accent_left_height_scale_setting,
@@ -2236,6 +2267,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     accent_center_offset_y_setting,
     { name = 'Center Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_center_custom_atlas_setting,
+    accent_center_desaturated_setting,
     accent_center_scale_setting,
     accent_center_width_scale_setting,
     accent_center_height_scale_setting,
@@ -2249,6 +2281,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     accent_right_offset_y_setting,
     { name = 'Right Accent Advanced', kind = LEM.SettingType.Divider, collapsed = true, },
     accent_right_custom_atlas_setting,
+    accent_right_desaturated_setting,
     accent_right_scale_setting,
     accent_right_width_scale_setting,
     accent_right_height_scale_setting,

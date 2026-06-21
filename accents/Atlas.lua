@@ -95,6 +95,11 @@ function RPGBB:RenderAtlasAccent(option, state, context, atlas, render_key)
     local mirror_x = config.mirror_x or false
     local mirror_y = config.mirror_y or false
     local rotation = tonumber(config.rotation) or 0
+    local desaturated = option.desaturated and true or false
+
+    if render_key == "custom_atlas" then
+        desaturated = config.desaturated and true or false
+    end
 
     if state and state.render_key ~= render_key then
         RPGBB:HideAccentGroup(state)
@@ -149,7 +154,7 @@ function RPGBB:RenderAtlasAccent(option, state, context, atlas, render_key)
         offset_y
     )
     state.texture:SetSize(texture_width, texture_height)
-    state.texture:SetDesaturated(option.desaturated and true or false)
+    state.texture:SetDesaturated(desaturated)
     state.texture:Show()
 
     if state.texture.SetRotation then
