@@ -102,9 +102,9 @@ RPGBB:RegisterDefaultSkin({
             texture = {
                 atlas = false,
                 atlas_texture = false,
-                color = { r = 0.27058824896812, g = 0.63921570777893, b = 0.85490202903748, a = 1 },
+                color = { r = 63 / 255, g = 199 / 255, b = 235 / 255, a = 1 },
                 desaturated = true,
-                texture = "Interface\\AddOns\\M33kAuras\\Media\\Textures\\Statusbar_Clean",
+                texture = "Interface\\Buttons\\WHITE8X8",
             },
         },
         power = {
@@ -119,7 +119,7 @@ RPGBB:RegisterDefaultSkin({
                 size = 12,
                 texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\ActionBar-Border.tga",
             },
-            color = { r = 0.68627452850342, g = 0.80392163991928, b = 1, a = 1 },
+            color = { r = 0.68627452850342, g = 0.803921639919, b = 1, a = 1 },
             font = {
                 enabled = false,
             },

@@ -19,6 +19,9 @@ accents/Atlas.lua
 accents/SimpleHordeWyvern.lua
 accents/SimpleAllianceGryphon.lua
 accents/KyrianSanctumReservoir.lua
+accents/NecrolordSanctumReservoir.lua
+accents/NightfaeSanctumReservoir.lua
+accents/VenthyrSanctumReservoir.lua
 accents/SGVigorDarkSide.lua
 accents/SGVigorDarkCenter.lua
 accents/SGVigorSilverSide.lua
@@ -29,6 +32,9 @@ accents/SGVigorBronzeSide.lua
 accents/SGVigorBronzeCenter.lua
 skins/Registry.lua
 skins/kyrian.lua
+skins/necrolord.lua
+skins/nightfae.lua
+skins/venthyr.lua
 skins/vigor_dark.lua
 skins/vigor_silver.lua
 skins/vigor_gold.lua
