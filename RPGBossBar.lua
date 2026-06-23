@@ -375,7 +375,7 @@ end
 local function GetVerticalSecondaryWidth()
     local width = tonumber(RPGBB.db:Get("frame", "vertical_secondary_width")) or 1
 
-    return math.max(0.1, math.min(2, width))
+    return math.max(0.1, math.min(1, width))
 end
 
 local function GetBossBarScale(index, is_vertical)
