@@ -10,8 +10,10 @@ RPG Boss Bar adds a large, RPG-inspired boss health display to the World of Warc
 - Shows each boss's name, current health, and health percentage
 - Automatically appears when supported boss units are active and hides afterward
 - Integrates with Blizzard Edit Mode for positioning and configuration
-- Supports Blizzard atlas textures and LibSharedMedia fonts and status bars
-- Configurable dimensions, colors, fonts, textures, sparks, accents, and text offsets
+- Supports horizontal and vertical boss bar layouts
+- Supports Blizzard atlas textures, LibSharedMedia fonts, status bars, and borders
+- Includes configurable profile skins for Alliance, Horde, covenant, and Vigor-inspired themes
+- Configurable dimensions, colors, fonts, font outlines, textures, sparks, accents, borders, power bars, and text offsets
 - Includes a test mode for configuring the display outside an encounter
 - Provides account-wide profiles with per-character profile selection
 - Supports creating, copying, renaming, deleting, importing, and exporting profiles
@@ -28,15 +30,19 @@ Open Blizzard Edit Mode and select **RPG Boss Bar**. The addon automatically dis
 
 The Edit Mode panel provides controls for:
 
-- Frame position, width, height, background color, and border appearance
-- Boss name font, size, color, and vertical offset
-- Health font, size, color, and vertical offset
+- Profile skin selection and skin application
+- Frame position, width, height, background color, border appearance, and vertical layout
+- Boss name font, size, outline, color, and vertical offset
+- Health font, size, outline, color, visibility, and vertical offset
 - Health bar texture, color, and desaturation
 - Percentage visibility and horizontal offset
 - Spark texture, color, blend mode, width, and height
-- Decorative accent color
+- Power bar texture, color, border, text, size, and visibility
+- Decorative accent selection, color, offsets, custom atlas, scaling, rotation, and mirroring
 
 Outside Edit Mode or a boss encounter, use `/rpgbb test [1-5]` to preview the display with between one and five boss bars.
+
+Vertical layout stacks boss bars instead of splitting the frame horizontally. Skins are designed primarily for horizontal layouts, so vertical mode may require manual adjustment. Center Accent settings control the accents used on secondary vertical bars.
 
 ## Profiles
 
@@ -44,6 +50,8 @@ Profiles are stored account-wide, while each character selects which profile to 
 
 Open profile management with `/rpgbb settings` or the **Manage Profiles** button in Edit Mode. From there you can:
 
+- Apply a bundled profile skin to the active profile
+- Create a new profile from a bundled profile skin
 - Create an empty profile
 - Switch the current character to another profile
 - Copy settings from another profile
