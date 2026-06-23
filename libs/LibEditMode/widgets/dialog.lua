@@ -58,6 +58,43 @@ function dialogMixin:RefreshWidgets()
 	end
 end
 
+function dialogMixin:IsDropdownMenuOpen()
+	return (self.openDropdownMenuCount or 0) > 0
+end
+
+function dialogMixin:DeferRefresh(selection)
+	self.deferredRefreshSelection = selection
+end
+
+function dialogMixin:FlushDeferredRefresh()
+	local selection = self.deferredRefreshSelection
+	self.deferredRefreshSelection = nil
+
+	if selection and self.selection == selection and self:IsVisible() then
+		self:Update(selection)
+	end
+end
+
+function dialogMixin:OnDropdownMenuOpen(dropdown)
+	self.openDropdownMenus = self.openDropdownMenus or {}
+
+	if not self.openDropdownMenus[dropdown] then
+		self.openDropdownMenus[dropdown] = true
+		self.openDropdownMenuCount = (self.openDropdownMenuCount or 0) + 1
+	end
+end
+
+function dialogMixin:OnDropdownMenuClose(dropdown)
+	if self.openDropdownMenus and self.openDropdownMenus[dropdown] then
+		self.openDropdownMenus[dropdown] = nil
+		self.openDropdownMenuCount = math.max((self.openDropdownMenuCount or 1) - 1, 0)
+	end
+
+	if not self:IsDropdownMenuOpen() then
+		self:FlushDeferredRefresh()
+	end
+end
+
 function dialogMixin:UpdateSettings()
 	internal.ReleaseAllPools()
 
@@ -133,6 +170,9 @@ end
 
 function dialogMixin:Reset()
 	self.selection = nil
+	self.deferredRefreshSelection = nil
+	self.openDropdownMenus = nil
+	self.openDropdownMenuCount = 0
 	self:ClearAllPoints()
 	self:SetPoint('BOTTOMRIGHT', UIParent, -250, 250)
 end
@@ -215,9 +255,104 @@ end
 
 local BIG_STEP = 10
 local SMALL_STEP = 1
-local MENU_KEY_SCROLL_STEP = 0.1
 
-local function ScrollOpenMenu(key)
+local function ScrollMenuToDescription(menu, description)
+	local scrollBox = menu and menu.ScrollBox
+	if not scrollBox or not scrollBox.ScrollToElementDataByPredicate then
+		return
+	end
+
+	if scrollBox.HasDataProvider and not scrollBox:HasDataProvider() then
+		return
+	end
+
+	local alignNearest = ScrollBoxConstants and ScrollBoxConstants.AlignNearest
+	scrollBox:ScrollToElementDataByPredicate(function(frame)
+		return frame.GetElementDescription and frame:GetElementDescription() == description
+	end, alignNearest)
+end
+
+local function PickDropdownRadio(menu, owner, description)
+	if not description or not owner.Pick then
+		return
+	end
+
+	if description.SetResponse and MenuResponse and MenuResponse.Refresh then
+		local previousResponse = description.defaultResponse
+		description:SetResponse(MenuResponse.Refresh)
+		owner:Pick(description, MenuInputContext.MouseWheel)
+		description:SetResponse(previousResponse)
+	else
+		owner:Pick(description, MenuInputContext.MouseWheel)
+	end
+
+	owner.libEditModeSelectedDescription = description
+	ScrollMenuToDescription(menu, description)
+end
+
+local function GetDropdownStepDescription(owner, key)
+	if not MenuUtil or not MenuUtil.TraverseMenu or not owner.GetMenuDescription then
+		return nil
+	end
+
+	local menuDescription = owner:GetMenuDescription()
+	if not menuDescription then
+		return nil
+	end
+
+	local radioDescriptions = {}
+	local selectedIndex
+	local keyboardSelectedIndex
+
+	MenuUtil.TraverseMenu(menuDescription, function(description)
+		local isUsableRadio = description.IsRadio
+			and description:IsRadio()
+			and description.CanSelect
+			and description:CanSelect()
+
+		if isUsableRadio then
+			local index = #radioDescriptions + 1
+			radioDescriptions[index] = description
+
+			if description.IsSelected and description:IsSelected() then
+				selectedIndex = index
+
+				if description == owner.libEditModeSelectedDescription then
+					keyboardSelectedIndex = index
+				end
+			end
+		end
+	end)
+
+	local numDescriptions = #radioDescriptions
+	if numDescriptions == 0 then
+		return nil
+	end
+
+	selectedIndex = keyboardSelectedIndex or selectedIndex
+	if not selectedIndex then
+		if key == 'DOWN' then
+			return radioDescriptions[1]
+		end
+
+		return radioDescriptions[numDescriptions]
+	end
+
+	local nextIndex = selectedIndex
+	if key == 'DOWN' then
+		nextIndex = math.min(selectedIndex + 1, numDescriptions)
+	else
+		nextIndex = math.max(selectedIndex - 1, 1)
+	end
+
+	if nextIndex == selectedIndex then
+		return nil
+	end
+
+	return radioDescriptions[nextIndex]
+end
+
+local function StepOpenDropdown(key)
 	if key ~= 'UP' and key ~= 'DOWN' and key ~= 'LEFT' and key ~= 'RIGHT' then
 		return false
 	end
@@ -240,11 +375,9 @@ local function ScrollOpenMenu(key)
 		return true
 	end
 
-	local direction = key == 'DOWN' and 1 or -1
-	if menu.ScrollBar and menu.ScrollBar:IsShown() then
-		menu.ScrollBar:ScrollStepInDirection(direction)
-	elseif menu.ScrollBox and menu.ScrollBox:IsShown() then
-		menu.ScrollBox:ScrollInDirection(MENU_KEY_SCROLL_STEP, direction)
+	local owner = menu.GetOwnerRegion and menu:GetOwnerRegion()
+	if owner then
+		PickDropdownRadio(menu, owner, GetDropdownStepDescription(owner, key))
 	end
 
 	return true
@@ -255,7 +388,7 @@ function dialogMixin:OnKeyDown(key)
 		return
 	end
 
-	if ScrollOpenMenu(key) then
+	if StepOpenDropdown(key) then
 		self:SetPropagateKeyboardInput(false) -- protected
 		return
 	end

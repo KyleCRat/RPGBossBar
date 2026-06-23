@@ -513,7 +513,11 @@ Refresh the dialog attached to the frame.
 function lib:RefreshFrameSettings(frame)
 	local selection = lib.frameSelections[frame]
 	if selection and internal.dialog and internal.dialog.selection == selection and internal.dialog:IsVisible() then
-		internal.dialog:Update(selection)
+		if internal.dialog:IsDropdownMenuOpen() then
+			internal.dialog:DeferRefresh(selection)
+		else
+			internal.dialog:Update(selection)
+		end
 	end
 end
 

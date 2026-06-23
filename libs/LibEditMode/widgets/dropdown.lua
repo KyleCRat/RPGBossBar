@@ -27,6 +27,24 @@ local function refreshOwnerWidgets(widget)
 	end
 end
 
+local function getDialog()
+	return lib.internal and lib.internal.dialog
+end
+
+local function onMenuOpen(dropdown)
+	local dialog = getDialog()
+	if dialog and dialog.OnDropdownMenuOpen then
+		dialog:OnDropdownMenuOpen(dropdown)
+	end
+end
+
+local function onMenuClose(dropdown)
+	local dialog = getDialog()
+	if dialog and dialog.OnDropdownMenuClose then
+		dialog:OnDropdownMenuClose(dropdown)
+	end
+end
+
 local function get(data)
 	local value = data.get(lib:GetActiveLayoutName())
 	if value then
@@ -164,6 +182,8 @@ lib.internal:CreatePool(lib.SettingType.Dropdown, function()
 	dropdown:SetPoint('LEFT', label, 'RIGHT', 5, 0)
 	dropdown:SetPoint('RIGHT', frame, 'RIGHT', -4, 0)
 	dropdown:SetHeight(30)
+	dropdown:RegisterCallback(DropdownButtonMixin.Event.OnMenuOpen, onMenuOpen, dropdown)
+	dropdown:RegisterCallback(DropdownButtonMixin.Event.OnMenuClose, onMenuClose, dropdown)
 	frame.Dropdown = dropdown
 
 	return frame
