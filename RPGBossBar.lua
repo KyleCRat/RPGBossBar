@@ -405,25 +405,36 @@ function RPGBB:InitOrUpdateFrame()
 
     local health_font = RPGBB.db:Get("health", "font", "font")
     local health_font_size = RPGBB.db:Get("health", "font", "size")
+    local health_font_outline = RPGBB.db:Get("health", "font", "outline") or ""
+    local health_font_r, health_font_g, health_font_b, health_font_a =
+        RPGBB.db:GetColor("health", "font", "color")
 
     RPGBB.health_font = CreateFont("RPGBossBarHealthFont")
-    RPGBB.health_font:SetFont(health_font, health_font_size, "OUTLINE")
-    RPGBB.health_font:SetTextColor(RPGBB.db:GetColor("health", "font", "color"))
+    RPGBB.health_font:SetFont(health_font, health_font_size, health_font_outline)
+    RPGBB.health_font:SetTextColor(health_font_r, health_font_g, health_font_b, health_font_a)
+
+    local health_percent_font_outline = RPGBB.db:Get("health", "percent_font", "outline") or ""
+
+    RPGBB.health_percent_font = CreateFont("RPGBossBarHealthPercentFont")
+    RPGBB.health_percent_font:SetFont(health_font, health_font_size, health_percent_font_outline)
+    RPGBB.health_percent_font:SetTextColor(health_font_r, health_font_g, health_font_b, health_font_a)
 
 
     local name_font = RPGBB.db:Get("name", "font", "font")
     local name_font_size = RPGBB.db:Get("name", "font", "size")
+    local name_font_outline = RPGBB.db:Get("name", "font", "outline") or ""
 
     RPGBB.name_font = CreateFont("RPGBossBarNameFont")
-    RPGBB.name_font:SetFont(name_font, name_font_size, "OUTLINE")
+    RPGBB.name_font:SetFont(name_font, name_font_size, name_font_outline)
     RPGBB.name_font:SetTextColor(RPGBB.db:GetColor("name", "font", "color"))
 
 
     local power_font = RPGBB.db:Get("power", "font", "font")
     local power_font_size = RPGBB.db:Get("power", "font", "size")
+    local power_font_outline = RPGBB.db:Get("power", "font", "outline") or ""
 
     RPGBB.power_font = CreateFont("RPGBossBarPowerFont")
-    RPGBB.power_font:SetFont(power_font, power_font_size, "OUTLINE")
+    RPGBB.power_font:SetFont(power_font, power_font_size, power_font_outline)
     RPGBB.power_font:SetTextColor(RPGBB.db:GetColor("power", "font", "color"))
 
     --- Update Frames after changing Init Frame settings
@@ -825,7 +836,7 @@ function RPGBB:UpdateFrames()
         end
         RPGBB.health_bars[boss_frame].percent_text:ClearAllPoints()
         RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", health_percent_offset_x, health_font_offset_y)
-        RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_font)
+        RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_percent_font)
 
         -- Healthbar name text (above frame)
         if not RPGBB.health_bars[boss_frame].name_text then

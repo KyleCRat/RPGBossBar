@@ -17,6 +17,8 @@ local anchor_points = db_validation.anchor_points or {}
 local anchor_point_paths = db_validation.anchor_point_paths or {}
 local blend_modes = db_validation.blend_modes or {}
 local blend_mode_paths = db_validation.blend_mode_paths or {}
+local font_outlines = db_validation.font_outlines or {}
+local font_outline_paths = db_validation.font_outline_paths or {}
 local string_or_false_paths = db_validation.string_or_false_paths or {}
 
 local function DeepMerge(dest, src)
@@ -124,6 +126,8 @@ local function ValidateStringValue(path, value, errors)
         AddValidationError(errors, path, "must be a valid anchor point")
     elseif blend_mode_paths[path_string] and not blend_modes[value] then
         AddValidationError(errors, path, "must be a valid blend mode")
+    elseif font_outline_paths[path_string] and not font_outlines[value] then
+        AddValidationError(errors, path, "must be a valid font outline")
     else
         ValidateAccentSelection(path, value, errors)
     end

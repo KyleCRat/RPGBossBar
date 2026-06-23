@@ -68,6 +68,7 @@ RPGBB:RegisterDefaultSkin({
             font = {
                 color = { r = 1, g = 1, b = 1, a = 1, },
                 font = "Fonts\\FRIZQT__.TTF",
+                outline = "THICKOUTLINE",
                 size = 30,
             },
             offset = {
@@ -79,6 +80,7 @@ RPGBB:RegisterDefaultSkin({
                 color = { r = 1, g = 1, b = 1, a = 1, },
                 enabled = true,
                 font = "Fonts\\FRIZQT__.TTF",
+                outline = "OUTLINESLUG",
                 offset = {
                     y = -1,
                 },
@@ -86,6 +88,7 @@ RPGBB:RegisterDefaultSkin({
             },
             percent_font = {
                 enabled = true,
+                outline = "OUTLINESLUG",
                 offset = {
                     x = -22,
                 },

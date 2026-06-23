@@ -19,6 +19,47 @@ local function DefaultColor(...)
     return CreateColor(color.r, color.g, color.b, color.a)
 end
 
+local font_outline_options = {
+    {
+        name = "None",
+        value = "",
+    },
+    {
+        name = "Outline",
+        value = "OUTLINE",
+    },
+    {
+        name = "Thick Outline",
+        value = "THICKOUTLINE",
+    },
+    {
+        name = "Slug",
+        value = "OUTLINESLUG",
+    },
+    {
+        name = "Monochrome",
+        value = "MONOCHROMEOUTLINE",
+    },
+    {
+        name = "Monochrome Thick",
+        value = "MONOCHROMETHICKOUTLINE",
+    },
+}
+
+local function CreateFontOutlineSetting(label, defaultValue, get, setSelected, setDefault)
+    return {
+        name = label or "Outline",
+        kind = LEM.SettingType.Dropdown,
+        default = defaultValue,
+        set = setDefault,
+        generator = function(owner, rootDescription)
+            for _, option in ipairs(font_outline_options) do
+                rootDescription:CreateCheckbox(option.name, get, setSelected, option.value)
+            end
+        end,
+    }
+end
+
 -------------------------------------------------------------------------------
 --- Listeners
 -------------------------------------------------------------------------------
@@ -653,6 +694,32 @@ health_font_setting = {
 }
 
 -------------------------------------------------------------------------------
+--- Health Font Outline
+local function health_font_outline_get(value)
+    return RPGBB.db:Get("health", "font", "outline") == value
+end
+
+local function health_font_outline_set(value)
+    RPGBB.db:Set("health", "font", "outline", value)
+    RPGBB:InitOrUpdateFrame()
+end
+
+local function health_font_outline_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("health", "font", "outline")
+        RPGBB:InitOrUpdateFrame()
+    end
+end
+
+local health_font_outline_setting = CreateFontOutlineSetting(
+    "Outline",
+    defaults.health.font.outline,
+    health_font_outline_get,
+    health_font_outline_set,
+    health_font_outline_default
+)
+
+-------------------------------------------------------------------------------
 --- Health Font Size
 local function health_font_size_get(layoutName)
     return RPGBB.db:Get("health", "font", "size")
@@ -787,6 +854,32 @@ health_percentage_font_offset_x_setting = {
     valueStep = 1,
     formatter = function(value) return value end,
 }
+
+-------------------------------------------------------------------------------
+--- Health Percentage Font Outline
+local function health_percentage_font_outline_get(value)
+    return RPGBB.db:Get("health", "percent_font", "outline") == value
+end
+
+local function health_percentage_font_outline_set(value)
+    RPGBB.db:Set("health", "percent_font", "outline", value)
+    RPGBB:InitOrUpdateFrame()
+end
+
+local function health_percentage_font_outline_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("health", "percent_font", "outline")
+        RPGBB:InitOrUpdateFrame()
+    end
+end
+
+local health_percentage_font_outline_setting = CreateFontOutlineSetting(
+    "Outline",
+    defaults.health.percent_font.outline,
+    health_percentage_font_outline_get,
+    health_percentage_font_outline_set,
+    health_percentage_font_outline_default
+)
 
 -------------------------------------------------------------------------------
 --- Health Bar Spark Texture
@@ -993,6 +1086,43 @@ global_font_setting = {
         end
     end,
 }
+
+-------------------------------------------------------------------------------
+--- Global Font Outline
+local function global_font_outline_get(value)
+    return RPGBB.db:Get("name", "font", "outline") == value
+        and RPGBB.db:Get("health", "font", "outline") == value
+        and RPGBB.db:Get("health", "percent_font", "outline") == value
+        and RPGBB.db:Get("power", "font", "outline") == value
+end
+
+local function global_font_outline_set(value)
+    RPGBB.db:Set("name", "font", "outline", value)
+    RPGBB.db:Set("health", "font", "outline", value)
+    RPGBB.db:Set("health", "percent_font", "outline", value)
+    RPGBB.db:Set("power", "font", "outline", value)
+    RPGBB:InitOrUpdateFrame()
+    RefreshGlobalFontSettings()
+end
+
+local function global_font_outline_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("name", "font", "outline")
+        RPGBB.db:SetDefault("health", "font", "outline")
+        RPGBB.db:SetDefault("health", "percent_font", "outline")
+        RPGBB.db:SetDefault("power", "font", "outline")
+        RPGBB:InitOrUpdateFrame()
+        RefreshGlobalFontSettings()
+    end
+end
+
+local global_font_outline_setting = CreateFontOutlineSetting(
+    "Outline",
+    defaults.name.font.outline,
+    global_font_outline_get,
+    global_font_outline_set,
+    global_font_outline_default
+)
 
 -- -------------------------------------------------------------------------------
 -- --- Accent Copy Healthbar Texture Color
@@ -1408,6 +1538,32 @@ name_font_setting = {
         end
     end,
 }
+
+-------------------------------------------------------------------------------
+--- Name Font Outline
+local function name_font_outline_get(value)
+    return RPGBB.db:Get("name", "font", "outline") == value
+end
+
+local function name_font_outline_set(value)
+    RPGBB.db:Set("name", "font", "outline", value)
+    RPGBB:InitOrUpdateFrame()
+end
+
+local function name_font_outline_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("name", "font", "outline")
+        RPGBB:InitOrUpdateFrame()
+    end
+end
+
+local name_font_outline_setting = CreateFontOutlineSetting(
+    "Outline",
+    defaults.name.font.outline,
+    name_font_outline_get,
+    name_font_outline_set,
+    name_font_outline_default
+)
 
 -------------------------------------------------------------------------------
 --- Name Font Size
@@ -1920,6 +2076,32 @@ power_bar_font_setting = {
 }
 
 -------------------------------------------------------------------------------
+--- Power Bar Text Outline
+local function power_bar_font_outline_get(value)
+    return RPGBB.db:Get("power", "font", "outline") == value
+end
+
+local function power_bar_font_outline_set(value)
+    RPGBB.db:Set("power", "font", "outline", value)
+    RPGBB:InitOrUpdateFrame()
+end
+
+local function power_bar_font_outline_default(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("power", "font", "outline")
+        RPGBB:InitOrUpdateFrame()
+    end
+end
+
+local power_bar_font_outline_setting = CreateFontOutlineSetting(
+    "Outline",
+    defaults.power.font.outline,
+    power_bar_font_outline_get,
+    power_bar_font_outline_set,
+    power_bar_font_outline_default
+)
+
+-------------------------------------------------------------------------------
 --- Power Bar Text Size
 local function power_bar_font_size_get()
     return RPGBB.db:Get("power", "font", "size")
@@ -2163,10 +2345,12 @@ LEM:AddFrameSettings(RPGBB.frame, {
     frame_border_offset_setting,
     { name = 'Global Font', kind = LEM.SettingType.Divider, collapsed = true, },
     global_font_setting,
+    global_font_outline_setting,
     { name = 'Boss Name Text', kind = LEM.SettingType.Divider, collapsed = true, },
     name_text_enabled_setting,
     name_offset_y_setting,
     name_font_setting,
+    name_font_outline_setting,
     name_font_size_setting,
     name_font_color_setting,
     { name = 'Health Bar Texture', kind = LEM.SettingType.Divider, collapsed = true, },
@@ -2177,12 +2361,14 @@ LEM:AddFrameSettings(RPGBB.frame, {
     health_text_enabled_setting,
     health_font_offset_y_setting,
     health_font_setting,
+    health_font_outline_setting,
     health_font_size_setting,
     health_font_color_setting,
     { name = 'Health % Text', kind = LEM.SettingType.Divider, collapsed = true, },
     health_percentage_enabled_setting,
     health_percentage_disable_above_setting,
     health_percentage_font_offset_x_setting,
+    health_percentage_font_outline_setting,
     { name = 'Health Bar Spark', kind = LEM.SettingType.Divider, collapsed = true, },
     health_bar_spark_width_setting,
     health_bar_spark_height_multi_setting,
@@ -2208,6 +2394,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     power_bar_text_show_percent_setting,
     power_bar_text_hide_above_setting,
     power_bar_font_setting,
+    power_bar_font_outline_setting,
     power_bar_font_size_setting,
     power_bar_font_color_setting,
     power_bar_text_frame_anchor_setting,

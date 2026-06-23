@@ -20,6 +20,15 @@ local blend_modes = {
     MOD = true,
 }
 
+local font_outlines = {
+    [""] = true,
+    OUTLINE = true,
+    THICKOUTLINE = true,
+    OUTLINESLUG = true,
+    MONOCHROMEOUTLINE = true,
+    MONOCHROMETHICKOUTLINE = true,
+}
+
 addon.db_defaults = {
     frame = {
         width = 1100,
@@ -43,6 +52,7 @@ addon.db_defaults = {
             enabled = true,
             font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
             size = 20,
+            outline = "OUTLINESLUG",
             color = { r = 1, g = 1, b = 1, a = 1 },
             offset = {
                 y = 0
@@ -51,6 +61,7 @@ addon.db_defaults = {
         percent_font = {
             enabled = true,
             disable_above = 3,
+            outline = "OUTLINESLUG",
             offset = {
                 x = -24,
             },
@@ -78,6 +89,7 @@ addon.db_defaults = {
         font = {
             font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
             size = 32,
+            outline = "THICKOUTLINE",
             color = { r = 1, g = 1, b = 1, a = 1 },
         },
     },
@@ -100,6 +112,7 @@ addon.db_defaults = {
             show_percent = true,
             font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
             size = 16,
+            outline = "OUTLINE",
             color = { r = 1, g = 1, b = 1, a = 1 },
             hide_above = 5,
             position = {
@@ -166,6 +179,7 @@ addon.db_defaults = {
 addon.db_validation = {
     anchor_points = anchor_points,
     blend_modes = blend_modes,
+    font_outlines = font_outlines,
     accent_selection_paths = {
         ["accents.center.selected"] = "center",
         ["accents.left.selected"] = "left",
@@ -179,6 +193,12 @@ addon.db_validation = {
     },
     blend_mode_paths = {
         ["health.spark.blend_mode"] = true,
+    },
+    font_outline_paths = {
+        ["health.font.outline"] = true,
+        ["health.percent_font.outline"] = true,
+        ["name.font.outline"] = true,
+        ["power.font.outline"] = true,
     },
 
     -- These fields store raw media references that may intentionally be false.
