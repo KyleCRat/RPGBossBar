@@ -95,7 +95,7 @@ RPGBB:RegisterDefaultSkin({
             },
             texture = {
                 atlas = true,
-                atlas_texture = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Mana",
+                atlas_texture = "UI-HUD-UnitFrame-Player-PortraitOff-Bar-Energy",
                 color = { r = 180 / 255, g = 225 / 255, b = 1, a = 1 },
                 desaturated = true,
                 texture = false,
