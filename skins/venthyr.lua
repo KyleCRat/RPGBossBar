@@ -1,8 +1,8 @@
 local ADDON_NAME, RPGBB = ...
 
 RPGBB:RegisterDefaultSkin({
-    id = "ventyr",
-    name = "Ventyr",
+    id = "venthyr",
+    name = "Venthyr",
     overrides = {
         frame = {
             background_color = { r = 0, g = 0, b = 0, a = 0.8 },
