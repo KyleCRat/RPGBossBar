@@ -9,6 +9,7 @@ function RPGBB.InitializeDB()
     RPGBossBarProfiles.profileKeys = RPGBossBarProfiles.profileKeys or {}
     RPGBossBarProfiles.profiles = RPGBossBarProfiles.profiles or {}
     RPGBossBarProfiles.profileMeta = RPGBossBarProfiles.profileMeta or {}
+    RPGBossBarProfiles.accountMeta = RPGBossBarProfiles.accountMeta or {}
 
     local profileKey = RPGBB.GetActiveProfileKey()
     RPGBossBarProfiles.profiles[profileKey] = RPGBossBarProfiles.profiles[profileKey] or {}
@@ -168,6 +169,7 @@ function RPGBB.MigrateOldDB()
     RPGBossBarProfiles.profileKeys = {}
     RPGBossBarProfiles.profiles = {}
     RPGBossBarProfiles.profileMeta = {}
+    RPGBossBarProfiles.accountMeta = {}
 
     -- Migrate old global data into "Global" profile
     if RPGBossBarGlobalDB and next(RPGBossBarGlobalDB) then

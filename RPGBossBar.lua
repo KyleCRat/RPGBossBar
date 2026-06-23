@@ -253,11 +253,14 @@ local function ShowModernBorder(frame, style, borderSize, r, g, b, a)
     frame:Show()
 end
 
-local function UpdateFrameBorder()
+local function UpdateBorderForFrame(target_frame, border_state, border_scale, border_name, nine_slice_name)
+    border_state = border_state or {}
+    border_scale = border_scale or 1
+
     local border_texture = RPGBB.db:Get("frame", "border", "texture")
     local border_r, border_g, border_b, border_a = RPGBB.db:GetColor("frame", "border", "color")
-    local border_size = RPGBB.db:Get("frame", "border", "size")
-    local border_offset = RPGBB.db:Get("frame", "border", "offset")
+    local border_size = RPGBB.db:Get("frame", "border", "size") * border_scale
+    local border_offset = RPGBB.db:Get("frame", "border", "offset") * border_scale
     local nine_slice_style = RPGBB:GetNineSliceBorderStyle(border_texture)
 
     -- Fall back cleanly if a profile references a style no longer in the
@@ -267,24 +270,28 @@ local function UpdateFrameBorder()
         border_texture = RPGBB.db:GetDefault("frame", "border", "texture")
     end
 
-    if not RPGBB.border then
-        RPGBB.border = CreateFrame("Frame", "RPGBossBarBorder", RPGBB.frame, "BackdropTemplate")
-        RPGBB.border:SetFrameLevel(RPGBB.frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
+    if not border_state.border then
+        border_state.border = CreateFrame("Frame", border_name, target_frame, "BackdropTemplate")
+    else
+        border_state.border:SetParent(target_frame)
     end
+    border_state.border:SetFrameLevel(target_frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
 
-    if not RPGBB.nineSliceBorder then
-        RPGBB.nineSliceBorder = CreateFrame("Frame", "RPGBossBarNineSliceBorder", RPGBB.frame)
-        RPGBB.nineSliceBorder:SetFrameLevel(RPGBB.frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
+    if not border_state.nineSliceBorder then
+        border_state.nineSliceBorder = CreateFrame("Frame", nine_slice_name, target_frame)
+    else
+        border_state.nineSliceBorder:SetParent(target_frame)
     end
+    border_state.nineSliceBorder:SetFrameLevel(target_frame:GetFrameLevel() + FRAME_BORDER_LEVEL)
 
     if nine_slice_style then
-        RPGBB.border:Hide()
+        border_state.border:Hide()
 
-        RPGBB.nineSliceBorder:ClearAllPoints()
-        RPGBB.nineSliceBorder:SetPoint("TOPLEFT", RPGBB.frame, "TOPLEFT", -border_offset, border_offset)
-        RPGBB.nineSliceBorder:SetPoint("BOTTOMRIGHT", RPGBB.frame, "BOTTOMRIGHT", border_offset, -border_offset)
+        border_state.nineSliceBorder:ClearAllPoints()
+        border_state.nineSliceBorder:SetPoint("TOPLEFT", target_frame, "TOPLEFT", -border_offset, border_offset)
+        border_state.nineSliceBorder:SetPoint("BOTTOMRIGHT", target_frame, "BOTTOMRIGHT", border_offset, -border_offset)
         ShowModernBorder(
-            RPGBB.nineSliceBorder,
+            border_state.nineSliceBorder,
             nine_slice_style,
             border_size,
             border_r,
@@ -293,12 +300,12 @@ local function UpdateFrameBorder()
             border_a
         )
     else
-        HideNineSliceBorder(RPGBB.nineSliceBorder)
+        HideNineSliceBorder(border_state.nineSliceBorder)
 
-        RPGBB.border:ClearAllPoints()
-        RPGBB.border:SetPoint("TOPLEFT", RPGBB.frame, "TOPLEFT", -border_offset, border_offset)
-        RPGBB.border:SetPoint("BOTTOMRIGHT", RPGBB.frame, "BOTTOMRIGHT", border_offset, -border_offset)
-        RPGBB.border:SetBackdrop({
+        border_state.border:ClearAllPoints()
+        border_state.border:SetPoint("TOPLEFT", target_frame, "TOPLEFT", -border_offset, border_offset)
+        border_state.border:SetPoint("BOTTOMRIGHT", target_frame, "BOTTOMRIGHT", border_offset, -border_offset)
+        border_state.border:SetBackdrop({
             edgeFile = border_texture or nil,
             edgeSize = border_size,
             insets = {
@@ -308,9 +315,34 @@ local function UpdateFrameBorder()
                 bottom = 0,
             },
         })
-        RPGBB.border:SetBackdropBorderColor(border_r, border_g, border_b, border_a)
-        RPGBB.border:Show()
+        border_state.border:SetBackdropBorderColor(border_r, border_g, border_b, border_a)
+        border_state.border:Show()
     end
+
+    return border_state
+end
+
+local function UpdateFrameBorder()
+    RPGBB.frameBorderState = UpdateBorderForFrame(
+        RPGBB.frame,
+        RPGBB.frameBorderState,
+        1,
+        "RPGBossBarBorder",
+        "RPGBossBarNineSliceBorder"
+    )
+
+    RPGBB.border = RPGBB.frameBorderState.border
+    RPGBB.nineSliceBorder = RPGBB.frameBorderState.nineSliceBorder
+end
+
+local function UpdateFrameBackground(frame)
+    if not frame.bg then
+        frame.bg = frame:CreateTexture(nil, "BACKGROUND")
+    end
+
+    frame.bg:ClearAllPoints()
+    frame.bg:SetAllPoints(frame)
+    frame.bg:SetColorTexture(RPGBB.db:GetColor("frame", "background_color"))
 end
 
 local function GetAccentColor(slot)
@@ -322,6 +354,98 @@ local function GetAccentColor(slot)
         b = b,
         a = a,
     }
+end
+
+local function GetVerticalLayoutEnabled()
+    return RPGBB.db:Get("frame", "vertical") == true
+end
+
+local function GetVerticalOffset()
+    local offset = tonumber(RPGBB.db:Get("frame", "vertical_offset")) or 0
+
+    return math.max(0, offset)
+end
+
+local function GetVerticalSecondaryScale()
+    local scale = tonumber(RPGBB.db:Get("frame", "vertical_secondary_scale")) or 1
+
+    return math.max(0.1, math.min(1, scale))
+end
+
+local function GetVerticalSecondaryWidth()
+    local width = tonumber(RPGBB.db:Get("frame", "vertical_secondary_width")) or 1
+
+    return math.max(0.1, math.min(2, width))
+end
+
+local function GetBossBarScale(index, is_vertical)
+    if is_vertical and index > 1 then
+        return GetVerticalSecondaryScale()
+    end
+
+    return 1
+end
+
+local function GetBossBarWidthScale(index, is_vertical)
+    if is_vertical and index > 1 then
+        return GetVerticalSecondaryWidth()
+    end
+
+    return 1
+end
+
+local function GetPowerBarFootprint(boss_frame_count, scale)
+    local power_bar_enabled = RPGBB.db:Get("power", "enabled")
+    local power_bar_hide_above = RPGBB.db:Get("power", "hide_above")
+
+    if not power_bar_enabled or boss_frame_count > power_bar_hide_above then
+        return 0
+    end
+
+    local power_bar_height = RPGBB.db:Get("power", "height") or 0
+    local power_bar_offset_y = RPGBB.db:Get("power", "offset_y") or 0
+    local power_border_offset = RPGBB.db:Get("power", "border", "offset") or 0
+
+    return math.max(0, (power_bar_height - power_bar_offset_y + power_border_offset) * scale)
+end
+
+local function UpdateMainFrameSize(frame_width, frame_height)
+    RPGBB.frame:SetSize(frame_width, frame_height)
+end
+
+local function HideVerticalRowFrame(health_bar)
+    if not health_bar or not health_bar.row_frame then
+        return
+    end
+
+    health_bar.row_frame:Hide()
+    health_bar.row_frame:ClearAllPoints()
+end
+
+local function GetBossRowContainer(health_bar, index, is_vertical, width, height, y_offset, scale)
+    if not is_vertical or index == 1 then
+        HideVerticalRowFrame(health_bar)
+
+        return RPGBB.frame
+    end
+
+    if not health_bar.row_frame then
+        health_bar.row_frame = CreateFrame("Frame", nil, RPGBB.frame)
+    end
+
+    health_bar.row_frame:SetFrameLevel(RPGBB.frame:GetFrameLevel())
+    health_bar.row_frame:ClearAllPoints()
+    health_bar.row_frame:SetPoint("TOP", RPGBB.frame, "TOP", 0, -y_offset)
+    health_bar.row_frame:SetSize(width, height)
+    UpdateFrameBackground(health_bar.row_frame)
+    health_bar.rowBorderState = UpdateBorderForFrame(
+        health_bar.row_frame,
+        health_bar.rowBorderState,
+        scale
+    )
+    health_bar.row_frame:Show()
+
+    return health_bar.row_frame
 end
 
 
@@ -351,14 +475,10 @@ function RPGBB:InitOrUpdateFrame()
                          RPGBB.db:Get("frame", "position", "relative_point"),
                          RPGBB.db:Get("frame", "position", "x"),
                          RPGBB.db:Get("frame", "position", "y"))
-    RPGBB.frame:SetSize(frame_width, frame_height)
+    UpdateMainFrameSize(frame_width, frame_height)
 
     -- Create container's background
-    if not RPGBB.frame.bg then
-        RPGBB.frame.bg = RPGBB.frame:CreateTexture(nil, "BACKGROUND")
-        RPGBB.frame.bg:SetAllPoints(RPGBB.frame)
-    end
-    RPGBB.frame.bg:SetColorTexture(RPGBB.db:GetColor("frame", "background_color"))
+    UpdateFrameBackground(RPGBB.frame)
 
     UpdateFrameBorder()
 
@@ -701,17 +821,30 @@ function RPGBB:UpdateFrames()
     local frame_width  = RPGBB.db:Get("frame", "width")
 
     local boss_frame_count = #RPGBB.current_boss_frames
-    local health_bar_width = frame_width / boss_frame_count
+    local is_vertical = GetVerticalLayoutEnabled()
+    local vertical_offset = GetVerticalOffset()
+
+    UpdateMainFrameSize(frame_width, frame_height)
 
     -- Hide all visible elements for updating
     for _, bf in pairs(RPGBB.health_bars) do
         bf.frame:Hide()
+        HideVerticalRowFrame(bf)
         if bf.spark_frame then bf.spark_frame:Hide() end
         if bf.text_frame then bf.text_frame:Hide() end
         if bf.power_bar then bf.power_bar:Hide() end
         if bf.power_border then bf.power_border:Hide() end
         if bf.centerAccentGroup then RPGBB:HideAccentGroup(bf.centerAccentGroup) end
+        if bf.leftCenterAccentGroup then RPGBB:HideAccentGroup(bf.leftCenterAccentGroup) end
+        if bf.rightCenterAccentGroup then RPGBB:HideAccentGroup(bf.rightCenterAccentGroup) end
     end
+
+    if boss_frame_count == 0 then
+        return
+    end
+
+    local horizontal_bar_width = frame_width / boss_frame_count
+    local vertical_y_offset = 0
 
     -- Get all db values before looping so we only get them once
     local health_bar_texture_is_atlas = RPGBB.db:Get("health", "texture", "atlas")
@@ -761,22 +894,38 @@ function RPGBB:UpdateFrames()
 
     local center_accent = RPGBB.db:Get("accents", "center")
     local center_accent_color = GetAccentColor("center")
+    local center_accent_offset_x = RPGBB.db:Get("accents", "center", "offset", "x")
+    local center_accent_offset_y = RPGBB.db:Get("accents", "center", "offset", "y")
 
     for i, boss_frame in ipairs(RPGBB.current_boss_frames) do
         RPGBB:VPrint("RPGBB: " .. boss_frame .. " i: " .. i)
 
         RPGBB.health_bars[boss_frame] = RPGBB.health_bars[boss_frame] or {}
 
-        local y_left_offset = health_bar_width * (i - 1)
+        local bar_scale = GetBossBarScale(i, is_vertical)
+        local bar_width_scale = GetBossBarWidthScale(i, is_vertical)
+        local bar_width = is_vertical and (frame_width * bar_scale * bar_width_scale) or horizontal_bar_width
+        local bar_height = frame_height * bar_scale
+        local x_left_offset = horizontal_bar_width * (i - 1)
+        local row_container = GetBossRowContainer(
+            RPGBB.health_bars[boss_frame],
+            i,
+            is_vertical,
+            bar_width,
+            bar_height,
+            vertical_y_offset,
+            bar_scale
+        )
 
         -- Healthbar Frame
         if not RPGBB.health_bars[boss_frame].frame then
             RPGBB:VPrint(boss_frame .. " did not exist, creating.")
-            RPGBB.health_bars[boss_frame].frame = CreateFrame("StatusBar", "RPG".. boss_frame .."BarHealthBar", RPGBB.frame)
-            RPGBB.health_bars[boss_frame].frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + HEALTH_BAR_LEVEL)
+            RPGBB.health_bars[boss_frame].frame = CreateFrame("StatusBar", "RPG".. boss_frame .."BarHealthBar", row_container)
         else
             RPGBB:VPrint(boss_frame .. " Already Existed.")
+            RPGBB.health_bars[boss_frame].frame:SetParent(row_container)
         end
+        RPGBB.health_bars[boss_frame].frame:SetFrameLevel(row_container:GetFrameLevel() + HEALTH_BAR_LEVEL)
         -- Update each time for setting changes
         if health_bar_texture_is_atlas then
             RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
@@ -788,15 +937,21 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(hb_r, hb_g, hb_b, hb_a)
         -- Update each time for frame count changes
         RPGBB.health_bars[boss_frame].frame:ClearAllPoints()
-        RPGBB.health_bars[boss_frame].frame:SetPoint("LEFT", RPGBB.frame, "LEFT", y_left_offset, 0)
-        RPGBB.health_bars[boss_frame].frame:SetSize(health_bar_width, frame_height)
+        if is_vertical then
+            RPGBB.health_bars[boss_frame].frame:SetAllPoints(row_container)
+        else
+            RPGBB.health_bars[boss_frame].frame:SetPoint("LEFT", row_container, "LEFT", x_left_offset, 0)
+            RPGBB.health_bars[boss_frame].frame:SetSize(bar_width, bar_height)
+        end
         RPGBB.health_bars[boss_frame].frame:Show()
 
         -- Healthbar Spark
         if not RPGBB.health_bars[boss_frame].spark_frame then
-            RPGBB.health_bars[boss_frame].spark_frame = CreateFrame("Frame", nil, RPGBB.frame)
-            RPGBB.health_bars[boss_frame].spark_frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + SPARK_LEVEL)
+            RPGBB.health_bars[boss_frame].spark_frame = CreateFrame("Frame", nil, row_container)
+        else
+            RPGBB.health_bars[boss_frame].spark_frame:SetParent(row_container)
         end
+        RPGBB.health_bars[boss_frame].spark_frame:SetFrameLevel(row_container:GetFrameLevel() + SPARK_LEVEL)
         RPGBB.health_bars[boss_frame].spark_frame:ClearAllPoints()
         RPGBB.health_bars[boss_frame].spark_frame:SetAllPoints(RPGBB.health_bars[boss_frame].frame)
         RPGBB.health_bars[boss_frame].spark_frame:Show()
@@ -809,15 +964,17 @@ function RPGBB:UpdateFrames()
         RPGBB.health_bars[boss_frame].spark:SetAtlas(spark_atlas)
         RPGBB.health_bars[boss_frame].spark:SetVertexColor(sp_r, sp_g, sp_b, sp_a)
         RPGBB.health_bars[boss_frame].spark:SetBlendMode(spark_blend_mode)
-        RPGBB.health_bars[boss_frame].spark:SetSize(spark_width, frame_height * spark_height_multi)
+        RPGBB.health_bars[boss_frame].spark:SetSize(spark_width * bar_scale, bar_height * spark_height_multi)
 
         -- Boss text renders above the frame border.
         if not RPGBB.health_bars[boss_frame].text_frame then
-            RPGBB.health_bars[boss_frame].text_frame = CreateFrame("Frame", nil, RPGBB.frame)
+            RPGBB.health_bars[boss_frame].text_frame = CreateFrame("Frame", nil, row_container)
+        else
+            RPGBB.health_bars[boss_frame].text_frame:SetParent(row_container)
         end
-        RPGBB.health_bars[boss_frame].text_frame:SetFrameLevel(RPGBB.frame:GetFrameLevel() + TEXT_LEVEL)
+        RPGBB.health_bars[boss_frame].text_frame:SetFrameLevel(row_container:GetFrameLevel() + TEXT_LEVEL)
         RPGBB.health_bars[boss_frame].text_frame:ClearAllPoints()
-        RPGBB.health_bars[boss_frame].text_frame:SetAllPoints(RPGBB.frame)
+        RPGBB.health_bars[boss_frame].text_frame:SetAllPoints(row_container)
         RPGBB.health_bars[boss_frame].text_frame:Show()
 
         -- Healthbar absolute value health text
@@ -826,8 +983,15 @@ function RPGBB:UpdateFrames()
         end
         -- Update each time for setting changes
         RPGBB.health_bars[boss_frame].health_text:ClearAllPoints()
-        RPGBB.health_bars[boss_frame].health_text:SetPoint("CENTER", RPGBB.health_bars[boss_frame].frame, "CENTER", 0, health_font_offset_y)
+        RPGBB.health_bars[boss_frame].health_text:SetPoint(
+            "CENTER",
+            RPGBB.health_bars[boss_frame].frame,
+            "CENTER",
+            0,
+            health_font_offset_y * bar_scale
+        )
         RPGBB.health_bars[boss_frame].health_text:SetFontObject(RPGBB.health_font)
+        RPGBB.health_bars[boss_frame].health_text:SetScale(bar_scale)
         RPGBB.health_bars[boss_frame].health_text:SetShown(health_text_enabled)
 
         -- Healthbar percentage text (right side of bar)
@@ -835,8 +999,15 @@ function RPGBB:UpdateFrames()
             RPGBB.health_bars[boss_frame].percent_text = RPGBB.health_bars[boss_frame].text_frame:CreateFontString(nil, "OVERLAY")
         end
         RPGBB.health_bars[boss_frame].percent_text:ClearAllPoints()
-        RPGBB.health_bars[boss_frame].percent_text:SetPoint("RIGHT", RPGBB.health_bars[boss_frame].frame, "RIGHT", health_percent_offset_x, health_font_offset_y)
+        RPGBB.health_bars[boss_frame].percent_text:SetPoint(
+            "RIGHT",
+            RPGBB.health_bars[boss_frame].frame,
+            "RIGHT",
+            health_percent_offset_x * bar_scale,
+            health_font_offset_y * bar_scale
+        )
         RPGBB.health_bars[boss_frame].percent_text:SetFontObject(RPGBB.health_percent_font)
+        RPGBB.health_bars[boss_frame].percent_text:SetScale(bar_scale)
 
         -- Healthbar name text (above frame)
         if not RPGBB.health_bars[boss_frame].name_text then
@@ -844,9 +1015,10 @@ function RPGBB:UpdateFrames()
             RPGBB.health_bars[boss_frame].name_text:SetWordWrap(false)
         end
         RPGBB.health_bars[boss_frame].name_text:ClearAllPoints()
-        RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, name_y_offset)
+        RPGBB.health_bars[boss_frame].name_text:SetPoint("BOTTOM", RPGBB.health_bars[boss_frame].frame, "TOP", 0, name_y_offset * bar_scale)
         RPGBB.health_bars[boss_frame].name_text:SetFontObject(RPGBB.name_font)
-        RPGBB.health_bars[boss_frame].name_text:SetWidth(health_bar_width)
+        RPGBB.health_bars[boss_frame].name_text:SetScale(bar_scale)
+        RPGBB.health_bars[boss_frame].name_text:SetWidth(bar_width / bar_scale)
         RPGBB.health_bars[boss_frame].name_text:SetText(UnitName(boss_frame) or "Test Boss " .. boss_frame:match("%d+"))
         RPGBB.health_bars[boss_frame].name_text:SetShown(name_text_enabled)
 
@@ -862,9 +1034,8 @@ function RPGBB:UpdateFrames()
             local power_bar = CreateFrame(
                 "StatusBar",
                 "RPG" .. boss_frame .. "BarPowerBar",
-                RPGBB.frame
+                row_container
             )
-            power_bar:SetFrameLevel(RPGBB.frame:GetFrameLevel() + POWER_BAR_LEVEL)
 
             local background = power_bar:CreateTexture(nil, "BACKGROUND")
             background:SetAllPoints(power_bar)
@@ -875,17 +1046,20 @@ function RPGBB:UpdateFrames()
             RPGBB.health_bars[boss_frame].power_bar = power_bar
             RPGBB.health_bars[boss_frame].power_background = background
             RPGBB.health_bars[boss_frame].power_text = power_text
+        else
+            RPGBB.health_bars[boss_frame].power_bar:SetParent(row_container)
         end
 
         if not RPGBB.health_bars[boss_frame].power_border then
             local power_border = CreateFrame(
                 "Frame",
                 "RPG" .. boss_frame .. "BarPowerBorder",
-                RPGBB.frame,
+                row_container,
                 "BackdropTemplate"
             )
-            power_border:SetFrameLevel(RPGBB.frame:GetFrameLevel() + POWER_BORDER_LEVEL)
             RPGBB.health_bars[boss_frame].power_border = power_border
+        else
+            RPGBB.health_bars[boss_frame].power_border:SetParent(row_container)
         end
 
         local power_bar = RPGBB.health_bars[boss_frame].power_bar
@@ -895,15 +1069,18 @@ function RPGBB:UpdateFrames()
         local has_power = RPGBB:BossFrameHasPower(boss_frame)
         RPGBB.health_bars[boss_frame].has_power = has_power
 
+        power_bar:SetFrameLevel(row_container:GetFrameLevel() + POWER_BAR_LEVEL)
+        power_border:SetFrameLevel(row_container:GetFrameLevel() + POWER_BORDER_LEVEL)
+
         power_bar:ClearAllPoints()
         power_bar:SetPoint(
             "TOP",
             RPGBB.health_bars[boss_frame].frame,
             "BOTTOM",
             0,
-            power_bar_offset_y
+            power_bar_offset_y * bar_scale
         )
-        power_bar:SetSize(health_bar_width * (power_bar_percent_width / 100), power_bar_height)
+        power_bar:SetSize(bar_width * (power_bar_percent_width / 100), power_bar_height * bar_scale)
         power_bar:SetStatusBarTexture(power_bar_texture)
         power_bar:SetStatusBarColor(power_r, power_g, power_b, power_a)
 
@@ -915,19 +1092,19 @@ function RPGBB:UpdateFrames()
             "TOPLEFT",
             power_bar,
             "TOPLEFT",
-            -power_border_offset,
-            power_border_offset
+            -power_border_offset * bar_scale,
+            power_border_offset * bar_scale
         )
         power_border:SetPoint(
             "BOTTOMRIGHT",
             power_bar,
             "BOTTOMRIGHT",
-            power_border_offset,
-            -power_border_offset
+            power_border_offset * bar_scale,
+            -power_border_offset * bar_scale
         )
         power_border:SetBackdrop({
             edgeFile = power_border_enabled and power_border_texture or nil,
-            edgeSize = power_border_size,
+            edgeSize = power_border_size * bar_scale,
             insets = {
                 left = 0,
                 right = 0,
@@ -947,10 +1124,11 @@ function RPGBB:UpdateFrames()
             power_text_point,
             power_bar,
             power_text_relative_point,
-            power_text_x,
-            power_text_y
+            power_text_x * bar_scale,
+            power_text_y * bar_scale
         )
         power_text:SetFontObject(RPGBB.power_font)
+        power_text:SetScale(bar_scale)
         power_text:SetShown(has_power and power_text_enabled and boss_frame_count <= power_text_hide_above)
 
         if power_bar_enabled and has_power and boss_frame_count <= power_bar_hide_above then
@@ -965,25 +1143,65 @@ function RPGBB:UpdateFrames()
             power_text:Hide()
         end
 
-        -- Don't create extra divider graphic elements
-        if i == boss_frame_count then break end
+        if not is_vertical and i < boss_frame_count then
+            RPGBB.health_bars[boss_frame].centerAccentGroup = RPGBB:RenderAccentSelection(
+                center_accent.selected,
+                RPGBB.health_bars[boss_frame].centerAccentGroup,
+                {
+                    parent = RPGBB.health_bars[boss_frame].frame,
+                    anchor = RPGBB.health_bars[boss_frame].frame,
+                    side = "center",
+                    config = center_accent,
+                    offset_x = center_accent_offset_x,
+                    offset_y = center_accent_offset_y,
+                    frame_height = bar_height,
+                    frame_level = RPGBB.health_bars[boss_frame].frame:GetFrameLevel() + GRAPHICS_LEVEL,
+                    color = center_accent_color,
+                    width_multiplier = 0.7,
+                }
+            )
+        elseif is_vertical and i > 1 then
+            RPGBB.health_bars[boss_frame].leftCenterAccentGroup = RPGBB:RenderAccentSelection(
+                center_accent.selected,
+                RPGBB.health_bars[boss_frame].leftCenterAccentGroup,
+                {
+                    parent = row_container,
+                    anchor = row_container,
+                    side = "left",
+                    config = center_accent,
+                    offset_x = -center_accent_offset_x,
+                    offset_y = center_accent_offset_y,
+                    frame_height = bar_height,
+                    frame_level = row_container:GetFrameLevel() + GRAPHICS_LEVEL,
+                    color = center_accent_color,
+                    width_multiplier = 0.7,
+                }
+            )
 
-        RPGBB.health_bars[boss_frame].centerAccentGroup = RPGBB:RenderAccentSelection(
-            center_accent.selected,
-            RPGBB.health_bars[boss_frame].centerAccentGroup,
-            {
-                parent = RPGBB.health_bars[boss_frame].frame,
-                anchor = RPGBB.health_bars[boss_frame].frame,
-                side = "center",
-                config = center_accent,
-                offset_x = RPGBB.db:Get("accents", "center", "offset", "x"),
-                offset_y = RPGBB.db:Get("accents", "center", "offset", "y"),
-                frame_height = frame_height,
-                frame_level = RPGBB.health_bars[boss_frame].frame:GetFrameLevel() + GRAPHICS_LEVEL,
-                color = center_accent_color,
-                width_multiplier = 0.7,
-            }
-        )
+            RPGBB.health_bars[boss_frame].rightCenterAccentGroup = RPGBB:RenderAccentSelection(
+                center_accent.selected,
+                RPGBB.health_bars[boss_frame].rightCenterAccentGroup,
+                {
+                    parent = row_container,
+                    anchor = row_container,
+                    side = "right",
+                    config = center_accent,
+                    offset_x = center_accent_offset_x,
+                    offset_y = center_accent_offset_y,
+                    frame_height = bar_height,
+                    frame_level = row_container:GetFrameLevel() + GRAPHICS_LEVEL,
+                    color = center_accent_color,
+                    width_multiplier = 0.7,
+                }
+            )
+        end
+
+        if is_vertical then
+            vertical_y_offset = vertical_y_offset
+                + bar_height
+                + GetPowerBarFootprint(boss_frame_count, bar_scale)
+                + vertical_offset
+        end
     end
 end
 

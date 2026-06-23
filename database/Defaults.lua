@@ -33,6 +33,10 @@ addon.db_defaults = {
     frame = {
         width = 1100,
         height = 38,
+        vertical = false,
+        vertical_offset = 36,
+        vertical_secondary_scale = 0.85,
+        vertical_secondary_width = 1,
         background_color = { r = 0, g = 0, b = 0, a = 0.8 },
         border = {
             texture = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_dark.tga",

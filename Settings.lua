@@ -329,6 +329,141 @@ frame_background_color_setting = {
 }
 
 -------------------------------------------------------------------------------
+--- Frame Vertical Layout
+local VERTICAL_LAYOUT_WARNING_KEY = "verticalLayoutWarningShown"
+
+local function ShowVerticalLayoutWarningOnce()
+    RPGBossBarProfiles = RPGBossBarProfiles or {}
+    RPGBossBarProfiles.accountMeta = RPGBossBarProfiles.accountMeta or {}
+
+    if RPGBossBarProfiles.accountMeta[VERTICAL_LAYOUT_WARNING_KEY] then
+        return
+    end
+
+    RPGBossBarProfiles.accountMeta[VERTICAL_LAYOUT_WARNING_KEY] = true
+    StaticPopup_Show("RPGBB_VERTICAL_LAYOUT_WARNING")
+end
+
+local function frame_vertical_get()
+    return RPGBB.db:Get("frame", "vertical")
+end
+
+local function frame_vertical_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "vertical")
+    else
+        RPGBB.db:Set("frame", "vertical", value)
+        if value then
+            ShowVerticalLayoutWarningOnce()
+        end
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+frame_vertical_setting = {
+    name = 'Vertical Bars',
+    kind = LEM.SettingType.Checkbox,
+    default = defaults.frame.vertical,
+    get = frame_vertical_get,
+    set = frame_vertical_set,
+    desc = 'Stack boss bars vertically instead of dividing the frame horizontally.',
+}
+
+local function frame_vertical_setting_disabled()
+    return not RPGBB.db:Get("frame", "vertical")
+end
+
+-------------------------------------------------------------------------------
+--- Frame Vertical Offset
+local function frame_vertical_offset_get()
+    return RPGBB.db:Get("frame", "vertical_offset")
+end
+
+local function frame_vertical_offset_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "vertical_offset")
+    else
+        RPGBB.db:Set("frame", "vertical_offset", value)
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+frame_vertical_offset_setting = {
+    name = 'Vertical Offset',
+    kind = LEM.SettingType.Slider,
+    default = defaults.frame.vertical_offset,
+    get = frame_vertical_offset_get,
+    set = frame_vertical_offset_set,
+    minValue = 0,
+    maxValue = 120,
+    valueStep = 1,
+    formatter = function(value) return value end,
+    disabled = frame_vertical_setting_disabled,
+}
+
+-------------------------------------------------------------------------------
+--- Frame Vertical Secondary Scale
+local function frame_vertical_secondary_scale_get()
+    return RPGBB.db:Get("frame", "vertical_secondary_scale")
+end
+
+local function frame_vertical_secondary_scale_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "vertical_secondary_scale")
+    else
+        RPGBB.db:Set("frame", "vertical_secondary_scale", value)
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+frame_vertical_secondary_scale_setting = {
+    name = 'Secondary Scale',
+    kind = LEM.SettingType.Slider,
+    default = defaults.frame.vertical_secondary_scale,
+    get = frame_vertical_secondary_scale_get,
+    set = frame_vertical_secondary_scale_set,
+    minValue = 0.25,
+    maxValue = 1,
+    valueStep = 0.05,
+    snapToStep = true,
+    formatter = function(value) return string.format("%.0f%%", value * 100) end,
+    disabled = frame_vertical_setting_disabled,
+}
+
+-------------------------------------------------------------------------------
+--- Frame Vertical Secondary Width
+local function frame_vertical_secondary_width_get()
+    return RPGBB.db:Get("frame", "vertical_secondary_width")
+end
+
+local function frame_vertical_secondary_width_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "vertical_secondary_width")
+    else
+        RPGBB.db:Set("frame", "vertical_secondary_width", value)
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+frame_vertical_secondary_width_setting = {
+    name = 'Secondary Width',
+    kind = LEM.SettingType.Slider,
+    default = defaults.frame.vertical_secondary_width,
+    get = frame_vertical_secondary_width_get,
+    set = frame_vertical_secondary_width_set,
+    minValue = 0.1,
+    maxValue = 1,
+    valueStep = 0.05,
+    snapToStep = true,
+    formatter = function(value) return string.format("%.0f%%", value * 100) end,
+    disabled = frame_vertical_setting_disabled,
+}
+
+-------------------------------------------------------------------------------
 --- Frame Border Texture
 local function frame_border_texture_get(value)
     local nine_slice_style = RPGBB:GetNineSliceBorderStyle(value)
@@ -2338,6 +2473,10 @@ LEM:AddFrameSettings(RPGBB.frame, {
     frame_width_setting,
     frame_height_setting,
     frame_background_color_setting,
+    frame_vertical_setting,
+    frame_vertical_offset_setting,
+    frame_vertical_secondary_scale_setting,
+    frame_vertical_secondary_width_setting,
     { name = 'Frame Border', kind = LEM.SettingType.Divider, collapsed = true, },
     frame_border_texture_setting,
     frame_border_color_setting,
@@ -2493,6 +2632,19 @@ LEM.internal.dialog:HookScript('OnHide', function(self)
     SetEditModeSelectionState(1, false)
   end
 end)
+
+-------------------------------------------------------------------------------
+--- Vertical Layout warning dialog
+-------------------------------------------------------------------------------
+
+StaticPopupDialogs["RPGBB_VERTICAL_LAYOUT_WARNING"] = {
+    text = "Skins are designed primarily for horizontal layouts. Using the vertical layout may require manual adjustments.\n\nUse the Center Accent settings to adjust accents for secondary bars.",
+    button1 = "Okay",
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
 
 -------------------------------------------------------------------------------
 --- Reset Current Profile confirmation dialog
