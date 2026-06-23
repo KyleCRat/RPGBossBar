@@ -6,6 +6,7 @@ local function Frame(state, context)
     local width_multiplier = context.width_multiplier or 1
     local offset_x = context.offset_x or 0
     local offset_y = context.offset_y or 0
+    local frame_anchor_point = context.side == "left" and "LEFT" or "RIGHT"
 
     -- The center divider reuses the SG Vigor frame and fill atlases, but omits
     -- the outer decor piece used by the side accents. The width multiplier keeps
@@ -20,7 +21,7 @@ local function Frame(state, context)
     local tint_fill_width = tint_fill_height * (36 / 50) * width_multiplier
 
     state.foreground:ClearAllPoints()
-    state.foreground:SetPoint("CENTER", context.anchor, "RIGHT", offset_x, offset_y)
+    state.foreground:SetPoint("CENTER", context.anchor, frame_anchor_point, offset_x, offset_y)
     state.foreground:SetSize(vigor_frame_width, vigor_frame_height)
 
     state.background:ClearAllPoints()
@@ -34,7 +35,12 @@ RPGBB:RegisterAccentGroup({
     name = "SG Vigor Gold Center",
     slots = {
         center = true,
+        left = true,
+        right = true,
     },
+    supportsScale = true,
+    supportsRotation = true,
+    supportsMirror = true,
     textures = {
         {
             key = "background",
