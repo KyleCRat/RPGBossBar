@@ -527,6 +527,23 @@ function RPGBB:UpdatePower()
     end
 end
 
+function RPGBB:BossFrameHasPower(boss_frame)
+    if testing then
+        return true
+    end
+
+    if not UnitExists(boss_frame) then
+        return false
+    end
+
+    local max_power = UnitPowerMax(boss_frame)
+    if issecretvalue and issecretvalue(max_power) then
+        return true
+    end
+
+    return type(max_power) == "number" and max_power > 0
+end
+
 function RPGBB:RenderHealthChanges(boss_frame, abs_health, max_health, per_health)
     local health_bar = RPGBB.health_bars[boss_frame]
 
@@ -550,13 +567,32 @@ function RPGBB:RenderHealthChanges(boss_frame, abs_health, max_health, per_healt
     end
 end
 
-function RPGBB:RenderPowerChanges(boss_frame, per_power)
+function RPGBB:RenderPowerChanges(boss_frame, power_percent)
     local health_bar = RPGBB.health_bars[boss_frame]
     if not health_bar or not health_bar.power_bar then
         return
     end
 
-    local per_power = per_power or UnitPowerPercent(
+    local has_power = power_percent ~= nil or RPGBB:BossFrameHasPower(boss_frame)
+    health_bar.has_power = has_power
+
+    if not has_power then
+        health_bar.power_bar:SetValue(0)
+        health_bar.power_bar:Hide()
+
+        if health_bar.power_border then
+            health_bar.power_border:Hide()
+        end
+
+        if health_bar.power_text then
+            health_bar.power_text:SetText("")
+            health_bar.power_text:Hide()
+        end
+
+        return
+    end
+
+    local per_power = power_percent or UnitPowerPercent(
         boss_frame,
         nil,
         false,
@@ -570,6 +606,27 @@ function RPGBB:RenderPowerChanges(boss_frame, per_power)
         and "%.0f%%"
         or "%.0f"
     health_bar.power_text:SetText(string.format(power_text_format, per_power))
+
+    local boss_frame_count = #RPGBB.current_boss_frames
+    local power_bar_enabled = RPGBB.db:Get("power", "enabled")
+    local power_bar_hide_above = RPGBB.db:Get("power", "hide_above")
+    local power_text_enabled = RPGBB.db:Get("power", "font", "enabled")
+    local power_text_hide_above = RPGBB.db:Get("power", "font", "hide_above")
+    local power_border_texture = RPGBB.db:Get("power", "border", "texture")
+    local power_border_enabled = type(power_border_texture) == "string" and power_border_texture ~= ""
+    local show_power_bar = power_bar_enabled and boss_frame_count <= power_bar_hide_above
+
+    health_bar.power_bar:SetShown(show_power_bar)
+
+    if health_bar.power_border then
+        health_bar.power_border:SetShown(show_power_bar and power_border_enabled)
+    end
+
+    if health_bar.power_text then
+        health_bar.power_text:SetShown(
+            show_power_bar and power_text_enabled and boss_frame_count <= power_text_hide_above
+        )
+    end
 end
 
 function RPGBB:HaveBossFramesChanged(new_frames)
@@ -820,6 +877,8 @@ function RPGBB:UpdateFrames()
         local power_background = RPGBB.health_bars[boss_frame].power_background
         local power_border = RPGBB.health_bars[boss_frame].power_border
         local power_text = RPGBB.health_bars[boss_frame].power_text
+        local has_power = RPGBB:BossFrameHasPower(boss_frame)
+        RPGBB.health_bars[boss_frame].has_power = has_power
 
         power_bar:ClearAllPoints()
         power_bar:SetPoint(
@@ -877,15 +936,18 @@ function RPGBB:UpdateFrames()
             power_text_y
         )
         power_text:SetFontObject(RPGBB.power_font)
-        power_text:SetShown(power_text_enabled and boss_frame_count <= power_text_hide_above)
+        power_text:SetShown(has_power and power_text_enabled and boss_frame_count <= power_text_hide_above)
 
-        if power_bar_enabled and boss_frame_count <= power_bar_hide_above then
+        if power_bar_enabled and has_power and boss_frame_count <= power_bar_hide_above then
             power_bar:Show()
             power_border:SetShown(power_border_enabled)
             RPGBB:RenderPowerChanges(boss_frame, testing and 65 or nil)
         else
+            power_bar:SetValue(0)
             power_bar:Hide()
             power_border:Hide()
+            power_text:SetText("")
+            power_text:Hide()
         end
 
         -- Don't create extra divider graphic elements
