@@ -338,18 +338,14 @@ local function serializeValue(value, indent)
 end
 
 local function createTextFrame(name, buttonText, onButtonClick)
-    local frame = CreateFrame("Frame", name, UIParent, "BackdropTemplate")
+    local frame = CreateFrame("Frame", name, UIParent, "DefaultPanelFlatTemplate")
     frame:SetSize(500, 400)
     frame:SetPoint("CENTER")
     frame:SetFrameStrata("DIALOG")
-    frame:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 },
-    })
     frame:EnableMouse(true)
     frame:SetMovable(true)
+    frame:SetClampedToScreen(true)
+    frame:SetToplevel(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving)
     frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
@@ -359,35 +355,36 @@ local function createTextFrame(name, buttonText, onButtonClick)
         end
     end)
 
-    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-    title:SetPoint("TOP", 0, -12)
-    frame.Title = title
+    frame.Title = frame:GetTitleText()
 
-    local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
-    close:SetPoint("TOPRIGHT", -2, -2)
+    local close = CreateFrame("Button", nil, frame, "UIPanelCloseButtonDefaultAnchors")
+    close:SetFrameLevel(frame.TitleContainer:GetFrameLevel() + 1)
+    frame.CloseButton = close
 
-    local bottomOffset = 12
+    local bottomOffset = 10
     if buttonText then
         local button = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
         button:SetSize(120, 22)
-        button:SetPoint("BOTTOM", 0, 12)
+        button:SetPoint("BOTTOM", frame.Bg, "BOTTOM", 0, 10)
         button:SetText(buttonText)
         button:SetScript("OnClick", function() onButtonClick(frame) end)
         frame.ActionButton = button
-        bottomOffset = 40
+        bottomOffset = 42
     end
 
     local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", 12, -36)
-    scrollFrame:SetPoint("BOTTOMRIGHT", -30, bottomOffset)
+    scrollFrame:SetPoint("TOPLEFT", frame.Bg, "TOPLEFT", 10, -10)
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame.Bg, "BOTTOMRIGHT", -28, bottomOffset)
 
     local editBox = CreateFrame("EditBox", nil, scrollFrame)
     editBox:SetMultiLine(true)
     editBox:SetAutoFocus(false)
     editBox:SetFontObject(GameFontHighlightSmall)
-    editBox:SetWidth(scrollFrame:GetWidth() or 440)
     editBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     scrollFrame:SetScrollChild(editBox)
+    scrollFrame:SetScript("OnSizeChanged", function(self, width)
+        editBox:SetWidth(math.max(1, width - 4))
+    end)
 
     frame.EditBox = editBox
 
