@@ -149,13 +149,19 @@ local NINE_SLICE_BORDER_STYLES = {
         bottomAtlas = "_UI-Frame-DiamondMetal-EdgeBottom",
     },
     {
-        name = "Clean Metal",
+        name = "Character Create Metal",
+        value = "nineslice:character-create-metal",
+        topAtlas = "UI-CharacterCreate-MetalFrame-Horizontal",
+        bottomAtlas = "UI-CharacterCreate-MetalFrame-Horizontal",
+    },
+    {
+        name = "Generic Clean Metal",
         value = "nineslice:generic-metal-2",
         layout = UNIQUE_CORNERS_BORDER_LAYOUT,
         textureKit = "GenericMetal2",
     },
     {
-        name = "Dirty Metal",
+        name = "Generic Dirty Metal",
         value = "nineslice:generic-metal",
         layoutName = "GenericMetal",
     },

@@ -237,9 +237,13 @@ local function ShowModernBorder(frame, style, borderSize, r, g, b, a)
 
     frame.HorizontalTopEdge:SetAtlas(topAtlas, false, nil, true)
     frame.HorizontalTopEdge:ClearTextureSlice()
+    frame.HorizontalTopEdge:SetHorizTile(true)
+    frame.HorizontalTopEdge:SetVertTile(false)
 
     frame.HorizontalBottomEdge:SetAtlas(bottomAtlas, false, nil, true)
     frame.HorizontalBottomEdge:ClearTextureSlice()
+    frame.HorizontalBottomEdge:SetHorizTile(true)
+    frame.HorizontalBottomEdge:SetVertTile(false)
 
     frame.HorizontalTopEdge:SetVertexColor(r, g, b, a)
     frame.HorizontalBottomEdge:SetVertexColor(r, g, b, a)
