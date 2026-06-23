@@ -69,7 +69,7 @@ RPGBB:RegisterDefaultSkin({
                 color = { r = 1, g = 1, b = 1, a = 1, },
                 font = "Fonts\\FRIZQT__.TTF",
                 outline = "THICKOUTLINE",
-                size = 30,
+                size = 32,
             },
             offset = {
                 y = 7,
@@ -96,7 +96,7 @@ RPGBB:RegisterDefaultSkin({
             spark = {
                 atlas = "GarrMission_EncounterBar-Spark",
                 blend_mode = "ADD",
-                color = { r = 0.86274509803922, g = 0.37647058823529, b = 0.21176470588235, a = 1, },
+                color = { r = 0 / 255, g = 90 / 255, b = 179 / 255, a = 1, },
                 height_multi = 2.3,
                 width = 10,
             },

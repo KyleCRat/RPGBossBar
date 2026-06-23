@@ -72,7 +72,7 @@ RPGBB:RegisterDefaultSkin({
                 size = 30,
             },
             offset = {
-                y = 1,
+                y = 4,
             },
         },
         health = {
@@ -96,7 +96,7 @@ RPGBB:RegisterDefaultSkin({
             spark = {
                 atlas = "GarrMission_EncounterBar-Spark",
                 blend_mode = "ADD",
-                color = { r = 220 / 255, g = 96 / 255, b = 54 / 255, a = 1 },
+                color = { r = 140 / 255, g = 22 / 255, b = 22 / 255, a = 1 },
                 height_multi = 2.3,
                 width = 10,
             },
