@@ -718,13 +718,13 @@ function RPGBB:UpdateFrames()
     local health_bar_texture          = RPGBB.db:Get("health", "texture", "texture")
     local health_bar_atlas_texture    = RPGBB.db:Get("health", "texture", "atlas_texture")
     local health_bar_desaturated      = RPGBB.db:Get("health", "texture", "desaturated")
-    local hb_r, hb_b, hb_g, hb_a      = RPGBB.db:GetColor("health", "texture", "color")
+    local hb_r, hb_g, hb_b, hb_a      = RPGBB.db:GetColor("health", "texture", "color")
 
     local health_font_offset_y = RPGBB.db:Get("health", "font", "offset", "y")
     local health_text_enabled  = RPGBB.db:Get("health", "font", "enabled")
 
     local spark_atlas            = RPGBB.db:Get("health", "spark", "atlas")
-    local sp_r, sp_b, sp_g, sp_a = RPGBB.db:GetColor("health", "spark", "color")
+    local sp_r, sp_g, sp_b, sp_a = RPGBB.db:GetColor("health", "spark", "color")
     local spark_blend_mode       = RPGBB.db:Get("health", "spark", "blend_mode")
     local spark_width            = RPGBB.db:Get("health", "spark", "width")
     local spark_height_multi     = RPGBB.db:Get("health", "spark", "height_multi")
@@ -785,7 +785,7 @@ function RPGBB:UpdateFrames()
             RPGBB.health_bars[boss_frame].frame:SetStatusBarTexture(health_bar_texture)
         end
         RPGBB.health_bars[boss_frame].frame:GetStatusBarTexture():SetDesaturated(health_bar_desaturated)
-        RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(hb_r, hb_b, hb_g, hb_a)
+        RPGBB.health_bars[boss_frame].frame:SetStatusBarColor(hb_r, hb_g, hb_b, hb_a)
         -- Update each time for frame count changes
         RPGBB.health_bars[boss_frame].frame:ClearAllPoints()
         RPGBB.health_bars[boss_frame].frame:SetPoint("LEFT", RPGBB.frame, "LEFT", y_left_offset, 0)
@@ -807,7 +807,7 @@ function RPGBB:UpdateFrames()
         end
         -- Update each time for setting changes
         RPGBB.health_bars[boss_frame].spark:SetAtlas(spark_atlas)
-        RPGBB.health_bars[boss_frame].spark:SetVertexColor(sp_r, sp_b, sp_g, sp_a)
+        RPGBB.health_bars[boss_frame].spark:SetVertexColor(sp_r, sp_g, sp_b, sp_a)
         RPGBB.health_bars[boss_frame].spark:SetBlendMode(spark_blend_mode)
         RPGBB.health_bars[boss_frame].spark:SetSize(spark_width, frame_height * spark_height_multi)
 
