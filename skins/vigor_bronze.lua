@@ -26,7 +26,7 @@ RPGBB:RegisterDefaultSkin({
                     y = 0,
                 },
                 rotation = 0,
-                scale = 1,
+                scale = 0.8,
                 selected = "sgvigor-bronze-center",
                 width_scale = 1,
             },
