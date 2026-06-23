@@ -26,7 +26,7 @@ RPGBB:RegisterDefaultSkin({
                     y = -1,
                 },
                 rotation = 0,
-                scale = 0.9,
+                scale = 0.8,
                 selected = "none",
                 width_scale = 1,
             },

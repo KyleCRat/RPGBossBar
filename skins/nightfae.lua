@@ -23,10 +23,10 @@ RPGBB:RegisterDefaultSkin({
                 mirror_y = false,
                 offset = {
                     x = 0,
-                    y = -1,
+                    y = 0,
                 },
                 rotation = 0,
-                scale = 0.9,
+                scale = 0.6,
                 selected = "none",
                 width_scale = 1,
             },
