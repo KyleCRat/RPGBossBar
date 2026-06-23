@@ -1948,7 +1948,7 @@ local function power_bar_border_texture_set(value)
     end
 
     local texture = LibSharedMedia:Fetch('border', value, true)
-    RPGBB.db:Set("power", "border", "texture", texture)
+    RPGBB.db:Set("power", "border", "texture", texture or false)
     RPGBB:UpdateFrames()
 end
 
