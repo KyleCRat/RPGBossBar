@@ -2,13 +2,30 @@ local ADDON_NAME, RPGBB = ...
 
 local LibSharedMedia = LibStub('LibSharedMedia-3.0')
 
-LibSharedMedia:Register(
-    'font',
-    'Metamorphous',
-    "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf"
-)
+local fonts = {
+    {
+        name = 'Metamorphous',
+        path = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf"
+    },
+    {
+        name = 'Comfortaa Light',
+        path = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Comfortaa-Light.ttf"
+    },
+    {
+        name = 'Comfortaa Regular',
+        path = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Comfortaa-Regular.ttf"
+    },
+    {
+        name = 'Comfortaa Bold',
+        path = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Comfortaa-Bold.ttf"
+    },
+}
 
-local border_media = {
+for _, media in ipairs(fonts) do
+    LibSharedMedia:Register('font', media.name, media.path)
+end
+
+local borders = {
     {
         name = "RPGBB: Vigor Bronze",
         path = "Interface\\AddOns\\RPGBossBar\\media\\art\\dragonriding_sgvigor_border_bronze.tga",
@@ -59,6 +76,6 @@ local border_media = {
     },
 }
 
-for _, media in ipairs(border_media) do
+for _, media in ipairs(borders) do
     LibSharedMedia:Register('border', media.name, media.path)
 end
