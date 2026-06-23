@@ -6,4 +6,4 @@ RPGBB:RegisterDefaultSkin({
     name = "L'ura",
     overrides = {
     },
-}
+})
