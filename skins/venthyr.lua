@@ -69,27 +69,27 @@ RPGBB:RegisterDefaultSkin({
             font = {
                 color = { r = 1, g = 1, b = 1, a = 1 },
                 font = "Fonts\\FRIZQT__.TTF",
-                size = 36,
+                size = 30,
             },
             offset = {
-                y = -3,
+                y = 7,
             },
         },
         health = {
             font = {
                 enabled = true,
                 font = "Fonts\\FRIZQT__.TTF",
-                size = 26,
+                size = 21,
                 color = { r = 1, g = 1, b = 1, a = 1 },
                 offset = {
-                    y = 0,
+                    y = -1,
                 },
             },
             percent_font = {
                 disable_above = 3,
                 enabled = true,
                 offset = {
-                    x = -24,
+                    x = -19,
                 },
             },
             spark = {

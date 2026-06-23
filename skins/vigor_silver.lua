@@ -15,7 +15,7 @@ RPGBB:RegisterDefaultSkin({
         },
         accents = {
             center = {
-                color = { r = 165 / 255, g = 190 / 255, b = 210 / 255, a = 1 },
+                color = { r = 135 / 255, g = 206 / 255, b = 235 / 255, a = 1 },
                 custom_atlas = "",
                 desaturated = false,
                 height_scale = 1,
@@ -31,7 +31,7 @@ RPGBB:RegisterDefaultSkin({
                 width_scale = 1,
             },
             left = {
-                color = { r = 165 / 255, g = 190 / 255, b = 210 / 255, a = 1 },
+                color = { r = 135 / 255, g = 206 / 255, b = 235 / 255, a = 1 },
                 custom_atlas = "",
                 desaturated = false,
                 height_scale = 1,
@@ -47,7 +47,7 @@ RPGBB:RegisterDefaultSkin({
                 width_scale = 1,
             },
             right = {
-                color = { r = 165 / 255, g = 190 / 255, b = 210 / 255, a = 1 },
+                color = { r = 135 / 255, g = 206 / 255, b = 235 / 255, a = 1 },
                 custom_atlas = "",
                 desaturated = false,
                 height_scale = 1,
@@ -68,7 +68,7 @@ RPGBB:RegisterDefaultSkin({
             font = {
                 color = { r = 1, g = 1, b = 1, a = 1 },
                 font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
-                size = 32,
+                size = 30,
             },
             offset = {
                 y = 2,

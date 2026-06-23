@@ -68,7 +68,7 @@ RPGBB:RegisterDefaultSkin({
             font = {
                 color = { r = 1, g = 1, b = 1, a = 1 },
                 font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
-                size = 32,
+                size = 30,
             },
             offset = {
                 y = 2,

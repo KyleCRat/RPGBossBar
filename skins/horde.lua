@@ -67,27 +67,27 @@ RPGBB:RegisterDefaultSkin({
             enabled = true,
             font = {
                 color = { r = 1, g = 1, b = 1, a = 1, },
-                font = "Fonts\\FRIZQT__.TTF",
-                size = 28,
+                font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
+                size = 30,
             },
             offset = {
-                y = 6,
+                y = 1,
             },
         },
         health = {
             font = {
                 color = { r = 1, g = 1, b = 1, a = 1, },
                 enabled = true,
-                font = "Fonts\\FRIZQT__.TTF",
+                font = "Interface\\AddOns\\RPGBossBar\\media\\fonts\\Metamorphous-Regular.ttf",
                 offset = {
                     y = -1,
                 },
-                size = 23,
+                size = 21,
             },
             percent_font = {
                 enabled = true,
                 offset = {
-                    x = -28,
+                    x = -22,
                 },
             },
             spark = {
