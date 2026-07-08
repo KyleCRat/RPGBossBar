@@ -73,6 +73,10 @@ local borders = {
         path = "Interface\\AddOns\\RPGBossBar\\media\\art\\ActionBar-Border.tga",
     },
     {
+        name = "RPGBB: Vertex Border",
+        path = "Interface\\AddOns\\RPGBossBar\\media\\art\\VertexBorder.tga",
+    },
+    {
         name = "Blizzard Arena",
         path = "Interface\\ArenaEnemyFrame\\UI-Arena-Border",
     },
