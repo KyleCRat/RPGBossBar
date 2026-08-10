@@ -1,5 +1,16 @@
 # Changelog
 
+## [12.1.0-12] - 2026-08-10
+
+### Added
+- Add a colorable Vertex Border texture to the LibSharedMedia border options
+
+### Changed
+- Add compatibility metadata for World of Warcraft 12.1.0
+
+### Fixed
+- Keep Edit Mode sliders synchronized when related settings or dialog controls refresh them
+
 ## [12.0.7-11] - 2026-06-23
 
 ### Added
@@ -24,11 +35,3 @@
 - Fix covenant and Vigor skin sizing issues
 - Fix bad border texture selection falling back to no border instead of writing a nil setting
 - Fix incomplete WIP skin file before release
-
-## [12.0.7-10] - 2026-06-16
-
-### Added
-- Profile export and import support
-
-### Changed
-- Update TOC interface metadata for WoW 12.0.7

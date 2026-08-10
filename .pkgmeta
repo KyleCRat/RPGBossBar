@@ -6,6 +6,6 @@ manual-changelog:
 
 ignore:
     - images
-    - .pkgmeta
-    - .git
-    - "*.png"
+    - AGENTS.md
+    - FIXME.md
+    - TODO.md
