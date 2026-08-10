@@ -1,4 +1,4 @@
-local MINOR = 15
+local MINOR = 16
 local lib = LibStub:NewLibrary('LibEditMode-RPGBossBar-1.0', MINOR)
 if not lib then
 	-- this or a newer version is already loaded

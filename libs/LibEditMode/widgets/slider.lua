@@ -1,4 +1,4 @@
-local MINOR = 15
+local MINOR = 16
 local lib, minor = LibStub('LibEditMode-RPGBossBar-1.0')
 if minor > MINOR then
 	return
@@ -15,11 +15,13 @@ local function showTooltip(self)
 end
 
 local function refreshOwnerWidgets(widget)
-	local owner = widget:GetParent()
-	owner = owner and owner:GetParent()
-
-	if owner and not owner.RefreshWidgets then
+	local owner = widget
+	while owner and not owner.RefreshWidgets do
 		owner = owner:GetParent()
+	end
+
+	if not owner and lib.internal and lib.internal.dialog and lib.internal.dialog:IsShown() then
+		owner = lib.internal.dialog
 	end
 
 	if owner and owner.RefreshWidgets then
@@ -65,6 +67,18 @@ end
 function sliderMixin:Refresh()
 	local data = self.setting
 	self:SetEnabled(not isDisabled(data))
+
+	if self.formatters and self.Slider and self.Slider.SetValue and not self.EditBox:HasFocus() then
+		local value = data.get(lib:GetActiveLayoutName())
+		if value == nil then
+			value = data.default
+		end
+
+		self.suppressSliderChange = true
+		self.Slider:SetValue(value)
+		self.suppressSliderChange = false
+		self.Slider:FormatValue(value)
+	end
 
 	local hidden = data.hidden
 	if type(hidden) == 'function' then
