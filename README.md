@@ -7,6 +7,7 @@ RPG Boss Bar adds a large, RPG-inspired boss health display to the World of Warc
 ## Features
 
 - Displays up to five active bosses in one segmented bar
+- Can track a single enemy hard or soft target instead of boss units
 - Shows each boss's name, current health, and health percentage
 - Automatically appears when supported boss units are active and hides afterward
 - Integrates with Blizzard Edit Mode for positioning and configuration
@@ -31,7 +32,7 @@ Open Blizzard Edit Mode and select **RPG Boss Bar**. The addon automatically pre
 The Edit Mode panel provides controls for:
 
 - Profile skin selection and skin application
-- Maximum frames, frame position, width, height, background color, border appearance, and vertical layout
+- Target tracking, maximum frames, frame position, width, height, background color, border appearance, and vertical layout
 - Boss name font, size, outline, color, and vertical offset
 - Health font, size, outline, color, visibility, and vertical offset
 - Health bar texture, color, and desaturation
@@ -40,7 +41,13 @@ The Edit Mode panel provides controls for:
 - Power bar texture, color, border, text, size, and visibility
 - Decorative accent selection, color, offsets, custom atlas, scaling, rotation, and mirroring
 
-The Frame section's **Maximum Frames** setting defaults to 5 and limits the number of visible boss bars. Living, present bosses fill the available positions in boss-unit order, skipping dead or missing bosses. With a limit of 2, if `boss2` dies while `boss1` and `boss3` are still alive, `boss3` takes the second position.
+**Track Target** and **Maximum Frames** appear directly below **Test Frames**, above the collapsible sections.
+
+**Maximum Frames** defaults to 5 and limits the number of visible boss bars. Living, present bosses fill the available positions in boss-unit order, skipping dead or missing bosses. With a limit of 2, if `boss2` dies while `boss1` and `boss3` are still alive, `boss3` takes the second position.
+
+Enable **Track Target** to show one bar for your selected attackable enemy instead of tracking bosses. Your hard target takes priority; when no hard target is selected, the bar follows your soft enemy target. Selecting a friendly or helpful hard target still hides the bar, even if a soft enemy target is available. Target changes update its name, health, and power immediately, and the bar remains visible outside combat while an enemy is selected. Maximum Frames and Test Frames are disabled at 1 in this mode; turning it off restores your saved boss-frame limit.
+
+In target mode, Edit Mode shows live enemy-target information. With neither a hard target nor a soft enemy target, it shows a single preview instead; selecting a helpful hard target still hides the bar.
 
 Outside Edit Mode or a boss encounter, use `/rpgbb test [1-5]` to request between one and five preview bars. Previews also respect Maximum Frames.
 

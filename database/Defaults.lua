@@ -31,6 +31,7 @@ local font_outlines = {
 
 addon.db_defaults = {
     frame = {
+        track_target = false,
         max_frames = 5,
         width = 1100,
         height = 38,

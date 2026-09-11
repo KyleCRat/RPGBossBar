@@ -216,6 +216,29 @@ local profile_skin_apply_setting = {
     desc = 'Choose how to apply the selected profile skin to the active profile.',
 }
 
+--- Track Target
+local function frame_track_target_get()
+    return RPGBB:IsTrackingTarget()
+end
+
+local function frame_track_target_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "track_target")
+    else
+        RPGBB.db:Set("frame", "track_target", value)
+    end
+
+    RPGBB:InitOrUpdateFrame()
+end
+
+local frame_track_target_setting = {
+    name = 'Track Target',
+    kind = LEM.SettingType.Checkbox,
+    default = defaults.frame.track_target,
+    get = frame_track_target_get,
+    set = frame_track_target_set,
+}
+
 --- Test Frames
 local function test_frame_count_get()
     return RPGBB:GetTestFrameCount()
@@ -245,6 +268,7 @@ test_frame_count_setting = {
     maxValue = 5,
     valueStep = 1,
     formatter = function(value) return value end,
+    disabled = frame_track_target_get,
 }
 
 --- Maximum Frames
@@ -273,6 +297,7 @@ local frame_max_frames_setting = {
     valueStep = 1,
     snapToStep = true,
     formatter = function(value) return value end,
+    disabled = frame_track_target_get,
 }
 
 --- Frame Width
@@ -2493,11 +2518,12 @@ RPGBB.frame.hideDefaultSettingsResetButton = true
 LEM:AddFrame(RPGBB.frame, OnPositionChanged, default_position)
 LEM:AddFrameSettings(RPGBB.frame, {
     test_frame_count_setting,
+    frame_track_target_setting,
+    frame_max_frames_setting,
     { name = 'Profile Skin', kind = LEM.SettingType.Divider, collapsed = false, },
     profile_skin_selector_setting,
     profile_skin_apply_setting,
     { name = 'Frame', kind = LEM.SettingType.Divider, collapsed = true, },
-    frame_max_frames_setting,
     frame_center_x_setting,
     frame_width_setting,
     frame_height_setting,
