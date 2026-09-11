@@ -7,6 +7,7 @@ local ADDON_NAME, RPGBB = ...
 local addon_color = "ff46226a"
 
 local testing = false
+local test_frame_count = 2
 local verbose = false
 
 --- Strata levels
@@ -25,6 +26,36 @@ local GRAPHICS_LEVEL     = 15
 
 RPGBB.health_bars = {}
 RPGBB.current_boss_frames = {}
+
+function RPGBB:GetMaxBossFrames()
+    local count = tonumber(RPGBB.db:Get("frame", "max_frames")) or RPGBB.db_defaults.frame.max_frames
+
+    return math.max(1, math.min(5, math.floor(count)))
+end
+
+local function GetBossFrames()
+    local boss_frames = {}
+    local max_frames = RPGBB:GetMaxBossFrames()
+    local frame_count = testing and test_frame_count or 5
+
+    for i = 1, frame_count do
+        local unit = "boss" .. i
+        if testing then
+            table.insert(boss_frames, unit)
+        elseif UnitExists(unit) and not UnitIsDeadOrGhost(unit) then
+            local classification = UnitClassification(unit)
+            if classification == "elite" or classification == "worldboss" then
+                table.insert(boss_frames, unit)
+            end
+        end
+
+        if #boss_frames >= max_frames then
+            break
+        end
+    end
+
+    return boss_frames
+end
 
 
 -------------------------------------------------------------------------------
@@ -598,10 +629,14 @@ function RPGBB:ToggleDebug()
     RPGBB:Print("debug turned " .. (verbose and "on" or "off"))
 end
 
+function RPGBB:GetTestFrameCount()
+    return test_frame_count
+end
+
 function RPGBB:ToggleTest(frame_count)
     local received_frame_count_arg = ((frame_count and true) or false)
     frame_count = tonumber(frame_count) or 2
-    frame_count = math.max(1, math.min(5, frame_count)) -- Clamp between 1 and 5
+    frame_count = math.max(1, math.min(5, math.floor(frame_count))) -- Clamp between 1 and 5
 
     RPGBB:VPrint("ToggleTest: received_frame_count_arg " .. ((frame_count and "true") or "false"))
     RPGBB:VPrint("ToggleTest: frame_count: " .. frame_count .. " current_boss_frames_count " .. #RPGBB.current_boss_frames)
@@ -611,38 +646,17 @@ function RPGBB:ToggleTest(frame_count)
     --   We are testing: if no frame_count passed
     --                   or frame_count is the same as current test: Hide
     if not testing or (not received_frame_count_arg
-                        or #RPGBB.current_boss_frames == frame_count) then
+                        or test_frame_count == frame_count) then
         testing = not testing
 
         RPGBB:Print("testing turned " .. (testing and "on" or "off"))
     end
 
     if testing then
-        local test_boss_frames = {}
-        for i = 1, frame_count do
-            table.insert(test_boss_frames, "boss" .. i)
-        end
-
-        RPGBB.current_boss_frames = test_boss_frames
-        RPGBB:UpdateFrames()
-
-        for _, boss_frame in ipairs(test_boss_frames) do
-            local test_max_health = 214748364
-            local test_health = math.random(1, test_max_health)
-            local test_percent = (test_health / test_max_health) * 100
-            local test_power_percent = math.random(0, 100)
-
-            RPGBB:RenderHealthChanges(boss_frame, test_health, test_max_health, test_percent)
-            RPGBB:RenderPowerChanges(boss_frame, test_power_percent)
-        end
-
-        RPGBB.current_boss_frames = test_boss_frames
-        RPGBB.frame:Show()
-    else
-        RPGBB.current_boss_frames = {}
-        RPGBB:UpdateFrames()
-        RPGBB.frame:Hide()
+        test_frame_count = frame_count
     end
+
+    RPGBB:UpdateFrames()
 end
 
 
@@ -784,39 +798,21 @@ end
 --   true if we have any boss frames we should be tracking and BossBar should be visible
 --  false if we are not tracking boss frames and BossBar should be hidden
 function RPGBB:IsBossFramesToUpdate()
-    local boss_frames = {}
-
-    -- 5 boss frames maximum
-    for i = 1, 5 do
-        local unit = "boss" .. i
-        if UnitExists(unit) and (UnitClassification(unit) == "elite"
-                                 or UnitClassification(unit) == "worldboss") then
-            table.insert(boss_frames, unit)
-        end
-    end
-
-    -- If there are no boss frames we don't have anything to render or update, hide
-    if #boss_frames == 0 then
-        RPGBB.frame:Hide()
-        RPGBB.current_boss_frames = boss_frames
-        return false
-    end
-
-    -- Otherwise we have at least one boss frame to update, show
-    RPGBB.frame:Show()
+    local boss_frames = GetBossFrames()
 
     -- Only rebuild frames if boss frames have changed
-    if not RPGBB:HaveBossFramesChanged(boss_frames) then
-        return true
+    if RPGBB:HaveBossFramesChanged(boss_frames) then
+        RPGBB:UpdateFrames()
+    else
+        RPGBB.frame:SetShown(#boss_frames > 0)
     end
 
-    RPGBB.current_boss_frames = boss_frames
-    RPGBB:UpdateFrames()
-
-    return true
+    return #boss_frames > 0
 end
 
 function RPGBB:UpdateFrames()
+    RPGBB.current_boss_frames = GetBossFrames()
+
     local frame_height = RPGBB.db:Get("frame", "height")
     local frame_width  = RPGBB.db:Get("frame", "width")
 
@@ -839,6 +835,7 @@ function RPGBB:UpdateFrames()
         if bf.rightCenterAccentGroup then RPGBB:HideAccentGroup(bf.rightCenterAccentGroup) end
     end
 
+    RPGBB.frame:SetShown(boss_frame_count > 0)
     if boss_frame_count == 0 then
         return
     end
@@ -1203,6 +1200,20 @@ function RPGBB:UpdateFrames()
                 + vertical_offset
         end
     end
+
+    if testing then
+        for _, boss_frame in ipairs(RPGBB.current_boss_frames) do
+            local test_max_health = 214748364
+            local test_health = math.random(1, test_max_health)
+            local test_percent = (test_health / test_max_health) * 100
+            local test_power_percent = math.random(0, 100)
+
+            RPGBB:RenderHealthChanges(boss_frame, test_health, test_max_health, test_percent)
+            RPGBB:RenderPowerChanges(boss_frame, test_power_percent)
+        end
+    else
+        RPGBB:UpdateHealth()
+    end
 end
 
 -------------------------------------------------------------------------------
@@ -1221,6 +1232,7 @@ local function EventHandler(self, event, arg1)
             -- Register boss health events for all 5 possible boss units
             RPGBB.frame:RegisterUnitEvent("UNIT_HEALTH", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterUnitEvent("UNIT_MAXHEALTH", "boss1", "boss2", "boss3", "boss4", "boss5")
+            RPGBB.frame:RegisterUnitEvent("UNIT_FLAGS", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterUnitEvent("UNIT_POWER_UPDATE", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterUnitEvent("UNIT_MAXPOWER", "boss1", "boss2", "boss3", "boss4", "boss5")
             RPGBB.frame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "boss1", "boss2", "boss3", "boss4", "boss5")
@@ -1239,13 +1251,18 @@ local function EventHandler(self, event, arg1)
             end
         end
     elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_MAXPOWER" or event == "UNIT_DISPLAYPOWER" then
-        if RPGBB:IsBossFramesToUpdate() and RPGBB.health_bars[arg1] then
-            RPGBB:RenderPowerChanges(arg1)
+        if RPGBB:IsBossFramesToUpdate() then
+            for _, boss_frame in ipairs(RPGBB.current_boss_frames) do
+                if boss_frame == arg1 then
+                    RPGBB:RenderPowerChanges(boss_frame)
+                    break
+                end
+            end
         end
     elseif event == "PLAYER_REGEN_ENABLED" then
         -- Exited combat
         RPGBB.frame:Hide()
-    elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
+    elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or event == "UNIT_FLAGS" then
         if RPGBB:IsBossFramesToUpdate() then
             RPGBB:UpdateHealth()
             RPGBB:UpdatePower()

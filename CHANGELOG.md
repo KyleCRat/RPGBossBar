@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Add a Maximum Frames setting to cap visible boss bars at 1-5, filling gaps left by dead or missing bosses and also limiting previews
+
 ## [12.1.0-12] - 2026-08-10
 
 ### Added

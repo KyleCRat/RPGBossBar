@@ -218,7 +218,7 @@ local profile_skin_apply_setting = {
 
 --- Test Frames
 local function test_frame_count_get()
-    return #RPGBB.current_boss_frames
+    return RPGBB:GetTestFrameCount()
 end
 
 local function test_frame_count_set(layoutName, value, fromReset)
@@ -227,10 +227,10 @@ local function test_frame_count_set(layoutName, value, fromReset)
     if fromReset then
         frame_count = 2
     else
-        frame_count = value
+        frame_count = math.max(1, math.min(5, math.floor(value)))
     end
 
-    if frame_count ~= #RPGBB.current_boss_frames then
+    if frame_count ~= RPGBB:GetTestFrameCount() then
         RPGBB:ToggleTest(frame_count)
     end
 end
@@ -244,6 +244,34 @@ test_frame_count_setting = {
     minValue = 1,
     maxValue = 5,
     valueStep = 1,
+    formatter = function(value) return value end,
+}
+
+--- Maximum Frames
+local function frame_max_frames_get()
+    return RPGBB:GetMaxBossFrames()
+end
+
+local function frame_max_frames_set(layoutName, value, fromReset)
+    if fromReset then
+        RPGBB.db:SetDefault("frame", "max_frames")
+    else
+        RPGBB.db:Set("frame", "max_frames", math.max(1, math.min(5, math.floor(value))))
+    end
+
+    RPGBB:UpdateFrames()
+end
+
+local frame_max_frames_setting = {
+    name = 'Maximum Frames',
+    kind = LEM.SettingType.Slider,
+    default = defaults.frame.max_frames,
+    get = frame_max_frames_get,
+    set = frame_max_frames_set,
+    minValue = 1,
+    maxValue = 5,
+    valueStep = 1,
+    snapToStep = true,
     formatter = function(value) return value end,
 }
 
@@ -2469,6 +2497,7 @@ LEM:AddFrameSettings(RPGBB.frame, {
     profile_skin_selector_setting,
     profile_skin_apply_setting,
     { name = 'Frame', kind = LEM.SettingType.Divider, collapsed = true, },
+    frame_max_frames_setting,
     frame_center_x_setting,
     frame_width_setting,
     frame_height_setting,

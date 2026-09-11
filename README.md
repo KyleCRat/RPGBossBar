@@ -26,12 +26,12 @@ All required libraries are included with the addon.
 
 ## Getting Started
 
-Open Blizzard Edit Mode and select **RPG Boss Bar**. The addon automatically displays two test boss bars while Edit Mode is active.
+Open Blizzard Edit Mode and select **RPG Boss Bar**. The addon automatically previews up to two boss bars while Edit Mode is active, subject to the active profile's Maximum Frames setting.
 
 The Edit Mode panel provides controls for:
 
 - Profile skin selection and skin application
-- Frame position, width, height, background color, border appearance, and vertical layout
+- Maximum frames, frame position, width, height, background color, border appearance, and vertical layout
 - Boss name font, size, outline, color, and vertical offset
 - Health font, size, outline, color, visibility, and vertical offset
 - Health bar texture, color, and desaturation
@@ -40,7 +40,9 @@ The Edit Mode panel provides controls for:
 - Power bar texture, color, border, text, size, and visibility
 - Decorative accent selection, color, offsets, custom atlas, scaling, rotation, and mirroring
 
-Outside Edit Mode or a boss encounter, use `/rpgbb test [1-5]` to preview the display with between one and five boss bars.
+The Frame section's **Maximum Frames** setting defaults to 5 and limits the number of visible boss bars. Living, present bosses fill the available positions in boss-unit order, skipping dead or missing bosses. With a limit of 2, if `boss2` dies while `boss1` and `boss3` are still alive, `boss3` takes the second position.
+
+Outside Edit Mode or a boss encounter, use `/rpgbb test [1-5]` to request between one and five preview bars. Previews also respect Maximum Frames.
 
 Vertical layout stacks boss bars instead of splitting the frame horizontally. Skins are designed primarily for horizontal layouts, so vertical mode may require manual adjustment. Center Accent settings control the accents used on secondary vertical bars.
 
