@@ -24,7 +24,7 @@ RPGBB.cmds.toggle_debug = {
 RPGBB.cmds.settings = {
     triggers = { 'settings', 's' },
     name = "Open Settings",
-    description = "Open the profile settings panel",
+    description = "Open general settings and profile management",
     func = function()
         if RPGBB.settingsCategory then
             Settings.OpenToCategory(RPGBB.settingsCategory:GetID())

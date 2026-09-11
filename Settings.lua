@@ -284,6 +284,7 @@ local function frame_max_frames_set(layoutName, value, fromReset)
     end
 
     RPGBB:UpdateFrames()
+    RPGBB.RefreshGeneralSettings()
 end
 
 local frame_max_frames_setting = {
@@ -298,6 +299,12 @@ local frame_max_frames_setting = {
     snapToStep = true,
     formatter = function(value) return value end,
     disabled = frame_track_target_get,
+}
+
+RPGBB.sharedSettings = {
+    testFrames = test_frame_count_setting,
+    trackTarget = frame_track_target_setting,
+    maxFrames = frame_max_frames_setting,
 }
 
 --- Frame Width

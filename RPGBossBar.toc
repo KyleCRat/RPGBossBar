@@ -45,6 +45,7 @@ skins/horde.lua
 skins/alliance.lua
 database/Init.lua
 Commands.lua
+BlizzardBossFrames.lua
 RPGBossBar.lua
 Settings.lua
 ProfileSettings.lua

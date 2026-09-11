@@ -574,6 +574,7 @@ end
 function RPGBB:InitOrUpdateFrame()
     RPGBB:VPrint("InitOrUpdateFrame fired")
     UpdateTrackingEvents()
+    RPGBB:UpdateBlizzardBossFrameVisibility()
 
     local frame_height = RPGBB.db:Get("frame", "height")
     local frame_width  = RPGBB.db:Get("frame", "width")
@@ -668,6 +669,7 @@ function RPGBB:InitOrUpdateFrame()
 
     --- Update Frames after changing Init Frame settings
     RPGBB:UpdateFrames()
+    RPGBB.RefreshGeneralSettings()
 end
 
 
@@ -711,6 +713,10 @@ function RPGBB:ToggleDebug()
     RPGBB:Print("debug turned " .. (verbose and "on" or "off"))
 end
 
+function RPGBB:IsTesting()
+    return testing
+end
+
 function RPGBB:GetTestFrameCount()
     if RPGBB:IsTrackingTarget() then
         return 1
@@ -743,6 +749,7 @@ function RPGBB:ToggleTest(frame_count)
     end
 
     RPGBB:UpdateFrames()
+    RPGBB.RefreshGeneralSettings()
 end
 
 

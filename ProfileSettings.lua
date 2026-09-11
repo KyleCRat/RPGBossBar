@@ -467,8 +467,114 @@ end
 --- Blizzard Settings Panel
 -------------------------------------------------------------------------------
 
+function RPGBB.RefreshGeneralSettings()
+    Settings.NotifyUpdate("RPGBB_TEST_FRAMES")
+    Settings.NotifyUpdate("RPGBB_TRACK_TARGET")
+    Settings.NotifyUpdate("RPGBB_MAX_FRAMES")
+    Settings.NotifyUpdate("RPGBB_HIDE_BLIZZARD_BOSS_FRAMES")
+end
+
 function RPGBB.RegisterProfileSettings()
     local category, layout = Settings.RegisterVerticalLayoutCategory("RPG Boss Bar")
+    local ownsSettingsPreview = false
+
+    local function StopSettingsPreview()
+        EventRegistry:UnregisterCallback("SettingsPanel.OnHide", category)
+        EventRegistry:UnregisterCallback("Settings.CategoryChanged", category)
+
+        if ownsSettingsPreview then
+            ownsSettingsPreview = false
+            if RPGBB:IsTesting() then
+                RPGBB:ToggleTest()
+            end
+        end
+    end
+
+    local function OnSettingsCategoryChanged(_, selectedCategory)
+        if selectedCategory ~= category then
+            StopSettingsPreview()
+        end
+    end
+
+    ---- General
+    layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("General"))
+
+    local function RegisterSharedSetting(variable, variableType, sharedSetting)
+        return Settings.RegisterProxySetting(
+            category, variable, variableType, sharedSetting.name,
+            sharedSetting.default, sharedSetting.get,
+            function(value)
+                if sharedSetting.disabled and sharedSetting.disabled() then
+                    return
+                end
+
+                local startingPreview = sharedSetting == RPGBB.sharedSettings.testFrames
+                    and not RPGBB:IsTesting()
+                sharedSetting.set(LEM:GetActiveLayoutName(), value, false)
+
+                if startingPreview and RPGBB:IsTesting() and not ownsSettingsPreview then
+                    ownsSettingsPreview = true
+                    EventRegistry:RegisterCallback("SettingsPanel.OnHide", StopSettingsPreview, category)
+                    EventRegistry:RegisterCallback("Settings.CategoryChanged", OnSettingsCategoryChanged, category)
+                end
+
+                LEM:RefreshFrameSettings(RPGBB.frame)
+            end
+        )
+    end
+
+    local testFramesSetting = RegisterSharedSetting(
+        "RPGBB_TEST_FRAMES", Settings.VarType.Number, RPGBB.sharedSettings.testFrames
+    )
+    local trackTargetSetting = RegisterSharedSetting(
+        "RPGBB_TRACK_TARGET", Settings.VarType.Boolean, RPGBB.sharedSettings.trackTarget
+    )
+    local maxFramesSetting = RegisterSharedSetting(
+        "RPGBB_MAX_FRAMES", Settings.VarType.Number, RPGBB.sharedSettings.maxFrames
+    )
+
+    local frameCountOptions = Settings.CreateSliderOptions(1, 5, 1)
+    frameCountOptions:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
+
+    local testFramesInitializer = Settings.CreateSlider(
+        category, testFramesSetting, frameCountOptions,
+        "Number of preview frames, limited by Maximum Frames."
+    )
+    Settings.CreateCheckbox(
+        category, trackTargetSetting,
+        "Show one enemy hard or soft target instead of bosses."
+    )
+    local maxFramesInitializer = Settings.CreateSlider(
+        category, maxFramesSetting, frameCountOptions,
+        "Maximum number of living, present boss frames to display."
+    )
+
+    local function CanChangeFrameCount()
+        return not RPGBB:IsTrackingTarget()
+    end
+
+    for _, initializer in ipairs({ testFramesInitializer, maxFramesInitializer }) do
+        initializer:AddModifyPredicate(CanChangeFrameCount)
+        -- This native helper observes setting variables, including proxies.
+        initializer:AddEvaluateStateCVar(trackTargetSetting:GetVariable())
+    end
+
+    local hideBlizzardBossFramesSetting = Settings.RegisterProxySetting(
+        category, "RPGBB_HIDE_BLIZZARD_BOSS_FRAMES",
+        Settings.VarType.Boolean, "Hide Default Boss Frames",
+        RPGBB.db_defaults.frame.hide_blizzard_boss_frames,
+        function()
+            return RPGBB.db:Get("frame", "hide_blizzard_boss_frames") == true
+        end,
+        function(value)
+            RPGBB.db:Set("frame", "hide_blizzard_boss_frames", value)
+            RPGBB:UpdateBlizzardBossFrameVisibility()
+        end
+    )
+    Settings.CreateCheckbox(
+        category, hideBlizzardBossFramesSetting,
+        "Hide Blizzard's boss frames for the active profile. Changes made in combat apply after combat ends."
+    )
 
     ---- Active Profile
     layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Active Profile"))

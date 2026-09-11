@@ -33,6 +33,7 @@ addon.db_defaults = {
     frame = {
         track_target = false,
         max_frames = 5,
+        hide_blizzard_boss_frames = false,
         width = 1100,
         height = 38,
         vertical = false,

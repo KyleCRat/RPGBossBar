@@ -43,6 +43,10 @@ The Edit Mode panel provides controls for:
 
 **Track Target** and **Maximum Frames** appear directly below **Test Frames**, above the collapsible sections.
 
+The same three controls are also available under **General** in **Settings > AddOns > RPG Boss Bar**, opened with `/rpgbb settings`. Changes stay synchronized with Edit Mode. Previews started here stop when you close the menu or leave the addon's category.
+
+**Hide Default Boss Frames** is also available in General and defaults to off. It hides Blizzard's boss frames for the active profile without affecting RPG Boss Bar. Unchecking it restores Blizzard's normal boss-frame visibility. Changes made in combat apply after combat ends.
+
 **Maximum Frames** defaults to 5 and limits the number of visible boss bars. Living, present bosses fill the available positions in boss-unit order, skipping dead or missing bosses. With a limit of 2, if `boss2` dies while `boss1` and `boss3` are still alive, `boss3` takes the second position.
 
 Enable **Track Target** to show one bar for your selected attackable enemy instead of tracking bosses. Your hard target takes priority; when no hard target is selected, the bar follows your soft enemy target. Selecting a friendly or helpful hard target still hides the bar, even if a soft enemy target is available. Target changes update its name, health, and power immediately, and the bar remains visible outside combat while an enemy is selected. Maximum Frames and Test Frames are disabled at 1 in this mode; turning it off restores your saved boss-frame limit.
@@ -76,7 +80,7 @@ Importing or copying a profile overwrites the active profile's current settings.
 | --- | --- |
 | `/rpgbb` | Display command help |
 | `/rpgbb test [1-5]` | Toggle test mode, optionally using the specified number of bars |
-| `/rpgbb settings` | Open profile management |
+| `/rpgbb settings` | Open general settings and profile management |
 | `/rpgbb debug` | Toggle diagnostic chat messages |
 | `/rpgbb reset` | Clear stored settings from the active profile and use defaults |
 
