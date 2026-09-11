@@ -13,6 +13,7 @@
 
 ### Fixed
 - Stop unchanged slider callbacks from rebuilding and randomizing the preview while a slider is held
+- Hide dead enemy hard and soft targets, including when the tracked target dies
 
 ## [12.1.0-12] - 2026-08-10
 

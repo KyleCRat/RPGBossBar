@@ -60,7 +60,7 @@ local function GetTrackedUnits()
     if RPGBB:IsTrackingTarget() then
         local unit = GetTargetUnit()
         if unit then
-            if UnitCanAttack("player", unit) then
+            if not UnitIsDeadOrGhost(unit) and UnitCanAttack("player", unit) then
                 boss_frames[1] = unit
             end
         elseif testing then
