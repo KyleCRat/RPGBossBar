@@ -29,6 +29,22 @@ local function refreshOwnerWidgets(widget)
 	end
 end
 
+local function setValueIfChanged(widget, value)
+    local data = widget.setting
+    local layoutName = lib:GetActiveLayoutName()
+    local currentValue = data.get(layoutName)
+    if currentValue == nil then
+        currentValue = data.default
+    end
+
+    if value == currentValue then
+        return
+    end
+
+    data.set(layoutName, value, false)
+    refreshOwnerWidgets(widget)
+end
+
 local sliderMixin = {}
 
 local function isDisabled(data)
@@ -74,9 +90,11 @@ function sliderMixin:Refresh()
 			value = data.default
 		end
 
-		self.suppressSliderChange = true
-		self.Slider:SetValue(value)
-		self.suppressSliderChange = false
+        if self.Slider.Slider:GetValue() ~= value then
+            self.suppressSliderChange = true
+            self.Slider:SetValue(value)
+            self.suppressSliderChange = false
+        end
 		self.Slider:FormatValue(value)
 	end
 
@@ -94,9 +112,7 @@ function sliderMixin:OnSliderValueChanged(value)
 			value = snapValueToStep(value, self.setting.minValue or 0, self.setting.valueStep)
 		end
 
-		self.setting.set(lib:GetActiveLayoutName(), value, false)
-
-		refreshOwnerWidgets(self)
+        setValueIfChanged(self, value)
 	end
 end
 
@@ -153,8 +169,7 @@ local function onEditSubmit(self)
 		parent.Slider:SetValue(value)
 		parent.suppressSliderChange = false
 		parent.Slider:FormatValue(value)
-		parent.setting.set(lib:GetActiveLayoutName(), value, false)
-		refreshOwnerWidgets(parent)
+        setValueIfChanged(parent, value)
 	end
 
 	self:ClearFocus()
