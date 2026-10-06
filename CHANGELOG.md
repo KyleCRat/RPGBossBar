@@ -1,5 +1,9 @@
 # Changelog
 
+## [12.1.5-14] - 2026-10-06
+
+- Updated for WoW 12.1.5.
+
 ## [12.1.0-13] - 2026-09-11
 
 ### Added
@@ -14,14 +18,3 @@
 ### Fixed
 - Stop unchanged slider callbacks from rebuilding and randomizing the preview while a slider is held
 - Hide dead enemy hard and soft targets, including when the tracked target dies
-
-## [12.1.0-12] - 2026-08-10
-
-### Added
-- Add a colorable Vertex Border texture to the LibSharedMedia border options
-
-### Changed
-- Add compatibility metadata for World of Warcraft 12.1.0
-
-### Fixed
-- Keep Edit Mode sliders synchronized when related settings or dialog controls refresh them
