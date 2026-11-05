@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Add Forever 1.60.1 compatibility metadata (Interface 16001)
+
 ## [12.1.5-14] - 2026-10-06
 
 - Updated for WoW 12.1.5.

@@ -1,4 +1,4 @@
-## Interface: 120100, 120105
+## Interface: 16001, 120100, 120105
 ## Title: RPG Boss Bar
 ## Author: Yvairel
 ## Version: 12.1.5-14
