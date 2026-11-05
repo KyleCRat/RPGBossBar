@@ -21,9 +21,7 @@ RPG Boss Bar adds a large, RPG-inspired boss health display to the World of Warc
 
 ## Compatibility
 
-Release **12.1.5-14** supports World of Warcraft: Midnight, for Retail 12.1.5.
-
-The development version also declares Forever 1.60.1 compatibility (Interface `16001`). Forever support is provisional and still needs in-game verification.
+Release **12.1.5-15** supports World of Warcraft: Midnight (Retail 12.1.0 and 12.1.5) and World of Warcraft: Forever 1.60.1.
 
 All required libraries are included with the addon.
 
